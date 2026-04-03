@@ -1,0 +1,129 @@
+/* Custom #color_code#
+	#ffffff = #fff;
+	#9B1C31 =#e40955;
+    rgba(222,140,216,0.82) =rgba(228, 9, 85, 0.82); 
+*/
+/*._hamburge ul li a{
+	color: #ffffff;
+}*/
+.cool-link a {
+  color: #9b1c31 !important;
+}
+.menu-active:after {
+  background: #9b1c31 !important;
+}
+._hamburge ul li:last-child a {
+  background: #9b1c31 !important;
+}
+.banner-contact-1 {
+  background: #9b1c31 !important;
+}
+.tabbable-line > .nav-tabs > li.active > a {
+  color: #9b1c31 !important;
+}
+.tabbable-line > .nav-tabs > li.active {
+  border-bottom: 3px solid #9b1c31 !important;
+}
+.md-radio label:after {
+  background: #9b1c31 !important;
+}
+.reg-fect-box {
+  background: #9b1c31 !important;
+}
+.reg-cb-text a {
+  color: #9b1c31 !important;
+}
+.reg-btn {
+  background-color: #9b1c31 !important;
+  border: 1px solid #9b1c31;
+}
+.reg-btn:hover,
+.reg-btn:focus {
+  color: #9b1c31 !important;
+  background: #fff !important;
+}
+.searchnow {
+  background-color: #9b1c31 !important;
+}
+::-webkit-scrollbar-thumb {
+  background: #9b1c31 !important;
+}
+.more-success-stories {
+  background: #9b1c31 !important;
+}
+.service-box-new {
+  background-color: #9b1c31 !important;
+}
+.read-more-btn {
+  color: #9b1c31 !important;
+}
+.read-more-btn:hover {
+  background: #9b1c31 !important;
+  background-color: #fff !important;
+}
+.millions-of-happy-stories-box .owl-theme .owl-controls .owl-page.active span,
+.millions-of-happy-stories-box
+  .owl-theme
+  .owl-controls.clickable
+  .owl-page:hover
+  span {
+  background: #9b1c31 !important;
+}
+.option-1-title h4,
+.option-2-title h4,
+.option-3-title h4,
+.option-4-title h4 {
+  color: #9b1c31 !important;
+}
+.option-3-data {
+  background: #9b1c31 !important;
+}
+.planning-tools h3 span {
+  color: #9b1c31 !important;
+}
+.get-started-btn {
+  background-color: #9b1c31 !important;
+  border: 1px solid #9b1c31 !important;
+}
+.get-started-btn:hover,
+.get-started-btn:focus {
+  background: #f5f5f5 !important;
+  color: #9b1c31 !important;
+}
+.features {
+  background: #9b1c31 !important;
+}
+.stay-connected-title p span {
+  color: #9b1c31 !important;
+}
+.why-choose-us-data h3 {
+  color: #9b1c31 !important;
+}
+.footer-bg {
+  background-color: #9b1c31 !important;
+}
+.progress-wrap::after {
+  color: #9b1c31 !important;
+}
+.newHamburge,
+#dismiss,
+.ul-li-bg li {
+  background: #9b1c31 !important;
+}
+._hamburge li:hover:after {
+  background: #9b1c31 !important;
+}
+._hamburge li:last-child:hover:after {
+  background: none !important;
+}
+.how-does-it-work-new,
+.mobile-app-feact-new,
+.browse-matri-data-new {
+  background: #9b1c31 !important;
+}
+.last-child-menu {
+  background: #9b1c31 !important;
+}
+.a {
+  fill: #9b1c31 !important;
+}

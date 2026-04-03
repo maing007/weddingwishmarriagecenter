@@ -1,0 +1,241 @@
+@font-face {
+  font-family: 'fontello';
+  src: url('../fonts/fontellocf1b.eot');
+  src: url('../fonts/fontellocf1b.eot#iefix') format('embedded-opentype'),
+       url('../fontellocf1b.html') format('woff2'),
+       url('../fonts/fontellocf1b.woff') format('woff'),
+       url('../fonts/fontellocf1b.ttf') format('truetype'),
+       url('../images/fontellocf1b.svg#fontello') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+/* Chrome hack: SVG is rendered more smooth in Windozze. 100% magic, uncomment if you need it. */
+/* Note, that will break hinting! In other OS-es font will be not as sharp as it could be */
+/*
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: 'fontello';
+    src: url('../font/fontello.svg?37340713#fontello') format('svg');
+  }
+}
+*/
+ 
+ [class^="icon-"]:before, [class*=" icon-"]:before {
+  font-family: "fontello";
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+ 
+  display: inline-block;
+  text-decoration: inherit;
+ 
+ 
+  text-align: center;
+  /* opacity: .8; */
+ 
+  /* For safety - reset parent styles, that can break glyph codes*/
+  font-variant: normal;
+  text-transform: none;
+ 
+  /* fix buttons height, for twitter bootstrap */
+ 
+ 
+  /* Animation center compensation - margins should be symmetric */
+  /* remove if not needed */
+ 
+ 
+  /* you can be more comfortable with increased icons size */
+  /* font-size: 120%; */
+ 
+  /* Font smoothing. That was taken from TWBS */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+ 
+  /* Uncomment for 3D effect */
+  /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
+}
+ 
+.icon-wedding-invitation:before { content: '\e800'; } /* '' */
+.icon-wedding-location:before { content: '\e801'; } /* '' */
+.icon-wedding-planning:before { content: '\e802'; } /* '' */
+.icon-wedding-reception:before { content: '\e803'; } /* '' */
+.icon-wedding-rings:before { content: '\e804'; } /* '' */
+.icon-big-church:before { content: '\e805'; } /* '' */
+.icon-bouquet-of-flowers:before { content: '\e806'; } /* '' */
+.icon-bow-tie:before { content: '\e807'; } /* '' */
+.icon-bridal-shoe:before { content: '\e808'; } /* '' */
+.icon-bride-bust:before { content: '\e809'; } /* '' */
+.icon-butterfly-with-long-feelers:before { content: '\e80a'; } /* '' */
+.icon-champagne-bottle-uncork:before { content: '\e80b'; } /* '' */
+.icon-champagne-glasses:before { content: '\e80c'; } /* '' */
+.icon-diamond-ring:before { content: '\e80d'; } /* '' */
+.icon-double-bed-with-heart:before { content: '\e80e'; } /* '' */
+.icon-engagement-ring:before { content: '\e80f'; } /* '' */
+.icon-eros-bow-and-arrow:before { content: '\e810'; } /* '' */
+.icon-faq:before { content: '\e811'; } /* '' */
+.icon-gift-box-with-lace:before { content: '\e812'; } /* '' */
+.icon-global-refreshment:before { content: '\e813'; } /* '' */
+.icon-groom:before { content: '\e814'; } /* '' */
+.icon-groom-shoes:before { content: '\e815'; } /* '' */
+.icon-heart-shaped-balloons:before { content: '\e816'; } /* '' */
+.icon-heart-shaped-necklace:before { content: '\e817'; } /* '' */
+.icon-heart-shaped-padlock:before { content: '\e818'; } /* '' */
+.icon-heart-with-arrow:before { content: '\e819'; } /* '' */
+.icon-honeymoon-luggage:before { content: '\e81a'; } /* '' */
+.icon-inspection:before { content: '\e81b'; } /* '' */
+.icon-love-letter:before { content: '\e81c'; } /* '' */
+.icon-lovely-rainbow:before { content: '\e81d'; } /* '' */
+.icon-love-potion:before { content: '\e81e'; } /* '' */
+.icon-love-song:before { content: '\e81f'; } /* '' */
+.icon-love-talk:before { content: '\e820'; } /* '' */
+.icon-loving-home:before { content: '\e821'; } /* '' */
+.icon-male-and-female-genders:before { content: '\e822'; } /* '' */
+.icon-marketing:before { content: '\e823'; } /* '' */
+.icon-money:before { content: '\e824'; } /* '' */
+.icon-newly-married-couple:before { content: '\e825'; } /* '' */
+.icon-please-do-not-disturb-sign:before { content: '\e826'; } /* '' */
+.icon-priest-at-wedding:before { content: '\e827'; } /* '' */
+.icon-resume:before { content: '\e828'; } /* '' */
+.icon-rose-with-leaves:before { content: '\e829'; } /* '' */
+.icon-store:before { content: '\e82a'; } /* '' */
+.icon-suit-and-bow-tie:before { content: '\e82b'; } /* '' */
+.icon-sweet-muffin:before { content: '\e82c'; } /* '' */
+.icon-tandem-bicycle:before { content: '\e82d'; } /* '' */
+.icon-teddy-bear-with-heart:before { content: '\e82e'; } /* '' */
+.icon-three-candles-candelabrum:before { content: '\e82f'; } /* '' */
+.icon-two-hearts:before { content: '\e830'; } /* '' */
+.icon-vintage-cinema-camera-looking-left:before { content: '\e831'; } /* '' */
+.icon-wedding-arch:before { content: '\e832'; } /* '' */
+.icon-wedding-bells:before { content: '\e833'; } /* '' */
+.icon-wedding-cake:before { content: '\e834'; } /* '' */
+.icon-wedding-cake-1:before { content: '\e835'; } /* '' */
+.icon-wedding-day:before { content: '\e836'; } /* '' */
+.icon-wedding-dinner:before { content: '\e837'; } /* '' */
+.icon-wedding-dress:before { content: '\e838'; } /* '' */
+.icon-manicure:before { content: '\e839'; } /* '' */
+.icon-microphone:before { content: '\e83a'; } /* '' */
+.icon-ring:before { content: '\e83b'; } /* '' */
+.icon-rings:before { content: '\e83c'; } /* '' */
+.icon-suit:before { content: '\e83d'; } /* '' */
+.icon-table:before { content: '\e83e'; } /* '' */
+.icon-tag:before { content: '\e83f'; } /* '' */
+.icon-vinyl:before { content: '\e840'; } /* '' */
+.icon-violin:before { content: '\e841'; } /* '' */
+.icon-wedding:before { content: '\e842'; } /* '' */
+.icon-wedding-1:before { content: '\e843'; } /* '' */
+.icon-wedding-cake-2:before { content: '\e844'; } /* '' */
+.icon-wedding-car:before { content: '\e845'; } /* '' */
+.icon-wedding-dinner-1:before { content: '\e846'; } /* '' */
+.icon-wedding-dress-1:before { content: '\e847'; } /* '' */
+.icon-wedding-invitation-1:before { content: '\e848'; } /* '' */
+.icon-wedding-invitation-2:before { content: '\e849'; } /* '' */
+.icon-wedding-invitation-3:before { content: '\e84a'; } /* '' */
+.icon-wedding-invitation-4:before { content: '\e84b'; } /* '' */
+.icon-wedding-photos:before { content: '\e84c'; } /* '' */
+.icon-album:before { content: '\e84d'; } /* '' */
+.icon-balloon:before { content: '\e84e'; } /* '' */
+.icon-bells:before { content: '\e84f'; } /* '' */
+.icon-bouquet:before { content: '\e850'; } /* '' */
+.icon-bow:before { content: '\e851'; } /* '' */
+.icon-bow-1:before { content: '\e852'; } /* '' */
+.icon-bride:before { content: '\e853'; } /* '' */
+.icon-budget:before { content: '\e854'; } /* '' */
+.icon-cake:before { content: '\e855'; } /* '' */
+.icon-calendar:before { content: '\e856'; } /* '' */
+.icon-camera:before { content: '\e857'; } /* '' */
+.icon-camera-1:before { content: '\e858'; } /* '' */
+.icon-champagne:before { content: '\e859'; } /* '' */
+.icon-church:before { content: '\e85a'; } /* '' */
+.icon-cupcake:before { content: '\e85b'; } /* '' */
+.icon-curtains:before { content: '\e85c'; } /* '' */
+.icon-date:before { content: '\e85d'; } /* '' */
+.icon-desserts:before { content: '\e85e'; } /* '' */
+.icon-dove:before { content: '\e85f'; } /* '' */
+.icon-drink:before { content: '\e860'; } /* '' */
+.icon-earrings:before { content: '\e861'; } /* '' */
+.icon-gift:before { content: '\e862'; } /* '' */
+.icon-groom-1:before { content: '\e863'; } /* '' */
+.icon-guest-list:before { content: '\e864'; } /* '' */
+.icon-heart:before { content: '\e865'; } /* '' */
+.icon-hearts:before { content: '\e866'; } /* '' */
+.icon-high-heel:before { content: '\e867'; } /* '' */
+.icon-honeymoon:before { content: '\e868'; } /* '' */
+.icon-lipstick:before { content: '\e869'; } /* '' */
+.icon-lock:before { content: '\e86a'; } /* '' */
+.icon-check-mark:before { content: '\e86b'; } /* '' */
+.icon-close:before { content: '\e86c'; } /* '' */
+.icon-add:before { content: '\e86d'; } /* '' */
+.icon-bar-chart:before { content: '\e86e'; } /* '' */
+.icon-book:before { content: '\e86f'; } /* '' */
+.icon-bookmark:before { content: '\e870'; } /* '' */
+.icon-cancel:before { content: '\e871'; } /* '' */
+.icon-check:before { content: '\e872'; } /* '' */
+.icon-checked:before { content: '\e873'; } /* '' */
+.icon-upload:before { content: '\e874'; } /* '' */
+.icon-upload-1:before { content: '\e875'; } /* '' */
+.icon-upload-2:before { content: '\e876'; } /* '' */
+.icon-communication:before { content: '\e877'; } /* '' */
+.icon-communication-1:before { content: '\e878'; } /* '' */
+.icon-communication-2:before { content: '\e879'; } /* '' */
+.icon-communication-3:before { content: '\e87a'; } /* '' */
+.icon-communication-4:before { content: '\e87b'; } /* '' */
+.icon-communication-5:before { content: '\e87c'; } /* '' */
+.icon-communication-6:before { content: '\e87d'; } /* '' */
+.icon-delete:before { content: '\e881'; } /* '' */
+.icon-edit:before { content: '\e888'; } /* '' */
+.icon-email-1:before { content: '\e88a'; } /* '' */
+.icon-heart-1:before { content: '\e88f'; } /* '' */
+.icon-heart-2:before { content: '\e890'; } /* '' */
+.icon-heart-3:before { content: '\e891'; } /* '' */
+.icon-left-arrow:before { content: '\e895'; } /* '' */
+.icon-list:before { content: '\e89c'; } /* '' */
+.icon-list-1:before { content: '\e89d'; } /* '' */
+.icon-list-2:before { content: '\e89e'; } /* '' */
+.icon-list-3:before { content: '\e89f'; } /* '' */
+.icon-menu:before { content: '\e8a4'; } /* '' */
+.icon-padlock-1:before { content: '\e8b7'; } /* '' */
+.icon-photo-camera:before { content: '\e8ba'; } /* '' */
+.icon-picture:before { content: '\e8bb'; } /* '' */
+.icon-placeholder:before { content: '\e8bf'; } /* '' */
+.icon-speech-bubble:before { content: '\e8d7'; } /* '' */
+.icon-speech-bubble-1:before { content: '\e8d8'; } /* '' */
+.icon-speech-bubble-9:before { content: '\e8e0'; } /* '' */
+.icon-speech-bubble-10:before { content: '\e8e1'; } /* '' */
+.icon-speech-bubble-11:before { content: '\e8e2'; } /* '' */
+.icon-speech-bubble-17:before { content: '\e8e8'; } /* '' */
+.icon-speech-bubble-18:before { content: '\e8e9'; } /* '' */
+.icon-speech-bubble-24:before { content: '\e8ef'; } /* '' */
+.icon-speech-bubble-25:before { content: '\e8f0'; } /* '' */
+.icon-speech-bubble-26:before { content: '\e8f1'; } /* '' */
+.icon-speech-bubble-27:before { content: '\e8f2'; } /* '' */
+.icon-speech-bubble-28:before { content: '\e8f3'; } /* '' */
+.icon-star:before { content: '\e8f4'; } /* '' */
+.icon-sticker-4:before { content: '\e8f9'; } /* '' */
+.icon-telephone:before { content: '\e900'; } /* '' */
+.icon-telephone-1:before { content: '\e901'; } /* '' */
+.icon-telephone-2:before { content: '\e902'; } /* '' */
+.icon-telephone-3:before { content: '\e903'; } /* '' */
+.icon-telephone-8:before { content: '\e908'; } /* '' */
+.icon-settings:before { content: '\e915'; } /* '' */
+.icon-magnifying-glass:before { content: '\e916'; } /* '' */
+.icon-monitor:before { content: '\e917'; } /* '' */
+.icon-musical-note:before { content: '\e918'; } /* '' */
+.icon-phone-call:before { content: '\e91d'; } /* '' */
+.icon-photo-camera-1:before { content: '\e91e'; } /* '' */
+.icon-placeholder-1:before { content: '\e921'; } /* '' */
+.icon-settings-1:before { content: '\e924'; } /* '' */
+.icon-share:before { content: '\e926'; } /* '' */
+.icon-star-1:before { content: '\e92b'; } /* '' */
+.icon-avatar:before { content: '\e930'; } /* '' */
+.icon-avatar-1:before { content: '\e931'; } /* '' */
+.icon-cancel-1:before { content: '\e934'; } /* '' */
+.icon-chat:before { content: '\e935'; } /* '' */
+.icon-chat-1:before { content: '\e936'; } /* '' */
+.icon-copy:before { content: '\e938'; } /* '' */
+.icon-edit-1:before { content: '\e93c'; } /* '' */
+.icon-envelope:before { content: '\e93d'; } /* '' */
+.icon-folder:before { content: '\e93e'; } /* '' */
+.icon-heart-4:before { content: '\e943'; } /* '' */
+.icon-like:before { content: '\e945'; } /* '' */
+.icon-link:before { content: '\e946'; } /* '' */
+.icon-group:before { content: '\e948'; } /* '' */
