@@ -14,7 +14,8 @@ $fmtDate = static function ($raw): string {
 require __DIR__ . '/partials/header.php';
 require __DIR__ . '/partials/sidebar.php';
 
-$staffOpts = $deptOpts = $topicOpts = [];
+$staffOpts = $deptOpts = $topicOpts = $roleOpts = [];
+$roleBuckets = [];
 foreach ($activityRows as $r) {
     $vs = trim((string) ($r['staff_name'] ?? ''));
     if ($vs !== '' && !in_array($vs, $staffOpts, true)) {
@@ -28,10 +29,26 @@ foreach ($activityRows as $r) {
     if ($vt !== '' && !in_array($vt, $topicOpts, true)) {
         $topicOpts[] = $vt;
     }
+    $rl = trim((string) ($r['staff_role'] ?? ''));
+    if ($rl === '') {
+        $rl = '—';
+    }
+    if (!in_array($rl, $roleOpts, true)) {
+        $roleOpts[] = $rl;
+    }
+    $rk = strtolower($rl);
+    if (!isset($roleBuckets[$rk])) {
+        $roleBuckets[$rk] = ['label' => $rl, 'count' => 0];
+    }
+    $roleBuckets[$rk]['count']++;
 }
 sort($staffOpts);
 sort($deptOpts);
 sort($topicOpts);
+sort($roleOpts);
+uksort($roleBuckets, static function ($a, $b) {
+    return strcasecmp($a, $b);
+});
 
 $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-all-activity/export';
 ?>
@@ -72,10 +89,15 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-all-activity/expo
                 <span class="sa-show-wrap"><label class="me-2 mb-0">Show</label><select id="saShowEntries" class="form-select form-select-sm d-inline-block w-auto sa-select"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="9999">All</option></select><label class="ms-2 mb-0">Entries</label></span>
             </div>
 
-            <ul class="nav nav-tabs sa-tabs mb-0">
+            <ul class="nav nav-tabs sa-tabs sa-role-tabs flex-wrap mb-0" id="saRoleTabs">
                 <li class="nav-item">
-                    <span class="nav-link active">All <small>(<?= (int) $reportTotal ?>)</small></span>
+                    <a href="#" class="nav-link active sa-role-tab" data-role-key="" role="button">All <small>(<?= (int) $reportTotal ?>)</small></a>
                 </li>
+                <?php foreach ($roleBuckets as $rKey => $meta): ?>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link sa-role-tab" data-role-key="<?= htmlspecialchars($rKey, ENT_QUOTES, 'UTF-8') ?>" role="button"><?= htmlspecialchars((string) $meta['label'], ENT_QUOTES, 'UTF-8') ?> <small>(<?= (int) $meta['count'] ?>)</small></a>
+                    </li>
+                <?php endforeach; ?>
             </ul>
 
             <div class="table-responsive sa-table-wrap">
@@ -84,6 +106,7 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-all-activity/expo
                         <tr>
                             <th class="sa-th-sort" id="saSortDate" role="button" tabindex="0">Date Time <span class="sa-sort-arrows ms-1" aria-hidden="true"><i class="fa fa-sort-up"></i><i class="fa fa-sort-down"></i></span></th>
                             <th>Staff Name</th>
+                            <th>Admin role</th>
                             <th>Team Name</th>
                             <th>Main Topic</th>
                             <th>Activity</th>
@@ -97,9 +120,15 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-all-activity/expo
                         <?php foreach ($activityRows as $R):
                             $at = $R['activity_at'] ?? '';
                             $ts = $at !== '' && strtotime((string) $at) ? strtotime((string) $at) : 0;
+                            $roleDisp = trim((string) ($R['staff_role'] ?? ''));
+                            if ($roleDisp === '') {
+                                $roleDisp = '—';
+                            }
+                            $roleKeyRow = strtolower($roleDisp);
                             $searchBlob = strtolower(implode(' ', [
                                 $fmtDate($at),
                                 $R['staff_name'] ?? '',
+                                $roleDisp,
                                 $R['team_name'] ?? '',
                                 $R['main_topic'] ?? '',
                                 $R['activity'] ?? '',
@@ -112,9 +141,10 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-all-activity/expo
                             $deptVal = strtolower(trim((string) ($R['department_name'] ?? '')));
                             $topicVal = strtolower(trim((string) ($R['main_topic'] ?? '')));
                             ?>
-                        <tr class="sa-row" data-sort-ts="<?= (int) $ts ?>" data-search="<?= htmlspecialchars($searchBlob, ENT_QUOTES, 'UTF-8') ?>" data-staff="<?= htmlspecialchars($staffVal, ENT_QUOTES, 'UTF-8') ?>" data-dept="<?= htmlspecialchars($deptVal, ENT_QUOTES, 'UTF-8') ?>" data-topic="<?= htmlspecialchars($topicVal, ENT_QUOTES, 'UTF-8') ?>">
+                        <tr class="sa-row" data-sort-ts="<?= (int) $ts ?>" data-search="<?= htmlspecialchars($searchBlob, ENT_QUOTES, 'UTF-8') ?>" data-staff="<?= htmlspecialchars($staffVal, ENT_QUOTES, 'UTF-8') ?>" data-dept="<?= htmlspecialchars($deptVal, ENT_QUOTES, 'UTF-8') ?>" data-topic="<?= htmlspecialchars($topicVal, ENT_QUOTES, 'UTF-8') ?>" data-role="<?= htmlspecialchars($roleKeyRow, ENT_QUOTES, 'UTF-8') ?>">
                             <td><?= htmlspecialchars($fmtDate($at)) ?></td>
                             <td><?= htmlspecialchars((string) ($R['staff_name'] ?? '')) ?></td>
+                            <td><?= htmlspecialchars($roleDisp, ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars((string) ($R['team_name'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['main_topic'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['activity'] ?? '')) ?></td>
@@ -168,6 +198,15 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-all-activity/expo
                     <option value="">All topics</option>
                     <?php foreach ($topicOpts as $t): ?>
                         <option value="<?= htmlspecialchars(strtolower($t)) ?>"><?= htmlspecialchars($t) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small">Admin role</label>
+                <select id="saFilterRole" class="form-select form-select-sm">
+                    <option value="">All roles</option>
+                    <?php foreach ($roleOpts as $ro): ?>
+                        <option value="<?= htmlspecialchars(strtolower($ro === '' ? '—' : $ro)) ?>"><?= htmlspecialchars($ro === '' ? '—' : $ro) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -238,6 +277,7 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-all-activity/expo
     }
     .sa-tabs .nav-link small { font-size: 11px; font-weight: 600; color: #555; }
     .sa-tabs .nav-link.active small { color: #0096C7; }
+    .sa-role-tabs .nav-link { cursor: pointer; }
     .sa-table-wrap { border: 1px solid #d0d0d0; border-top: 0; border-radius: 0 0 4px 4px; }
     .sa-table { font-size: 13px; color: #333; }
     .sa-table thead th {
@@ -282,7 +322,8 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-all-activity/expo
     var infoEl = document.getElementById('saInfo');
     var pagWrap = document.getElementById('saPaginationWrap');
     var pagUl = document.getElementById('saPagination');
-    var staffFilter = '', deptFilter = '', topicFilter = '';
+    var staffFilter = '', deptFilter = '', topicFilter = '', roleFilter = '';
+    var roleTabKey = '';
     var currentPage = 1;
     var dateSortDesc = true;
 
@@ -304,6 +345,8 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-all-activity/expo
             if (staffFilter && (row.getAttribute('data-staff') || '') !== staffFilter) return false;
             if (deptFilter && (row.getAttribute('data-dept') || '') !== deptFilter) return false;
             if (topicFilter && (row.getAttribute('data-topic') || '') !== topicFilter) return false;
+            var rk = roleTabKey || roleFilter;
+            if (rk && (row.getAttribute('data-role') || '') !== rk) return false;
             return !q || (row.getAttribute('data-search') || '').indexOf(q) !== -1;
         });
     }
@@ -402,11 +445,31 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-all-activity/expo
         var s = document.getElementById('saFilterStaff');
         var d = document.getElementById('saFilterDept');
         var t = document.getElementById('saFilterTopic');
+        var r = document.getElementById('saFilterRole');
         staffFilter = s && s.value ? s.value : '';
         deptFilter = d && d.value ? d.value : '';
         topicFilter = t && t.value ? t.value : '';
+        roleFilter = r && r.value ? r.value : '';
+        roleTabKey = '';
+        document.querySelectorAll('.sa-role-tab').forEach(function(el) {
+            el.classList.toggle('active', el.getAttribute('data-role-key') === '');
+        });
         closeFilter();
         resetPage();
+    });
+
+    document.querySelectorAll('.sa-role-tab').forEach(function(tab) {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            roleTabKey = tab.getAttribute('data-role-key') || '';
+            roleFilter = '';
+            var fr = document.getElementById('saFilterRole');
+            if (fr) fr.value = '';
+            document.querySelectorAll('.sa-role-tab').forEach(function(el) {
+                el.classList.toggle('active', (el.getAttribute('data-role-key') || '') === roleTabKey);
+            });
+            resetPage();
+        });
     });
 
     render();

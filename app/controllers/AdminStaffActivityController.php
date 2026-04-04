@@ -46,7 +46,7 @@ class AdminStaffActivityController
         $rows = $this->model->allRows();
         $this->sendCsv(
             'staff-all-activity.csv',
-            ['Date Time', 'Staff Name', 'Team Name', 'Main Topic', 'Activity', 'Department Name', 'Matri Id', 'Member Name', 'Detail'],
+            ['Date Time', 'Staff Name', 'Admin role', 'Team Name', 'Main Topic', 'Activity', 'Department Name', 'Matri Id', 'Member Name', 'Detail'],
             $rows,
             static function (array $r): array {
                 $ts = strtotime((string) ($r['activity_at'] ?? ''));
@@ -54,6 +54,7 @@ class AdminStaffActivityController
                 return [
                     $ts ? date('Y-m-d H:i:s', $ts) : '',
                     (string) ($r['staff_name'] ?? ''),
+                    (string) ($r['staff_role'] ?? ''),
                     (string) ($r['team_name'] ?? ''),
                     (string) ($r['main_topic'] ?? ''),
                     (string) ($r['activity'] ?? ''),
@@ -71,13 +72,14 @@ class AdminStaffActivityController
         $rows = $this->model->summaryRows();
         $this->sendCsv(
             'staff-activity-summary.csv',
-            ['Staff Name', 'Team Name', 'Department Name', 'Total Activities', 'Last Activity'],
+            ['Staff Name', 'Admin role', 'Team Name', 'Department Name', 'Total Activities', 'Last Activity'],
             $rows,
             static function (array $r): array {
                 $ts = strtotime((string) ($r['last_activity_at'] ?? ''));
 
                 return [
                     (string) ($r['staff_name'] ?? ''),
+                    (string) ($r['staff_role'] ?? ''),
                     (string) ($r['team_name'] ?? ''),
                     (string) ($r['department_name'] ?? ''),
                     (string) ($r['total_activities'] ?? '0'),

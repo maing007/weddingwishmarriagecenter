@@ -14,7 +14,7 @@ $fmtDate = static function ($raw): string {
 require __DIR__ . '/partials/header.php';
 require __DIR__ . '/partials/sidebar.php';
 
-$staffOpts = $deptOpts = [];
+$staffOpts = $deptOpts = $roleOpts = [];
 foreach ($summaryRows as $r) {
     $vs = trim((string) ($r['staff_name'] ?? ''));
     if ($vs !== '' && !in_array($vs, $staffOpts, true)) {
@@ -24,9 +24,17 @@ foreach ($summaryRows as $r) {
     if ($vd !== '' && !in_array($vd, $deptOpts, true)) {
         $deptOpts[] = $vd;
     }
+    $vr = trim((string) ($r['staff_role'] ?? ''));
+    if ($vr === '') {
+        $vr = '—';
+    }
+    if (!in_array($vr, $roleOpts, true)) {
+        $roleOpts[] = $vr;
+    }
 }
 sort($staffOpts);
 sort($deptOpts);
+sort($roleOpts);
 
 $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-activity-summary/export';
 ?>
@@ -78,6 +86,7 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-activity-summary/
                     <thead>
                         <tr>
                             <th>Staff Name</th>
+                            <th>Admin role</th>
                             <th>Team Name</th>
                             <th>Department Name</th>
                             <th>Total Activities</th>
@@ -88,8 +97,14 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-activity-summary/
                         <?php foreach ($summaryRows as $R):
                             $last = $R['last_activity_at'] ?? '';
                             $ts = $last !== '' && strtotime((string) $last) ? strtotime((string) $last) : 0;
+                            $roleDisp = trim((string) ($R['staff_role'] ?? ''));
+                            if ($roleDisp === '') {
+                                $roleDisp = '—';
+                            }
+                            $roleKey = strtolower($roleDisp);
                             $searchBlob = strtolower(implode(' ', [
                                 $R['staff_name'] ?? '',
+                                $roleDisp,
                                 $R['team_name'] ?? '',
                                 $R['department_name'] ?? '',
                                 (string) ($R['total_activities'] ?? ''),
@@ -98,8 +113,9 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-activity-summary/
                             $staffVal = strtolower(trim((string) ($R['staff_name'] ?? '')));
                             $deptVal = strtolower(trim((string) ($R['department_name'] ?? '')));
                             ?>
-                        <tr class="ss-row" data-sort-ts="<?= (int) $ts ?>" data-search="<?= htmlspecialchars($searchBlob, ENT_QUOTES, 'UTF-8') ?>" data-staff="<?= htmlspecialchars($staffVal, ENT_QUOTES, 'UTF-8') ?>" data-dept="<?= htmlspecialchars($deptVal, ENT_QUOTES, 'UTF-8') ?>">
+                        <tr class="ss-row" data-sort-ts="<?= (int) $ts ?>" data-search="<?= htmlspecialchars($searchBlob, ENT_QUOTES, 'UTF-8') ?>" data-staff="<?= htmlspecialchars($staffVal, ENT_QUOTES, 'UTF-8') ?>" data-dept="<?= htmlspecialchars($deptVal, ENT_QUOTES, 'UTF-8') ?>" data-role="<?= htmlspecialchars($roleKey, ENT_QUOTES, 'UTF-8') ?>">
                             <td><?= htmlspecialchars((string) ($R['staff_name'] ?? '')) ?></td>
+                            <td><?= htmlspecialchars($roleDisp, ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars((string) ($R['team_name'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['department_name'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['total_activities'] ?? '0')) ?></td>
@@ -141,6 +157,15 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-activity-summary/
                     <option value="">All departments</option>
                     <?php foreach ($deptOpts as $d): ?>
                         <option value="<?= htmlspecialchars(strtolower($d)) ?>"><?= htmlspecialchars($d) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small">Admin role</label>
+                <select id="ssFilterRole" class="form-select form-select-sm">
+                    <option value="">All roles</option>
+                    <?php foreach ($roleOpts as $ro): ?>
+                        <option value="<?= htmlspecialchars(strtolower($ro === '' ? '—' : $ro)) ?>"><?= htmlspecialchars($ro === '' ? '—' : $ro) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -255,7 +280,7 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-activity-summary/
     var infoEl = document.getElementById('ssInfo');
     var pagWrap = document.getElementById('ssPaginationWrap');
     var pagUl = document.getElementById('ssPagination');
-    var staffFilter = '', deptFilter = '';
+    var staffFilter = '', deptFilter = '', roleFilter = '';
     var currentPage = 1;
     var dateSortDesc = true;
 
@@ -276,6 +301,7 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-activity-summary/
         return rows().filter(function(row) {
             if (staffFilter && (row.getAttribute('data-staff') || '') !== staffFilter) return false;
             if (deptFilter && (row.getAttribute('data-dept') || '') !== deptFilter) return false;
+            if (roleFilter && (row.getAttribute('data-role') || '') !== roleFilter) return false;
             return !q || (row.getAttribute('data-search') || '').indexOf(q) !== -1;
         });
     }
@@ -373,8 +399,10 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-activity-summary/
     document.getElementById('ssApplyFilter') && document.getElementById('ssApplyFilter').addEventListener('click', function() {
         var s = document.getElementById('ssFilterStaff');
         var d = document.getElementById('ssFilterDept');
+        var r = document.getElementById('ssFilterRole');
         staffFilter = s && s.value ? s.value : '';
         deptFilter = d && d.value ? d.value : '';
+        roleFilter = r && r.value ? r.value : '';
         closeFilter();
         resetPage();
     });
