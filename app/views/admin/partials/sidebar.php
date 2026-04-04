@@ -388,11 +388,7 @@ $isActivePath = static function (string $path, bool $exact = true) use ($request
         <?php
         $incomeRegistrationPath = '/admin/accounts/income/registration-fee';
         $incomeRishtaPath = '/admin/accounts/income/rishta-fee';
-        $legacyRegFeePath = '/admin/reports/payments/registration-fee';
-        $legacyRishtaFeePath = '/admin/reports/payments/rishta-fee';
-        $accountsIncomeOpen = $isActivePath('/admin/accounts/income', false)
-            || $requestPath === $legacyRegFeePath
-            || $requestPath === $legacyRishtaFeePath;
+        $accountsIncomeOpen = $isActivePath('/admin/accounts/income', false);
         $accountsSectionOpen = $isActivePath('/admin/sales-report', false)
             || $accountsIncomeOpen;
         ?>
@@ -412,13 +408,13 @@ $isActivePath = static function (string $path, bool $exact = true) use ($request
                     <ul class="submenu <?= $accountsIncomeOpen ? 'open' : '' ?>">
                         <li>
                             <a href="<?= BASE_URL . $incomeRegistrationPath ?>"
-                               class="<?= ($requestPath === $incomeRegistrationPath || $requestPath === $legacyRegFeePath) ? 'active' : '' ?>">
+                               class="<?= ($requestPath === $incomeRegistrationPath) ? 'active' : '' ?>">
                                 <i class="fa fa-money"></i>Registration Fee
                             </a>
                         </li>
                         <li>
                             <a href="<?= BASE_URL . $incomeRishtaPath ?>"
-                               class="<?= ($requestPath === $incomeRishtaPath || $requestPath === $legacyRishtaFeePath) ? 'active' : '' ?>">
+                               class="<?= ($requestPath === $incomeRishtaPath) ? 'active' : '' ?>">
                                 <i class="fa fa-heart"></i>Rishta Fee
                             </a>
                         </li>
@@ -692,14 +688,14 @@ $isActivePath = static function (string $path, bool $exact = true) use ($request
                     </a>
                     <ul class="submenu <?= $reportsPaymentsOpen ? 'open' : '' ?>">
                         <li>
-                            <a href="<?= BASE_URL ?>/admin/accounts/income/registration-fee"
-                               class="<?= ($requestPath === '/admin/accounts/income/registration-fee' || $requestPath === $registrationFeePath) ? 'active' : '' ?>">
+                            <a href="<?= BASE_URL . $registrationFeePath ?>"
+                               class="<?= ($requestPath === $registrationFeePath) ? 'active' : '' ?>">
                                 <i class="fa fa-file-text-o"></i>Registration Fee
                             </a>
                         </li>
                         <li>
-                            <a href="<?= BASE_URL ?>/admin/accounts/income/rishta-fee"
-                               class="<?= ($requestPath === '/admin/accounts/income/rishta-fee' || $requestPath === $rishtaFeePath) ? 'active' : '' ?>">
+                            <a href="<?= BASE_URL . $rishtaFeePath ?>"
+                               class="<?= ($requestPath === $rishtaFeePath) ? 'active' : '' ?>">
                                 <i class="fa fa-heart"></i>Rishta Fee
                             </a>
                         </li>

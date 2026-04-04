@@ -99,6 +99,12 @@ class AdminDashboardController extends Controller
             $pageHead = 'Manage Member Sale — ALL';
         }
 
+        $msrSelfUrl = BASE_URL . '/admin/sales-report';
+        $msrTabUrlAll = BASE_URL . '/admin/sales-report';
+        $msrTabUrlReg = BASE_URL . '/admin/reports/payments/registration-fee';
+        $msrTabUrlRishta = BASE_URL . '/admin/reports/payments/rishta-fee';
+        $msrLockScope = false;
+
         require_once __DIR__ . '/../views/admin/memberssalesreport.php';
     }
     public function team()

@@ -12,6 +12,17 @@ $title = $pageHead ?? 'Members sales report';
 /** @var array $rows */
 /** @var array $tabCounts */
 /** @var array $staffFilterOptions */
+/** @var string $msrSelfUrl */
+/** @var string $msrTabUrlAll */
+/** @var string $msrTabUrlReg */
+/** @var string $msrTabUrlRishta */
+/** @var bool $msrLockScope */
+
+$msrSelfUrl = $msrSelfUrl ?? (BASE_URL . '/admin/sales-report');
+$msrTabUrlAll = $msrTabUrlAll ?? (BASE_URL . '/admin/sales-report');
+$msrTabUrlReg = $msrTabUrlReg ?? (BASE_URL . '/admin/reports/payments/registration-fee');
+$msrTabUrlRishta = $msrTabUrlRishta ?? (BASE_URL . '/admin/reports/payments/rishta-fee');
+$msrLockScope = !empty($msrLockScope);
 
 $fmtMoney = static function ($raw): string {
     $n = (float) $raw;
@@ -45,20 +56,57 @@ if ($saleScope === 'registration') {
     $feeColLabel = 'Fee amount';
 }
 
-$msrQuery = static function (array $extra) use ($search, $saleScope, $payFilter, $filterStaff, $limit): string {
+$msrSelfHref = static function (array $extra = []) use ($msrSelfUrl, $msrLockScope, $saleScope, $search, $payFilter, $filterStaff, $limit): string {
     $q = array_merge([
         'search_filed' => $search,
-        'sale_scope' => $saleScope,
         'pay_filter' => $payFilter,
         'filter_staff' => $filterStaff,
         'limit_per_page' => $limit,
     ], $extra);
+    if (!$msrLockScope) {
+        if (!array_key_exists('sale_scope', $q)) {
+            $q['sale_scope'] = $saleScope;
+        }
+    } else {
+        unset($q['sale_scope']);
+    }
     $q = array_filter($q, static function ($v) {
         return $v !== null && $v !== '';
     });
 
-    return BASE_URL . '/admin/sales-report?' . http_build_query($q);
+    return $msrSelfUrl . '?' . http_build_query($q);
 };
+
+$msrTabHref = static function (string $which) use ($msrTabUrlAll, $msrTabUrlReg, $msrTabUrlRishta, $search, $payFilter, $filterStaff, $limit): string {
+    $q = array_filter([
+        'search_filed' => $search,
+        'pay_filter' => $payFilter,
+        'filter_staff' => $filterStaff,
+        'limit_per_page' => $limit,
+        'page' => 1,
+    ], static function ($v) {
+        return $v !== null && $v !== '';
+    });
+    if ($which === 'all') {
+        $q['sale_scope'] = 'all';
+
+        return $msrTabUrlAll . '?' . http_build_query($q);
+    }
+    if ($which === 'registration') {
+        return $msrTabUrlReg . '?' . http_build_query($q);
+    }
+    if ($which === 'rishta') {
+        return $msrTabUrlRishta . '?' . http_build_query($q);
+    }
+
+    return '#';
+};
+
+$msrResetQ = ['limit_per_page' => $limit, 'page' => 1];
+if (!$msrLockScope) {
+    $msrResetQ['sale_scope'] = $saleScope;
+}
+$msrResetUrl = $msrSelfUrl . '?' . http_build_query($msrResetQ);
 
 require __DIR__ . '/partials/header.php';
 require __DIR__ . '/partials/sidebar.php';
@@ -201,8 +249,10 @@ require __DIR__ . '/partials/sidebar.php';
         <div class="admin-content">
             <div class="container-fluid py-3">
                 <div class="msr-panel">
-                    <form method="get" action="<?= BASE_URL ?>/admin/sales-report" id="msrSearchForm" class="row g-2 align-items-center mb-3">
-                        <input type="hidden" name="sale_scope" value="<?= htmlspecialchars($saleScope, ENT_QUOTES, 'UTF-8') ?>">
+                    <form method="get" action="<?= htmlspecialchars($msrSelfUrl, ENT_QUOTES, 'UTF-8') ?>" id="msrSearchForm" class="row g-2 align-items-center mb-3">
+                        <?php if (!$msrLockScope): ?>
+                            <input type="hidden" name="sale_scope" value="<?= htmlspecialchars($saleScope, ENT_QUOTES, 'UTF-8') ?>">
+                        <?php endif; ?>
                         <input type="hidden" name="pay_filter" value="<?= htmlspecialchars($payFilter, ENT_QUOTES, 'UTF-8') ?>">
                         <input type="hidden" name="filter_staff" value="<?= htmlspecialchars($filterStaff, ENT_QUOTES, 'UTF-8') ?>">
                         <div class="col-lg-5 col-md-6">
@@ -226,9 +276,11 @@ require __DIR__ . '/partials/sidebar.php';
                     </form>
 
                     <div id="msrFilterPanel" class="msr-filter-panel <?= ($payFilter !== 'all' || $filterStaff !== '') ? 'open' : '' ?>">
-                        <form method="get" action="<?= BASE_URL ?>/admin/sales-report" class="row g-2 align-items-end">
+                        <form method="get" action="<?= htmlspecialchars($msrSelfUrl, ENT_QUOTES, 'UTF-8') ?>" class="row g-2 align-items-end">
                             <input type="hidden" name="search_filed" value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
-                            <input type="hidden" name="sale_scope" value="<?= htmlspecialchars($saleScope, ENT_QUOTES, 'UTF-8') ?>">
+                            <?php if (!$msrLockScope): ?>
+                                <input type="hidden" name="sale_scope" value="<?= htmlspecialchars($saleScope, ENT_QUOTES, 'UTF-8') ?>">
+                            <?php endif; ?>
                             <input type="hidden" name="limit_per_page" value="<?= (int) $limit ?>">
                             <div class="col-md-4">
                                 <label class="form-label small mb-1">Staff payment status</label>
@@ -249,15 +301,15 @@ require __DIR__ . '/partials/sidebar.php';
                             </div>
                             <div class="col-md-4">
                                 <button type="submit" class="btn btn-msr-teal btn-sm">Apply filters</button>
-                                <a class="btn btn-outline-secondary btn-sm ms-1" href="<?= BASE_URL ?>/admin/sales-report?sale_scope=<?= urlencode($saleScope) ?>&limit_per_page=<?= (int) $limit ?>">Reset</a>
+                                <a class="btn btn-outline-secondary btn-sm ms-1" href="<?= htmlspecialchars($msrResetUrl, ENT_QUOTES, 'UTF-8') ?>">Reset</a>
                             </div>
                         </form>
                     </div>
 
                     <div class="msr-tabs">
-                        <a class="msr-tab <?= $saleScope === 'all' ? 'active' : '' ?>" href="<?= htmlspecialchars($msrQuery(['sale_scope' => 'all', 'page' => 1]), ENT_QUOTES, 'UTF-8') ?>">All <small>(<?= (int) ($tabCounts['all'] ?? 0) ?>)</small></a>
-                        <a class="msr-tab <?= $saleScope === 'registration' ? 'active' : '' ?>" href="<?= htmlspecialchars($msrQuery(['sale_scope' => 'registration', 'page' => 1]), ENT_QUOTES, 'UTF-8') ?>">Registration <small>(<?= (int) ($tabCounts['registration'] ?? 0) ?>)</small></a>
-                        <a class="msr-tab <?= $saleScope === 'rishta' ? 'active' : '' ?>" href="<?= htmlspecialchars($msrQuery(['sale_scope' => 'rishta', 'page' => 1]), ENT_QUOTES, 'UTF-8') ?>">Rishta <small>(<?= (int) ($tabCounts['rishta'] ?? 0) ?>)</small></a>
+                        <a class="msr-tab <?= $saleScope === 'all' ? 'active' : '' ?>" href="<?= htmlspecialchars($msrTabHref('all'), ENT_QUOTES, 'UTF-8') ?>">All <small>(<?= (int) ($tabCounts['all'] ?? 0) ?>)</small></a>
+                        <a class="msr-tab <?= $saleScope === 'registration' ? 'active' : '' ?>" href="<?= htmlspecialchars($msrTabHref('registration'), ENT_QUOTES, 'UTF-8') ?>">Registration <small>(<?= (int) ($tabCounts['registration'] ?? 0) ?>)</small></a>
+                        <a class="msr-tab <?= $saleScope === 'rishta' ? 'active' : '' ?>" href="<?= htmlspecialchars($msrTabHref('rishta'), ENT_QUOTES, 'UTF-8') ?>">Rishta <small>(<?= (int) ($tabCounts['rishta'] ?? 0) ?>)</small></a>
                     </div>
 
                     <?php if (empty($rows)): ?>
@@ -311,8 +363,8 @@ require __DIR__ . '/partials/sidebar.php';
                             $prev = max(1, (int) $page - 1);
                             $next = min((int) $totalPages, (int) $page + 1);
                             ?>
-                            <a class="btn btn-sm btn-outline-secondary <?= (int) $page <= 1 ? 'disabled' : '' ?>" href="<?= (int) $page <= 1 ? '#' : htmlspecialchars($msrQuery(['page' => $prev]), ENT_QUOTES, 'UTF-8') ?>">Prev</a>
-                            <a class="btn btn-sm btn-outline-secondary <?= (int) $page >= (int) $totalPages ? 'disabled' : '' ?>" href="<?= (int) $page >= (int) $totalPages ? '#' : htmlspecialchars($msrQuery(['page' => $next]), ENT_QUOTES, 'UTF-8') ?>">Next</a>
+                            <a class="btn btn-sm btn-outline-secondary <?= (int) $page <= 1 ? 'disabled' : '' ?>" href="<?= (int) $page <= 1 ? '#' : htmlspecialchars($msrSelfHref(['page' => $prev]), ENT_QUOTES, 'UTF-8') ?>">Prev</a>
+                            <a class="btn btn-sm btn-outline-secondary <?= (int) $page >= (int) $totalPages ? 'disabled' : '' ?>" href="<?= (int) $page >= (int) $totalPages ? '#' : htmlspecialchars($msrSelfHref(['page' => $next]), ENT_QUOTES, 'UTF-8') ?>">Next</a>
                         </div>
                     </div>
                 </div>

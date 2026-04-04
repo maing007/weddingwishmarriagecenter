@@ -157,8 +157,8 @@ $router->get('/admin/reports/staff-management/staff-all-activity/export', 'Admin
 $router->get('/admin/reports/staff-management/staff-activity-summary', 'AdminStaffActivityController@summary');
 $router->get('/admin/reports/staff-management/staff-activity-summary/export', 'AdminStaffActivityController@exportSummary');
 
-$router->get('/admin/reports/payments/registration-fee', 'AdminMemberSaleFeesController@registrationFee');
-$router->get('/admin/reports/payments/rishta-fee', 'AdminMemberSaleFeesController@rishtaFee');
+$router->get('/admin/reports/payments/registration-fee', 'AdminMemberSaleFeesController@registrationFeeReport');
+$router->get('/admin/reports/payments/rishta-fee', 'AdminMemberSaleFeesController@rishtaFeeReport');
 $router->get('/admin/accounts/income/registration-fee', 'AdminMemberSaleFeesController@registrationFee');
 $router->get('/admin/accounts/income/rishta-fee', 'AdminMemberSaleFeesController@rishtaFee');
 $router->post('/admin/accounts/income/fee-paid-approved', 'AdminMemberSaleFeesController@feePaidApproved');
