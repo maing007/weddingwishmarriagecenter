@@ -90,7 +90,7 @@ require __DIR__ . '/partials/sidebar.php';
                             $pkgVal = strtolower(trim((string) ($R['package_name'] ?? '')));
                             ?>
                         <tr class="msr-row" data-search="<?= htmlspecialchars($searchBlob, ENT_QUOTES, 'UTF-8') ?>" data-pkg="<?= htmlspecialchars($pkgVal, ENT_QUOTES, 'UTF-8') ?>">
-                            <td><?= htmlspecialchars((string) ($R['matri_id'] ?? '')) ?></td>
+                            <td><?= htmlspecialchars(matri_id_display((string) ($R['matri_id'] ?? ''), (int) ($R['id'] ?? 0))) ?></td>
                             <td><?= htmlspecialchars((string) ($R['username'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['email'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['package_name'] ?? '')) ?></td>

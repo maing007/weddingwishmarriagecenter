@@ -340,7 +340,7 @@ require __DIR__ . '/partials/sidebar.php';
                                             <td><?= htmlspecialchars($fmtDate($r['activation_date'] ?? null), ENT_QUOTES, 'UTF-8') ?></td>
                                             <td><?= htmlspecialchars((string) ($r['staff_name'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
                                             <td><?= htmlspecialchars((string) ($r['ti_name'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
-                                            <td><?= htmlspecialchars(trim((string) ($r['matri_id'] ?? '')) !== '' ? (string) $r['matri_id'] : '-', ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?php $md = matri_id_display((string) ($r['matri_id'] ?? '')); ?><?= htmlspecialchars($md !== '' ? $md : '-', ENT_QUOTES, 'UTF-8') ?></td>
                                             <td><?= htmlspecialchars((string) ($r['client_name'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
                                             <td><?= htmlspecialchars($fmtMoney($r['fee_amount'] ?? 0), ENT_QUOTES, 'UTF-8') ?></td>
                                             <td><?= htmlspecialchars(trim((string) ($r['package'] ?? '')) !== '' ? (string) $r['package'] : '-', ENT_QUOTES, 'UTF-8') ?></td>

@@ -59,7 +59,7 @@ class AdminStaffActivityController
                     (string) ($r['main_topic'] ?? ''),
                     (string) ($r['activity'] ?? ''),
                     (string) ($r['department_name'] ?? ''),
-                    (string) ($r['matri_id'] ?? ''),
+                    matri_id_display((string) ($r['matri_id'] ?? '')),
                     (string) ($r['member_name'] ?? ''),
                     (string) ($r['detail'] ?? ''),
                 ];

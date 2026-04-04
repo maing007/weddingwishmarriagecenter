@@ -1,12 +1,65 @@
 <?php
 $title = "All Users";
+$pageHead = 'ManageMember - ALL';
+if (!empty($activeFilterLabel) && $activeFilterLabel !== 'All Members') {
+    $pageHead = 'ManageMember - ' . $activeFilterLabel;
+}
 require __DIR__.'/partials/header.php';
 require __DIR__.'/partials/sidebar.php';
+require_once __DIR__ . '/../../helpers/admin_member_display.php';
 ?>
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin-manage-members.css">
+<style>
+    .income-fee-page-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #111;
+        margin-left: 8px;
+        margin-right: auto;
+        letter-spacing: 0.01em;
+    }
+    .admin-topbar.income-fee-topbar {
+        justify-content: flex-start;
+        padding-left: 12px;
+        padding-right: 16px;
+    }
+    .income-fee-topbar .admin-profile {
+        margin-left: auto;
+    }
+</style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <?php
+$adminUserListPhotoUrl = static function (array $u): string {
+    $base = rtrim((string) BASE_URL, '/');
+    $p = trim((string) ($u['avatar'] ?? ''));
+    $usable = $p !== '';
+    if ($usable) {
+        $norm = strtolower(str_replace('\\', '/', $p));
+        if (strpos($norm, 'uploads/avatars/default') !== false
+            || strpos($norm, 'default-avatar') !== false
+            || strpos($norm, 'avatar-placeholder') !== false) {
+            $usable = false;
+        }
+    }
+    if ($usable) {
+        if (preg_match('#^https?://#i', $p)) {
+            return $p;
+        }
+
+        return $base . '/' . ltrim($p, '/');
+    }
+    $g = strtolower((string) ($u['gender'] ?? ''));
+    if (strpos($g, 'female') !== false) {
+        return $base . '/assets/images/female.png';
+    }
+    if (strpos($g, 'male') !== false) {
+        return $base . '/assets/images/male.png';
+    }
+
+    return $base . '/assets/images/male.png';
+};
+
 $allCount = is_array($users ?? null) ? count($users) : 0;
 $approvedCount = 0;
 $unapprovedCount = 0;
@@ -39,10 +92,11 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
 ?>
 
 <div class="admin-main">
-<div class="admin-topbar">
+<div class="admin-topbar income-fee-topbar">
     <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Open menu">
         <i class="fa fa-bars"></i>
     </button>
+    <div class="income-fee-page-title"><?= htmlspecialchars($pageHead, ENT_QUOTES, 'UTF-8') ?></div>
     <div class="admin-profile" id="adminProfileTrigger">
         <div class="admin-profile-box">
             <span><?= htmlspecialchars($this->displayadminname()) ?></span>
@@ -54,10 +108,10 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
         </div>
     </div>
 </div>
-<main class="admin-page">
-<div class="admin-content">
+<main class="admin-page manage-users-page">
+<div class="admin-content manage-users-content">
     <div class="container-fluid">
-        <div class="page-head">ManageMember - ALL</div>
+        <div class="page-head"><?= htmlspecialchars($pageHead, ENT_QUOTES, 'UTF-8') ?></div>
 
         <!-- TOP CONTROL PANEL -->
         <div class="top-controls">
@@ -166,7 +220,7 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
                 <div class="user-card-header">
                     <div class="user-left-title">
                         <input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>">
-                        <h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (NG<?= $u['id'] ?>)</h5>
+                        <h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id'])) ?>)</h5>
                     </div>
                     <div class="approved-badge status-<?= strtolower($u['status'] ?? 'approved') ?>">
                         <?php if (strtolower((string)($u['status'] ?? '')) === 'approved'): ?>
@@ -190,23 +244,32 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
                 <!-- CONTENT -->
                 <div class="user-main-content">
                     <div class="profile-image-box">
-                        <img src="<?= BASE_URL . (!empty($u['avatar']) ? $u['avatar'] : '/assets/images/default-avatar.png') ?>" alt="">
+                        <img src="<?= htmlspecialchars($adminUserListPhotoUrl($u), ENT_QUOTES, 'UTF-8') ?>" alt="">
                     </div>
 
                     <div class="details-column details-grid">
-                        <p><strong>Gender</strong><span>:</span> <?= htmlspecialchars($u['gender'] ?? '-') ?></p>
-                        <p><strong>Mobile</strong><span>:</span> <?= htmlspecialchars($u['phone'] ?? '-') ?></p>
-                        <p><strong>Religion Name</strong><span>:</span> <?= htmlspecialchars($u['religion'] ?? '-') ?></p>
-                        <p><strong>Marital Status</strong><span>:</span> <?= htmlspecialchars($u['marital_status'] ?? '-') ?></p>
-                        <p><strong>Added By</strong><span>:</span> Admin</p>
+                        <p><strong>Gender</strong><span>:</span> <?= htmlspecialchars(admin_member_na($u['gender'] ?? '')) ?></p>
+                        <p><strong>Mobile</strong><span>:</span> <?= htmlspecialchars(admin_member_mobile_display($u)) ?></p>
+                        <p><strong>Religion Name</strong><span>:</span> <?= htmlspecialchars(admin_member_na($u['religion'] ?? '')) ?></p>
+                        <p><strong>Caste Name</strong><span>:</span> <?= htmlspecialchars(admin_member_na($u['caste'] ?? '')) ?></p>
+                        <p><strong>Mother Tongue</strong><span>:</span> <?= htmlspecialchars(admin_member_na($u['mother_tongue'] ?? '')) ?></p>
+                        <p><strong>Marital Status</strong><span>:</span> <?= htmlspecialchars(admin_member_na($u['marital_status'] ?? '')) ?></p>
+                        <p><strong>Plan Name</strong><span>:</span> <?= htmlspecialchars(admin_member_na($u['active_plan_name'] ?? '')) ?></p>
+                        <p><strong>Plan Expired On</strong><span>:</span> <?= htmlspecialchars(admin_member_date_display($u['plan_expires_at'] ?? null)) ?></p>
+                        <p><strong>Added By</strong><span>:</span> <?= htmlspecialchars(admin_member_added_by_display($u)) ?></p>
+                        <p><strong>Uuid</strong><span>:</span> <?= htmlspecialchars(admin_member_uuid_display((int) $u['id'])) ?></p>
                     </div>
 
                     <div class="details-column details-grid">
-                        <p><strong>Email</strong><span>:</span> <?= htmlspecialchars($u['email']) ?></p>
-                        <p><strong>Country Name</strong><span>:</span> <?= htmlspecialchars($u['country'] ?? 'Pakistan') ?></p>
-                        <p><strong>City Name</strong><span>:</span> <?= htmlspecialchars($u['city'] ?? 'Lahore') ?></p>
-                        <p><strong>Birthdate</strong><span>:</span> <?= htmlspecialchars($u['dob'] ?? '-') ?></p>
-                        <p><strong>Registered On</strong><span>:</span> <?= htmlspecialchars($u['created_at']) ?></p>
+                        <p><strong>Email</strong><span>:</span> <?= htmlspecialchars(admin_member_na($u['email'] ?? '')) ?></p>
+                        <p><strong>Country Name</strong><span>:</span> <?= htmlspecialchars(admin_member_na($u['country'] ?? '')) ?></p>
+                        <p><strong>State Name</strong><span>:</span> <?= htmlspecialchars(admin_member_na($u['state'] ?? '')) ?></p>
+                        <p><strong>City Name</strong><span>:</span> <?= htmlspecialchars(admin_member_na($u['city'] ?? '')) ?></p>
+                        <p><strong>Birthdate</strong><span>:</span> <?= htmlspecialchars(admin_member_birth_display($u['dob'] ?? null)) ?></p>
+                        <p><strong>Registered On</strong><span>:</span> <?= htmlspecialchars(admin_member_datetime_display($u['created_at'] ?? null)) ?></p>
+                        <p><strong>Last Login</strong><span>:</span> <?= htmlspecialchars(admin_member_datetime_display($u['last_login'] ?? null)) ?></p>
+                        <p><strong>Partner Contact Pdf</strong><span>:</span> <?= htmlspecialchars(admin_member_partner_pdf_display($u)) ?></p>
+                        <p><strong>Final Rishta Fee</strong><span>:</span> <?= htmlspecialchars(admin_member_final_fee_display($u['final_fee'] ?? null)) ?></p>
                     </div>
                 </div>
 

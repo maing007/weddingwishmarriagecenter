@@ -1,6 +1,16 @@
 <?php
 $title = 'Deferred Matches';
 $reportTotal = count($deferredRows);
+$dmCountAuto = 0;
+$dmCountManual = 0;
+foreach ($deferredRows as $_dr) {
+    $ad = trim((string) ($_dr['auto_deferred'] ?? ''));
+    if ($ad !== '') {
+        $dmCountAuto++;
+    } else {
+        $dmCountManual++;
+    }
+}
 
 $fmtDate = static function ($raw): string {
     if ($raw === null || $raw === '') {
@@ -60,9 +70,15 @@ sort($staffOptions);
                 <span class="dm-show-wrap"><label class="me-2 mb-0">Show</label><select id="dmShowEntries" class="form-select form-select-sm d-inline-block w-auto dm-select"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="9999">All</option></select><label class="ms-2 mb-0">Entries</label></span>
             </div>
 
-            <ul class="nav nav-tabs dm-tabs mb-0">
+            <ul class="nav nav-tabs dm-tabs mb-0 dm-source-tabs" role="tablist">
                 <li class="nav-item">
-                    <span class="nav-link active">All <small>(<?= (int) $reportTotal ?>)</small></span>
+                    <button type="button" class="nav-link active dm-src-tab" data-dm-source="all" id="dmTabAll">All <small>(<?= (int) $reportTotal ?>)</small></button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="nav-link dm-src-tab" data-dm-source="auto" id="dmTabAuto">Auto <small>(<?= (int) $dmCountAuto ?>)</small></button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="nav-link dm-src-tab" data-dm-source="manual" id="dmTabManual">Manual <small>(<?= (int) $dmCountManual ?>)</small></button>
                 </li>
             </ul>
 
@@ -76,12 +92,13 @@ sort($staffOptions);
                             <th>Other Name</th>
                             <th>Staff</th>
                             <th class="dm-th-sort">Date <i class="fa fa-sort-desc ms-1" aria-hidden="true"></i></th>
-                            <th>Auto Deferred</th>
+                            <th>Source <span class="text-muted fw-normal small">(auto_deferred)</span></th>
                         </tr>
                     </thead>
                     <tbody id="dmTbody">
                         <?php foreach ($deferredRows as $R):
                             $autoDef = trim((string) ($R['auto_deferred'] ?? ''));
+                            $dmSource = $autoDef !== '' ? 'auto' : 'manual';
                             $searchBlob = strtolower(implode(' ', [
                                 $R['my_matri_id'] ?? '',
                                 $R['my_name'] ?? '',
@@ -93,14 +110,14 @@ sort($staffOptions);
                             ]));
                             $staffVal = trim((string) ($R['staff_name'] ?? ''));
                             ?>
-                        <tr class="dm-row" data-search="<?= htmlspecialchars($searchBlob, ENT_QUOTES, 'UTF-8') ?>" data-staff="<?= htmlspecialchars(strtolower($staffVal), ENT_QUOTES, 'UTF-8') ?>">
-                            <td><?= htmlspecialchars((string) ($R['my_matri_id'] ?? '')) ?></td>
+                        <tr class="dm-row" data-search="<?= htmlspecialchars($searchBlob, ENT_QUOTES, 'UTF-8') ?>" data-staff="<?= htmlspecialchars(strtolower($staffVal), ENT_QUOTES, 'UTF-8') ?>" data-dm-source="<?= htmlspecialchars($dmSource, ENT_QUOTES, 'UTF-8') ?>">
+                            <td><?= htmlspecialchars(matri_id_display((string) ($R['my_matri_id'] ?? ''))) ?></td>
                             <td><?= htmlspecialchars((string) ($R['my_name'] ?? '')) ?></td>
-                            <td><?= htmlspecialchars((string) ($R['other_matri_id'] ?? '')) ?></td>
+                            <td><?= htmlspecialchars(matri_id_display((string) ($R['other_matri_id'] ?? ''))) ?></td>
                             <td><?= htmlspecialchars((string) ($R['other_name'] ?? '')) ?></td>
                             <td><?= htmlspecialchars($staffVal) ?></td>
                             <td><?= htmlspecialchars($fmtDate($R['deferred_at'] ?? null)) ?></td>
-                            <td><?= $autoDef !== '' ? htmlspecialchars($autoDef) : '' ?></td>
+                            <td><?php if ($autoDef !== ''): ?><span class="badge bg-info text-dark"><?= htmlspecialchars($autoDef) ?></span><?php else: ?><span class="badge bg-secondary">Manual</span><?php endif; ?></td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -140,6 +157,7 @@ sort($staffOptions);
     </div>
 </div>
 
+<style>.dm-source-tabs .nav-link.dm-src-tab{border:0;background:transparent;cursor:pointer}.dm-source-tabs .nav-link.dm-src-tab.active{font-weight:600}</style>
 <script>
 (function(){
     var searchInput = document.getElementById('dmSearch');
@@ -149,16 +167,30 @@ sort($staffOptions);
     var pagUl = document.getElementById('dmPagination');
     var staffFilter = '';
     var currentPage = 1;
+    var activeSourceTab = 'all';
 
     function rows() { return Array.from(document.querySelectorAll('.dm-row')); }
 
     function filtered() {
         var q = (searchInput && searchInput.value ? searchInput.value : '').toLowerCase().trim();
         return rows().filter(function(r) {
+            if (activeSourceTab !== 'all') {
+                if ((r.getAttribute('data-dm-source') || '') !== activeSourceTab) return false;
+            }
             if (staffFilter && (r.getAttribute('data-staff') || '') !== staffFilter) return false;
             return !q || (r.getAttribute('data-search') || '').indexOf(q) !== -1;
         });
     }
+
+    document.querySelectorAll('.dm-src-tab').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            activeSourceTab = (btn.getAttribute('data-dm-source') || 'all');
+            document.querySelectorAll('.dm-src-tab').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            currentPage = 1;
+            render();
+        });
+    });
 
     function pageSizeRaw() {
         var v = parseInt(showSel && showSel.value ? showSel.value : '10', 10);

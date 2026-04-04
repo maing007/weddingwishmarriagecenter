@@ -149,7 +149,7 @@ $exportUrl = BASE_URL . '/admin/reports/staff-management/staff-all-activity/expo
                             <td><?= htmlspecialchars((string) ($R['main_topic'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['activity'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['department_name'] ?? '')) ?></td>
-                            <td><?= htmlspecialchars((string) ($R['matri_id'] ?? '')) ?></td>
+                            <td><?= htmlspecialchars(matri_id_display((string) ($R['matri_id'] ?? ''))) ?></td>
                             <td><?= htmlspecialchars((string) ($R['member_name'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['detail'] ?? '')) ?></td>
                         </tr>

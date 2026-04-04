@@ -96,7 +96,7 @@ require __DIR__.'/partials/sidebar.php';
                 <div class="user-card-header">
                     <div class="user-left-title">
                         <input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>">
-                        <h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (NG<?= (int)$u['id'] ?>)</h5>
+                        <h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id'])) ?>)</h5>
                     </div>
                     <div class="approved-badge <?= strtolower((string)($u['featured_status'] ?? 'non_featured')) === 'featured' ? 'status-featured' : 'status-nonfeatured' ?>">
                         <?php if (strtolower((string)($u['featured_status'] ?? 'non_featured')) === 'featured'): ?>

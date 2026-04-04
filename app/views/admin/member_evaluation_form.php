@@ -4,7 +4,7 @@ require __DIR__.'/partials/header.php';
 require __DIR__.'/partials/sidebar.php';
 
 $fullName = trim((string)($user['first_name'] ?? '') . ' ' . (string)($user['second_name'] ?? ''));
-$matri = !empty($user['matri_id']) ? (string)$user['matri_id'] : ('NG' . (int)$user['id']);
+$matri = matri_id_display((string) ($user['matri_id'] ?? ''), (int) ($user['id'] ?? 0));
 $ans = static function (string $key) use ($answers): string {
     return strtolower((string)($answers[$key] ?? ''));
 };

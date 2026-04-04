@@ -116,7 +116,7 @@ require __DIR__ . '/partials/sidebar.php';
                             $teamVal = strtolower(trim((string) ($R['team_assign_id'] ?? '')));
                             ?>
                         <tr class="mbr-row" data-sort-ts="<?= (int) $ts ?>" data-verified="<?= $v ?>" data-paid="<?= $p ?>" data-search="<?= htmlspecialchars($searchBlob, ENT_QUOTES, 'UTF-8') ?>" data-team="<?= htmlspecialchars($teamVal, ENT_QUOTES, 'UTF-8') ?>">
-                            <td><?= htmlspecialchars((string) ($R['matri_id'] ?? '')) ?></td>
+                            <td><?= htmlspecialchars(matri_id_display((string) ($R['matri_id'] ?? ''), (int) ($R['id'] ?? 0))) ?></td>
                             <td><?= htmlspecialchars((string) ($R['username'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['email'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['mobile'] ?? '')) ?></td>

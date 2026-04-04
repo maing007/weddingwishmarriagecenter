@@ -76,4 +76,10 @@ class AutoMatchCronHistoryModel
 
         return $stmt->execute([$id]);
     }
+
+    /** Normalized status labels for auto_match_cron_history.status */
+    public static function cronStatusTabs(): array
+    {
+        return ['Completed', 'Running', 'Failed'];
+    }
 }

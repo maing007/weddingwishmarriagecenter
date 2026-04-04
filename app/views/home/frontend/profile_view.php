@@ -101,7 +101,7 @@ $photoUrl = $rawPhoto !== ''
                         <div class="col-sm-6">
                             <div class="public-kv">
                                 <span class="label">Matri ID</span>
-                                <div class="value"><?= htmlspecialchars((string)($profile->matri_id ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="value"><?php $midPv = matri_id_display((string) ($profile->matri_id ?? ''), (int) ($profile->id ?? 0)); ?><?= htmlspecialchars($midPv !== '' ? $midPv : '-', ENT_QUOTES, 'UTF-8') ?></div>
                             </div>
                         </div>
                         <div class="col-sm-6">

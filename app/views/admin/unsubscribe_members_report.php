@@ -79,7 +79,7 @@ require __DIR__ . '/partials/sidebar.php';
                             $chVal = strtolower(trim((string) ($R['channel'] ?? '')));
                             ?>
                         <tr class="mun-row" data-sort-ts="<?= (int) $ts ?>" data-search="<?= htmlspecialchars($searchBlob, ENT_QUOTES, 'UTF-8') ?>" data-channel="<?= htmlspecialchars($chVal, ENT_QUOTES, 'UTF-8') ?>">
-                            <td><?= htmlspecialchars((string) ($R['matri_id'] ?? '')) ?></td>
+                            <td><?= htmlspecialchars(matri_id_display((string) ($R['matri_id'] ?? ''), (int) ($R['id'] ?? 0))) ?></td>
                             <td><?= htmlspecialchars((string) ($R['email'] ?? '')) ?></td>
                             <td><?= htmlspecialchars($fmtDateTime($ua)) ?></td>
                             <td><?= htmlspecialchars((string) ($R['channel'] ?? '')) ?></td>

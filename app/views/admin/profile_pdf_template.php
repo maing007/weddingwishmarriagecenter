@@ -10,12 +10,7 @@ if ($fullName === '') {
     $fullName = 'Member';
 }
 
-$matriRaw = trim((string) ($user['matri_id'] ?? ''));
-if ($matriRaw === '') {
-    $matriRaw = 'NG' . str_pad((string) (int) ($user['id'] ?? 0), 5, '0', STR_PAD_LEFT);
-} elseif (stripos($matriRaw, 'NG') !== 0) {
-    $matriRaw = 'NG' . preg_replace('/^NG/i', '', $matriRaw);
-}
+$matriRaw = matri_id_display((string) ($user['matri_id'] ?? ''), (int) ($user['id'] ?? 0), true);
 $matriDisplay = '(' . $matriRaw . ')';
 
 $pdfFileTitle = $matriDisplay . ' ' . $fullName;
@@ -120,6 +115,8 @@ $title = 'Profile PDF — ' . $pdfFileTitle;
 require __DIR__ . '/partials/header.php';
 require __DIR__ . '/partials/sidebar.php';
 ?>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gulzar&display=swap" rel="stylesheet">
@@ -159,12 +156,32 @@ require __DIR__ . '/partials/sidebar.php';
         }
         .top-level {
             display: flex;
-            justify-content: space-between;
+            justify-content: space-evenly;
             align-items: center;
             flex-wrap: wrap;
             padding: 10px;
         }
-        .logo { flex: 1; text-align: left; }
+        .logo-text {
+            font-size: 40px;
+    margin: 0;
+    padding: 4px 0;
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: 3px;
+    color: #6e032a;
+    /* text-transform: uppercase; */
+    font-family: "Dancing Script", serif !important;
+        }
+        .logo { 
+            /* flex: 1;  */
+            text-align: left;
+            display: flex;
+            align-items: center;
+            filter: saturate(150%) contrast(110%) brightness(105%);
+            filter: drop-shadow(0 0 10px rgba(255, 255, 0, 0.8)); /* Yellow glow */
+  /* transform: scale(1.05); Slight zoom */
+  transition: 0.3s ease; /* Smooth effect */
+        }
         .top-lev-img { max-height: 60px; width: auto; height: auto; display: block; }
         .middle-level {
             display: flex;
@@ -340,12 +357,13 @@ require __DIR__ . '/partials/sidebar.php';
 <div class="page" id="content">
     <div class="top-level">
         <div class="logo">
-            <img src="<?= $e(rtrim(BASE_URL, '/') . '/assets/images/admin_logo.png') ?>"
+            <img src="<?= $e(rtrim(BASE_URL, '/') . '/assets/images/logo.png') ?>"
                  alt="Logo"
                  class="top-lev-img"
                  height="60"
                  onerror="this.onerror=null;this.src='<?= $e(rtrim(BASE_URL, '/') . '/assets/images/logo.png') ?>';">
-        </div>
+                     </div>  <span class="logo-text">Wedding Wish Marriage Center</span>
+  
     </div>
 
     <div class="middle-level">

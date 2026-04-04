@@ -26,3 +26,13 @@ if ($appBase !== false && $appBase !== '') {
 
 define('VIEW_PATH', dirname(__DIR__) . '/app/views/');
 define('ASSETS_URL', dirname(__DIR__) . '/public/assets/');
+
+/**
+ * Auto-run app/migrations/*.php on boot. Set env SKIP_DB_MIGRATIONS=1 to disable (emergency only).
+ */
+if (!defined('RUN_DB_MIGRATIONS')) {
+    define('RUN_DB_MIGRATIONS', getenv('SKIP_DB_MIGRATIONS') !== '1');
+}
+
+// Matri helpers (also loaded from index-bootstrap.php after this file for older production configs).
+require_once dirname(__DIR__) . '/app/helpers/matri.php';

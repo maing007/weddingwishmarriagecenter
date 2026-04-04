@@ -1,12 +1,14 @@
 <?php
 $title = 'Profile View';
+require_once __DIR__ . '/../../helpers/admin_member_display.php';
 require __DIR__ . '/partials/header.php';
 require __DIR__ . '/partials/sidebar.php';
 
 $fullName = trim(($user['first_name'] ?? '') . ' ' . ($user['second_name'] ?? ''));
 $genderLabel = trim((string) ($user['gender'] ?? ''));
 $uid = (int) ($user['id'] ?? 0);
-$headLine = '(NG' . $uid . ') ' . ($fullName !== '' ? $fullName : 'Member Profile');
+$matriHead = matri_id_display((string) ($user['matri_id'] ?? ''), $uid);
+$headLine = '(' . $matriHead . ') ' . ($fullName !== '' ? $fullName : 'Member Profile');
 if ($genderLabel !== '') {
     $headLine .= ' — ' . $genderLabel;
 }
@@ -115,7 +117,7 @@ $photoBadgeApproved = in_array($memberListStatus, ['approved'], true);
             <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa fa-bars"></i></button>
             <div class="apv-topbar-titles">
                 <div class="apv-topbar-title"><?= htmlspecialchars($headLine) ?></div>
-                <div class="apv-topbar-sub">Matri ID: <?= htmlspecialchars((string) ($user['matri_id'] ?? '—')) ?></div>
+                <div class="apv-topbar-sub">Matri ID: <?= htmlspecialchars($matriHead !== '' ? $matriHead : '—') ?></div>
             </div>
         </div>
         <div class="admin-profile" id="adminProfileTrigger">
@@ -192,6 +194,33 @@ $photoBadgeApproved = in_array($memberListStatus, ['approved'], true);
                                             <span class="apv-detail-label">ID proof status</span>
                                             <span class="apv-detail-value"><?= htmlspecialchars($formatValue($user['id_proof_status'] ?? null)) ?></span>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <h3 class="apv-subsection-title">Member details (same as users list)</h3>
+                                <div class="apv-member-list-summary user-main-content">
+                                    <div class="details-column details-grid">
+                                        <p><strong>Gender</strong><span>:</span> <?= htmlspecialchars(admin_member_na($user['gender'] ?? '')) ?></p>
+                                        <p><strong>Mobile</strong><span>:</span> <?= htmlspecialchars(admin_member_mobile_display($user)) ?></p>
+                                        <p><strong>Religion Name</strong><span>:</span> <?= htmlspecialchars(admin_member_na($user['religion'] ?? '')) ?></p>
+                                        <p><strong>Caste Name</strong><span>:</span> <?= htmlspecialchars(admin_member_na($user['caste'] ?? '')) ?></p>
+                                        <p><strong>Mother Tongue</strong><span>:</span> <?= htmlspecialchars(admin_member_na($user['mother_tongue'] ?? '')) ?></p>
+                                        <p><strong>Marital Status</strong><span>:</span> <?= htmlspecialchars(admin_member_na($user['marital_status'] ?? '')) ?></p>
+                                        <p><strong>Plan Name</strong><span>:</span> <?= htmlspecialchars(admin_member_na($user['active_plan_name'] ?? '')) ?></p>
+                                        <p><strong>Plan Expired On</strong><span>:</span> <?= htmlspecialchars(admin_member_date_display($user['plan_expires_at'] ?? null)) ?></p>
+                                        <p><strong>Added By</strong><span>:</span> <?= htmlspecialchars(admin_member_added_by_display($user)) ?></p>
+                                        <p><strong>Uuid</strong><span>:</span> <?= htmlspecialchars(admin_member_uuid_display($uid)) ?></p>
+                                    </div>
+                                    <div class="details-column details-grid">
+                                        <p><strong>Email</strong><span>:</span> <?= htmlspecialchars(admin_member_na($user['email'] ?? '')) ?></p>
+                                        <p><strong>Country Name</strong><span>:</span> <?= htmlspecialchars(admin_member_na($user['country'] ?? '')) ?></p>
+                                        <p><strong>State Name</strong><span>:</span> <?= htmlspecialchars(admin_member_na($user['state'] ?? '')) ?></p>
+                                        <p><strong>City Name</strong><span>:</span> <?= htmlspecialchars(admin_member_na($user['city'] ?? '')) ?></p>
+                                        <p><strong>Birthdate</strong><span>:</span> <?= htmlspecialchars(admin_member_birth_display($user['dob'] ?? null)) ?></p>
+                                        <p><strong>Registered On</strong><span>:</span> <?= htmlspecialchars(admin_member_datetime_display($user['created_at'] ?? null)) ?></p>
+                                        <p><strong>Last Login</strong><span>:</span> <?= htmlspecialchars(admin_member_datetime_display($user['last_login'] ?? null)) ?></p>
+                                        <p><strong>Partner Contact Pdf</strong><span>:</span> <?= htmlspecialchars(admin_member_partner_pdf_display($user)) ?></p>
+                                        <p><strong>Final Rishta Fee</strong><span>:</span> <?= htmlspecialchars(admin_member_final_fee_display($user['final_fee'] ?? null)) ?></p>
                                     </div>
                                 </div>
                             <?php endif; ?>

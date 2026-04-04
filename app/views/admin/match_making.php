@@ -54,7 +54,7 @@ require __DIR__.'/partials/sidebar.php';
             <?php foreach ($users as $u): ?>
             <div class="user-card searchable-card" data-date="<?= strtotime($u['created_at']) ?>" data-name="<?= strtolower($u['first_name'].' '.$u['last_name']) ?>">
                 <div class="user-card-header">
-                    <div class="user-left-title"><input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>"><h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (NG<?= (int)$u['id'] ?>)</h5></div>
+                    <div class="user-left-title"><input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>"><h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id'])) ?>)</h5></div>
                     <div class="approved-badge status-<?= strtolower((string)($u['status'] ?? 'unapproved')) ?>">
                         <?php if (strtolower((string)($u['status'] ?? '')) === 'approved'): ?>
                             <i class="fa fa-thumbs-up" aria-hidden="true"></i>

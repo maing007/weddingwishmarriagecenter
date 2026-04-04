@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `usmanv`
+-- Database: `u878431314_usman`
 --
 
 -- --------------------------------------------------------
@@ -317,18 +317,18 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `gender`, `first_name`, `last_name`, `phone`, `country_code`, `email`, `password_hash`, `dob`, `religion`, `matri_id`, `avatar`, `created_at`) VALUES
-(3, 'Female', 'Nosheen', 'Iqbal', '03120147178', '', 'nosheen@gmail.com', '$2y$10$nSD7AvB2jXVNi82RKum0FuO4NrnQcqwe24ij9k2rqdIZ5CHbDkshu', '1997-10-10', 'Muslim', 'NG1765307740', '/uploads/avatars/user_3_1765307834.png', '2025-12-10 00:15:40'),
-(4, 'Male', 'Muhammad', 'Usman', '03496186700', '', 'us533gi@gmail.com', '$2y$10$VWo032PLdG.7ODxeNkryleztUs21E2VRqSK8yt7p.K0KpxsLge3V6', '2004-09-05', 'Muslim', 'NG1765895913', '/uploads/avatars/user_4_1765895969.jpg', '2025-12-16 19:38:33'),
-(5, 'Male', 'lmgedzdpvi', 'tlioouxlmq', 'upveytpo', 'ldyjnflg', 'vudxgunt@testform.xyz', '$2y$10$g0psmQ/1snlgaqdFruP8he1slZdY6md8tX3SgBx2IBR6VZCq31uUq', '0000-00-00', 'Select Religion', 'NG1766886081', NULL, '2025-12-28 01:41:21'),
-(6, 'Male', 'Ashall', 'Abbas', '', '', 'ashallabb0786@gmail.com', '$2y$10$VhLMYla0BkrbZ8XkxJlJJuPFaoGhHiirlsTJ/58Kb1GsimBUXhsfi', '2007-01-01', '53', 'NG1767002849', NULL, '2025-12-29 10:07:29'),
-(7, 'Female', 'saira', 'sehar', '', '', 'saira.sehar@studenti.unipd.it', '$2y$10$79NXOzWy4LIxsCF3dGXL8eH8zcxJM.z6yLbLwOFW82gfvX0kUO56S', '1996-01-01', '53', 'NG1767619311', NULL, '2026-01-05 13:21:51'),
-(8, 'Female', 'Bushra', 'Parveen', '', '', 'bushranasir70@yahoo.com', '$2y$10$Ef62RZMaGvVkt6ena.0RTu/ZVyckClT9D3jujPOILqGnbcDTczwt2', '2007-01-01', '53', 'NG1768747578', NULL, '2026-01-18 14:46:18'),
-(9, 'Male', 'Waqar', 'Ahmad', '', '', 'mwaqarasgharmughal@gmail.com', '$2y$10$LjEbqT4mbfqcJGzqx3ejRegewgiIl4aqReGLQCqEOIm2mI1jVEJMa', '2002-05-14', '53', 'NG1768942007', NULL, '2026-01-20 20:46:47'),
-(10, 'Female', 'Malayka', 'Malik', '', '', 'malaykamalik314@gmail.com', '$2y$10$ycnbxdQvSvi6iaGB.htnzenyQD7JOHGoqFJKZe2RWe9me07Ogb.6C', '2000-07-30', '53', 'NG1769708397', NULL, '2026-01-29 17:39:57'),
-(11, 'Male', 'kxlrfmjqng', 'musnvfrsph', 'nmugznsm', 'lovslkkv', 'ehftrwpp@checkyourform.xyz', '$2y$10$a8WysuentAeDnfJqi92uMeZrkpw0xw.dbI4OvZlw0jKz606D6B4nO', '0000-00-00', 'Select Religion', 'NG1769766705', NULL, '2026-01-30 09:51:45'),
-(12, 'Female', 'Amn', 'Naeem', '', '', 'amnanaeem328@gmail.com', '$2y$10$6C/d9AuQygpQ/LoUIEY6Ku5Mrj1eJORgaAicW/Ot8/nkTIGyyPa.y', '1993-04-01', '53', 'NG1771784574', NULL, '2026-02-22 18:22:54'),
-(13, 'Female', 'Rouman', 'Ahmad', '', '', 'ent.rouman@gmail.com', '$2y$10$SymA9BJZfGfxtFC88ZM.5OUnVJUJck7D0sMbNwmXSa2Nmif.7zQku', '2002-01-07', '53', 'NG1772495151', NULL, '2026-03-02 23:45:51'),
-(14, 'Male', 's', 'u', '', '', 'abc@123', '$2y$10$oA4GCG5RRAmMv8VyXuzdLezM9gZX0DvNtAk4UColh9M0DEb2ljFSq', '2003-01-01', '53', 'NG1772828240', NULL, '2026-03-06 20:17:20');
+(3, 'Female', 'Nosheen', 'Iqbal', '03120147178', '', 'nosheen@gmail.com', '$2y$10$nSD7AvB2jXVNi82RKum0FuO4NrnQcqwe24ij9k2rqdIZ5CHbDkshu', '1997-10-10', 'Muslim', 'WW1765307740', '/uploads/avatars/user_3_1765307834.png', '2025-12-10 00:15:40'),
+(4, 'Male', 'Muhammad', 'Usman', '03496186700', '', 'us533gi@gmail.com', '$2y$10$VWo032PLdG.7ODxeNkryleztUs21E2VRqSK8yt7p.K0KpxsLge3V6', '2004-09-05', 'Muslim', 'WW1765895913', '/uploads/avatars/user_4_1765895969.jpg', '2025-12-16 19:38:33'),
+(5, 'Male', 'lmgedzdpvi', 'tlioouxlmq', 'upveytpo', 'ldyjnflg', 'vudxgunt@testform.xyz', '$2y$10$g0psmQ/1snlgaqdFruP8he1slZdY6md8tX3SgBx2IBR6VZCq31uUq', '0000-00-00', 'Select Religion', 'WW1766886081', NULL, '2025-12-28 01:41:21'),
+(6, 'Male', 'Ashall', 'Abbas', '', '', 'ashallabb0786@gmail.com', '$2y$10$VhLMYla0BkrbZ8XkxJlJJuPFaoGhHiirlsTJ/58Kb1GsimBUXhsfi', '2007-01-01', '53', 'WW1767002849', NULL, '2025-12-29 10:07:29'),
+(7, 'Female', 'saira', 'sehar', '', '', 'saira.sehar@studenti.unipd.it', '$2y$10$79NXOzWy4LIxsCF3dGXL8eH8zcxJM.z6yLbLwOFW82gfvX0kUO56S', '1996-01-01', '53', 'WW1767619311', NULL, '2026-01-05 13:21:51'),
+(8, 'Female', 'Bushra', 'Parveen', '', '', 'bushranasir70@yahoo.com', '$2y$10$Ef62RZMaGvVkt6ena.0RTu/ZVyckClT9D3jujPOILqGnbcDTczwt2', '2007-01-01', '53', 'WW1768747578', NULL, '2026-01-18 14:46:18'),
+(9, 'Male', 'Waqar', 'Ahmad', '', '', 'mwaqarasgharmughal@gmail.com', '$2y$10$LjEbqT4mbfqcJGzqx3ejRegewgiIl4aqReGLQCqEOIm2mI1jVEJMa', '2002-05-14', '53', 'WW1768942007', NULL, '2026-01-20 20:46:47'),
+(10, 'Female', 'Malayka', 'Malik', '', '', 'malaykamalik314@gmail.com', '$2y$10$ycnbxdQvSvi6iaGB.htnzenyQD7JOHGoqFJKZe2RWe9me07Ogb.6C', '2000-07-30', '53', 'WW1769708397', NULL, '2026-01-29 17:39:57'),
+(11, 'Male', 'kxlrfmjqng', 'musnvfrsph', 'nmugznsm', 'lovslkkv', 'ehftrwpp@checkyourform.xyz', '$2y$10$a8WysuentAeDnfJqi92uMeZrkpw0xw.dbI4OvZlw0jKz606D6B4nO', '0000-00-00', 'Select Religion', 'WW1769766705', NULL, '2026-01-30 09:51:45'),
+(12, 'Female', 'Amn', 'Naeem', '', '', 'amnanaeem328@gmail.com', '$2y$10$6C/d9AuQygpQ/LoUIEY6Ku5Mrj1eJORgaAicW/Ot8/nkTIGyyPa.y', '1993-04-01', '53', 'WW1771784574', NULL, '2026-02-22 18:22:54'),
+(13, 'Female', 'Rouman', 'Ahmad', '', '', 'ent.rouman@gmail.com', '$2y$10$SymA9BJZfGfxtFC88ZM.5OUnVJUJck7D0sMbNwmXSa2Nmif.7zQku', '2002-01-07', '53', 'WW1772495151', NULL, '2026-03-02 23:45:51'),
+(14, 'Male', 's', 'u', '', '', 'abc@123', '$2y$10$oA4GCG5RRAmMv8VyXuzdLezM9gZX0DvNtAk4UColh9M0DEb2ljFSq', '2003-01-01', '53', 'WW1772828240', NULL, '2026-03-06 20:17:20');
 
 -- --------------------------------------------------------
 

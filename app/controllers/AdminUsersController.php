@@ -693,6 +693,7 @@ class AdminUsersController
             header('Location: ' . BASE_URL . '/admin/users');
             exit;
         }
+        $user = array_merge($user, $this->model->getUserListSupplement($id));
         require __DIR__ . '/../views/admin/admin_profile_view_clean.php';
     }
 

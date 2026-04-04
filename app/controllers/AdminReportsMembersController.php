@@ -65,7 +65,7 @@ class AdminReportsMembersController
 
                 return [
                     $ts ? date('Y-m-d H:i:s', $ts) : '',
-                    (string) ($r['matri_id'] ?? ''),
+                    matri_id_display((string) ($r['matri_id'] ?? '')),
                     (string) ($r['member_name'] ?? ''),
                     (string) ($r['activity'] ?? ''),
                     (string) ($r['detail'] ?? ''),

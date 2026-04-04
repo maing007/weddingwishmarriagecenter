@@ -1,6 +1,27 @@
 <?php
 $title = 'Auto Match Cron History';
 $reportTotal = count($cronRows);
+$cronStatusTabs = AutoMatchCronHistoryModel::cronStatusTabs();
+$amchTabCounts = ['all' => $reportTotal];
+foreach ($cronStatusTabs as $_t) {
+    $amchTabCounts[$_t] = 0;
+}
+foreach ($cronRows as $_r) {
+    $_s = trim((string) ($_r['status'] ?? ''));
+    if (isset($amchTabCounts[$_s])) {
+        $amchTabCounts[$_s]++;
+    }
+}
+$amchStatusBadgeClass = static function (string $s): string {
+    $s = trim($s);
+    $map = [
+        'Completed' => 'success',
+        'Running' => 'primary',
+        'Failed' => 'danger',
+    ];
+
+    return $map[$s] ?? 'secondary';
+};
 $fmtDt = static function (?string $raw): string {
     if ($raw === null || $raw === '') {
         return 'N/A';
@@ -70,10 +91,15 @@ require __DIR__ . '/partials/sidebar.php';
                 <span class="show-entry-wrap"><label class="me-2 mb-0">Show</label><select id="amchShowEntries" class="form-select form-select-sm d-inline-block w-auto"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="9999">All</option></select><label class="ms-2 mb-0">Entries</label></span>
             </div>
 
-            <ul class="nav nav-tabs lgr-tabs mb-0">
+            <ul class="nav nav-tabs lgr-tabs mb-0 amch-status-tabs" role="tablist">
                 <li class="nav-item">
-                    <span class="nav-link active">All <small>(<?= (int) $reportTotal ?>)</small></span>
+                    <button type="button" class="nav-link active amch-tab" data-amch-tab="all" id="amchTabAll">All <small>(<?= (int) $amchTabCounts['all'] ?>)</small></button>
                 </li>
+                <?php foreach ($cronStatusTabs as $tabLabel): ?>
+                <li class="nav-item">
+                    <button type="button" class="nav-link amch-tab" data-amch-tab="<?= htmlspecialchars($tabLabel, ENT_QUOTES, 'UTF-8') ?>" id="amchTab<?= preg_replace('/\W+/', '', $tabLabel) ?>"><?= htmlspecialchars($tabLabel) ?> <small>(<?= (int) ($amchTabCounts[$tabLabel] ?? 0) ?>)</small></button>
+                </li>
+                <?php endforeach; ?>
             </ul>
 
             <div class="table-responsive lgr-table-wrap">
@@ -89,15 +115,16 @@ require __DIR__ . '/partials/sidebar.php';
                     </thead>
                     <tbody id="amchTbody">
                         <?php foreach ($cronRows as $R):
+                            $rowStatus = trim((string) ($R['status'] ?? ''));
                             $searchBlob = strtolower(trim(implode(' ', [
-                                $R['status'] ?? '',
+                                $rowStatus,
                                 $fmtDt($R['started_at'] ?? null),
                                 $fmtDt($R['ended_at'] ?? null),
                                 (string) ($R['sent_emails_count'] ?? ''),
                             ])));
                             ?>
-                        <tr class="amch-row" data-search="<?= htmlspecialchars($searchBlob, ENT_QUOTES, 'UTF-8') ?>">
-                            <td><?= htmlspecialchars($na($R['status'] ?? '')) ?></td>
+                        <tr class="amch-row" data-search="<?= htmlspecialchars($searchBlob, ENT_QUOTES, 'UTF-8') ?>" data-cron-status="<?= htmlspecialchars($rowStatus, ENT_QUOTES, 'UTF-8') ?>">
+                            <td><span class="badge bg-<?= htmlspecialchars($amchStatusBadgeClass($rowStatus), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($rowStatus !== '' ? $rowStatus : 'N/A') ?></span></td>
                             <td><?= htmlspecialchars($fmtDt($R['started_at'] ?? null)) ?></td>
                             <td><?= htmlspecialchars($fmtDt($R['ended_at'] ?? null)) ?></td>
                             <td><?= htmlspecialchars((string) ($R['sent_emails_count'] ?? '0')) ?></td>
@@ -126,6 +153,7 @@ require __DIR__ . '/partials/sidebar.php';
 </main>
 </div>
 
+<style>.amch-status-tabs .nav-link.amch-tab{border:0;background:transparent;cursor:pointer}.amch-status-tabs .nav-link.amch-tab.active{font-weight:600}</style>
 <script>
 (function(){
     const searchInput = document.getElementById('amchSearch');
@@ -134,13 +162,28 @@ require __DIR__ . '/partials/sidebar.php';
     const infoEl = document.getElementById('amchInfo');
     const pagEl = document.getElementById('amchPagination');
     let currentPage = 1;
+    let activeStatusTab = 'all';
 
     function filtered() {
         const q = (searchInput && searchInput.value ? searchInput.value : '').toLowerCase().trim();
         return rows().filter(function(r) {
+            if (activeStatusTab !== 'all') {
+                const st = (r.getAttribute('data-cron-status') || '').trim();
+                if (st !== activeStatusTab) return false;
+            }
             return !q || (r.getAttribute('data-search') || '').indexOf(q) !== -1;
         });
     }
+
+    document.querySelectorAll('.amch-tab').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            activeStatusTab = (btn.getAttribute('data-amch-tab') || 'all');
+            document.querySelectorAll('.amch-tab').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            currentPage = 1;
+            render();
+        });
+    });
 
     function appendPageLink(text, targetPage, isActive, isDisabled) {
         const li = document.createElement('li');

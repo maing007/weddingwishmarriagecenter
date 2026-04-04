@@ -94,7 +94,7 @@ require __DIR__ . '/partials/sidebar.php';
                             ?>
                         <tr class="mma-row" data-sort-ts="<?= (int) $ts ?>" data-search="<?= htmlspecialchars($searchBlob, ENT_QUOTES, 'UTF-8') ?>" data-activity="<?= htmlspecialchars($actVal, ENT_QUOTES, 'UTF-8') ?>">
                             <td><?= htmlspecialchars($fmtDateTime($at)) ?></td>
-                            <td><?= htmlspecialchars((string) ($R['matri_id'] ?? '')) ?></td>
+                            <td><?= htmlspecialchars(matri_id_display((string) ($R['matri_id'] ?? ''))) ?></td>
                             <td><?= htmlspecialchars((string) ($R['member_name'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['activity'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['detail'] ?? '')) ?></td>

@@ -345,7 +345,7 @@ require __DIR__.'/partials/sidebar.php';
                     <tbody>
                         <?php foreach ($users as $user) : ?>
                             <tr>
-                                <td><?= htmlspecialchars($user['matri_id'] ?? ('NG' . str_pad((string)($user['id'] ?? 0), 5, '0', STR_PAD_LEFT))) ?></td>
+                                <td><?= htmlspecialchars(matri_id_display((string) ($user['matri_id'] ?? ''), (int) ($user['id'] ?? 0), true)) ?></td>
                                 <td><?= htmlspecialchars(trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''))) ?></td>
                                 <td><?= htmlspecialchars($user['email']) ?></td>
                                 <td><?= htmlspecialchars($user['gender'] ?? 'Male') ?></td>

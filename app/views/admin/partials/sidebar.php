@@ -752,6 +752,14 @@ $isActivePath = static function (string $path, bool $exact = true) use ($request
             </ul>
         </li>
 
+        <li>
+            <a href="<?= BASE_URL ?>/admin/system/database-migrations"
+               class="<?= $isActivePath('/admin/system/database-migrations', true) ? 'active' : '' ?>">
+                <i class="fa fa-database"></i>
+                <span class="nav-item">DB Migrations</span>
+            </a>
+        </li>
+
         <li class="has-submenu <?= ($isActivePath('/admin/blogs', false) || $isActivePath('/admin/blog/create', false)) ? 'open' : '' ?>">
             <a href="#" data-menu-toggle>
                 <i class="fa fa-pencil-square-o"></i>

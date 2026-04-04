@@ -149,7 +149,7 @@ sort($statusOpts);
                             <td><?= htmlspecialchars($fmtDate($act)) ?></td>
                             <td><?= htmlspecialchars((string) ($R['staff_name'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($R['ti_name'] ?? '')) ?></td>
-                            <td><?= htmlspecialchars((string) ($R['matri_id'] ?? '')) ?></td>
+                            <td><?= htmlspecialchars(matri_id_display((string) ($R['matri_id'] ?? ''), (int) ($R['id'] ?? 0))) ?></td>
                             <td><?= htmlspecialchars((string) ($R['client_name'] ?? '')) ?></td>
                             <td><?= htmlspecialchars($fmtMoney($R['fee_amount'] ?? 0)) ?></td>
                             <td><?= htmlspecialchars((string) ($R['package'] ?? '')) ?></td>

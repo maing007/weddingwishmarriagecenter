@@ -54,7 +54,7 @@ require __DIR__.'/partials/sidebar.php';
             <?php foreach ($users as $u): ?>
             <div class="user-card searchable-card" data-date="<?= strtotime($u['created_at']) ?>" data-name="<?= strtolower($u['first_name'].' '.$u['last_name']) ?>">
                 <div class="user-card-header">
-                    <div class="user-left-title"><input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>"><h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (NG<?= (int)$u['id'] ?>)</h5></div>
+                    <div class="user-left-title"><input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>"><h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id'])) ?>)</h5></div>
                     <div class="approved-badge status-<?= strtolower((string)($u['status'] ?? 'unapproved')) ?>">
                         <?php if (strtolower((string)($u['status'] ?? '')) === 'approved'): ?>
                             <i class="fa fa-thumbs-up" aria-hidden="true"></i>
@@ -98,7 +98,7 @@ require __DIR__.'/partials/sidebar.php';
                     <a class="btn-action btn-action-teal" href="<?= BASE_URL ?>/admin/users/profile-view?id=<?= (int)$u['id'] ?>">View Profile</a>
                     <button type="button" class="btn-action btn-action-amber" onclick="openViewCommentsPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">View Comments</button>
                     <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/users/edit-steps?id=<?= (int)$u['id'] ?>">Edit Profile</a>
-                    <button type="button" class="btn-action btn-action-green" onclick="openPlanModal({userId:'<?= (int)$u['id'] ?>',packageId:'<?= (int)($u['latest_package_id'] ?? 0) ?>',name:'<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>',matri:'NG<?= (int)$u['id'] ?>',email:'<?= htmlspecialchars((string)($u['email'] ?? ''), ENT_QUOTES) ?>',phone:'<?= htmlspecialchars((string)($u['phone'] ?? ''), ENT_QUOTES) ?>',fee:'<?= htmlspecialchars((string)($u['final_fee'] ?? '50000'), ENT_QUOTES) ?>',image:'<?= htmlspecialchars(BASE_URL . (!empty($u['avatar']) ? $u['avatar'] : '/assets/images/default-avatar.png'), ENT_QUOTES) ?>'})">Renew Plan</button>
+                    <button type="button" class="btn-action btn-action-green" onclick="openPlanModal({userId:'<?= (int)$u['id'] ?>',packageId:'<?= (int)($u['latest_package_id'] ?? 0) ?>',name:'<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>',matri:'<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id']), ENT_QUOTES) ?>',email:'<?= htmlspecialchars((string)($u['email'] ?? ''), ENT_QUOTES) ?>',phone:'<?= htmlspecialchars((string)($u['phone'] ?? ''), ENT_QUOTES) ?>',fee:'<?= htmlspecialchars((string)($u['final_fee'] ?? '50000'), ENT_QUOTES) ?>',image:'<?= htmlspecialchars(BASE_URL . (!empty($u['avatar']) ? $u['avatar'] : '/assets/images/default-avatar.png'), ENT_QUOTES) ?>'})">Renew Plan</button>
                     <a class="btn-action btn-action-green" target="_blank" href="<?= BASE_URL ?>/admin/users/profile-pdf-template?id=<?= (int)$u['id'] ?>">Profile (PDF)</a>
                     <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Team List (7)</a>
                 </div>

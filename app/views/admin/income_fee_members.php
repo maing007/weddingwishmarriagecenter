@@ -251,7 +251,7 @@ require __DIR__ . '/partials/sidebar.php';
                 if ($displayName === '') {
                     $displayName = trim((string) ($r['client_name'] ?? '')) ?: 'Client';
                 }
-                $matriShow = trim((string) ($r['matri_id'] ?? ''));
+                $matriShow = matri_id_display((string) ($r['matri_id'] ?? ''), $uid);
                 $tabStatus = $uid > 0 ? strtolower((string) ($r['user_status'] ?? 'unapproved')) : 'unlinked';
                 $actTs = strtotime((string) ($r['activation_date'] ?? '')) ?: 0;
                 $paySt = strtolower(trim((string) ($r['staff_payment_status'] ?? '')));

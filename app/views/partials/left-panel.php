@@ -368,8 +368,11 @@
 
             <h5><?= htmlspecialchars($fullName) ?></h5>
 
-            <?php if (!empty($user['matri_id'])): ?>
-                <span class="matri-id"><?= htmlspecialchars($user['matri_id']) ?></span>
+            <?php
+            $matriSide = matri_id_display((string) ($user['matri_id'] ?? ''), (int) ($user['id'] ?? 0));
+            if ($matriSide !== ''):
+                ?>
+                <span class="matri-id"><?= htmlspecialchars($matriSide) ?></span>
             <?php endif; ?>
         </div>
 

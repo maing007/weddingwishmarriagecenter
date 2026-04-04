@@ -62,61 +62,112 @@ class AdminUserModel
                 INDEX idx_eval_admin (admin_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ");
+
+        $this->db->exec("
+            CREATE TABLE IF NOT EXISTS members_email_verification (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                matri_id VARCHAR(32) NOT NULL,
+                username VARCHAR(255) NOT NULL DEFAULT '',
+                email VARCHAR(255) NOT NULL DEFAULT '',
+                mobile VARCHAR(64) NOT NULL DEFAULT '',
+                last_login DATETIME NULL,
+                team_assign_id VARCHAR(64) NOT NULL DEFAULT '',
+                is_verified TINYINT(1) NOT NULL DEFAULT 0,
+                is_paid TINYINT(1) NOT NULL DEFAULT 0,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_matri (matri_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ");
     }
 
     public function allUsers(?string $dashboardFilter = null)
     {
         $sql = "
             SELECT
-                id,
-                NULL AS avatar,
-                phone,
-                dob,
-                religion,
-                gender,
-                COALESCE(user_status, 'approved') AS status,
+                ud.id,
+                COALESCE(
+                    NULLIF(TRIM(COALESCE(ud.photo2_url, '')), ''),
+                    NULLIF(TRIM(COALESCE(ud.photo3_url, '')), ''),
+                    NULLIF(TRIM(COALESCE(ud.photo4_url, '')), ''),
+                    NULLIF(TRIM(COALESCE(ud.photo5_url, '')), ''),
+                    NULLIF(TRIM(COALESCE(ud.photo6_url, '')), '')
+                ) AS avatar,
+                ud.phone,
+                ud.mobile_number,
+                ud.dob,
+                ud.religion,
+                ud.gender,
+                ud.marital_status,
+                COALESCE(ud.user_status, 'approved') AS status,
                 NULL AS admin_comment,
-                first_name,
-                second_name AS last_name,
-                email,
-                city,
-                country,
-                matri_id,
-                COALESCE(featured_status, 'non_featured') AS featured_status,
+                ud.first_name,
+                ud.second_name AS last_name,
+                ud.email,
+                ud.city,
+                ud.country,
+                ud.state,
+                ud.caste,
+                ud.mother_tongue,
+                ud.final_fee,
+                ud.cv_file,
+                ud.matri_id,
+                COALESCE(ud.featured_status, 'non_featured') AS featured_status,
+                COALESCE(NULLIF(TRIM(au.name), ''), NULLIF(TRIM(ud.lead), '')) AS added_by_name,
+                (
+                    SELECT p.name
+                    FROM user_packages up
+                    INNER JOIN packages p ON p.id = up.package_id
+                    WHERE up.user_id = ud.id
+                    ORDER BY up.expires_at DESC
+                    LIMIT 1
+                ) AS active_plan_name,
+                (
+                    SELECT MAX(up.expires_at)
+                    FROM user_packages up
+                    WHERE up.user_id = ud.id
+                ) AS plan_expires_at,
+                (
+                    SELECT MAX(mev.last_login)
+                    FROM members_email_verification mev
+                    WHERE NULLIF(TRIM(ud.email), '') IS NOT NULL
+                      AND LOWER(TRIM(mev.email)) = LOWER(TRIM(ud.email))
+                ) AS last_login,
                 (
                     SELECT up.id
                     FROM user_packages up
-                    WHERE up.user_id = user_details.id
+                    WHERE up.user_id = ud.id
                     ORDER BY up.id DESC
                     LIMIT 1
                 ) AS latest_package_id,
                 (
                     SELECT COALESCE(SUM(ma.opened_count), 0)
                     FROM member_assignments ma
-                    WHERE ma.assigned_to = user_details.id
+                    WHERE ma.assigned_to = ud.id
                 ) AS opened_count,
                 (
                     SELECT COUNT(*)
                     FROM member_assignments ma
-                    WHERE ma.assigned_to = user_details.id AND LOWER(COALESCE(ma.status, '')) = 'pending'
+                    WHERE ma.assigned_to = ud.id AND LOWER(COALESCE(ma.status, '')) = 'pending'
                 ) AS deferred_count,
                 (
                     SELECT COUNT(*)
                     FROM member_assignments ma
-                    WHERE ma.assigned_to = user_details.id AND LOWER(COALESCE(ma.status, '')) = 'declined'
+                    WHERE ma.assigned_to = ud.id AND LOWER(COALESCE(ma.status, '')) = 'declined'
                 ) AS declined_count,
                 (
                     SELECT COUNT(*)
                     FROM member_assignments ma
-                    WHERE ma.assigned_to = user_details.id AND LOWER(COALESCE(ma.status, '')) = 'meeting'
+                    WHERE ma.assigned_to = ud.id AND LOWER(COALESCE(ma.status, '')) = 'meeting'
                 ) AS meeting_count,
                 (
                     SELECT COUNT(*)
                     FROM member_assignments ma
-                    WHERE ma.assigned_to = user_details.id AND LOWER(COALESCE(ma.status, '')) = 'accepted'
+                    WHERE ma.assigned_to = ud.id AND LOWER(COALESCE(ma.status, '')) = 'accepted'
                 ) AS accepted_count,
-                created_at
-            FROM user_details
+                ud.created_at
+            FROM user_details ud
+            LEFT JOIN admin_users au
+                ON ud.lead REGEXP '^[0-9]+$' AND au.id = CAST(ud.lead AS UNSIGNED)
         ";
 
         $conditions = [];
@@ -124,27 +175,27 @@ class AdminUserModel
 
         switch ($dashboardFilter) {
             case 'today':
-                $conditions[] = "DATE(created_at) = CURDATE()";
+                $conditions[] = "DATE(ud.created_at) = CURDATE()";
                 break;
             case 'last_week':
-                $conditions[] = "created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+                $conditions[] = "ud.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
                 break;
             case 'last_month':
-                $conditions[] = "created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+                $conditions[] = "ud.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
                 break;
             case 'male':
-                $conditions[] = "LOWER(COALESCE(gender, '')) = :gender_male";
+                $conditions[] = "LOWER(COALESCE(ud.gender, '')) = :gender_male";
                 $params[':gender_male'] = 'male';
                 break;
             case 'female':
-                $conditions[] = "LOWER(COALESCE(gender, '')) = :gender_female";
+                $conditions[] = "LOWER(COALESCE(ud.gender, '')) = :gender_female";
                 $params[':gender_female'] = 'female';
                 break;
             case 'active':
                 // users table has no status column in current schema; treat all as active
                 break;
             case 'paid':
-                $conditions[] = "EXISTS (SELECT 1 FROM user_packages up WHERE up.user_id = user_details.id AND (up.is_paid = 1 OR LOWER(COALESCE(up.status, '')) = 'paid'))";
+                $conditions[] = "EXISTS (SELECT 1 FROM user_packages up WHERE up.user_id = ud.id AND (up.is_paid = 1 OR LOWER(COALESCE(up.status, '')) = 'paid'))";
                 break;
             case 'total':
             default:
@@ -155,7 +206,7 @@ class AdminUserModel
             $sql .= " WHERE " . implode(' AND ', $conditions);
         }
 
-        $sql .= " ORDER BY created_at DESC";
+        $sql .= " ORDER BY ud.created_at DESC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
@@ -588,6 +639,46 @@ class AdminUserModel
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ?: null;
+    }
+
+    /**
+     * Plan, added-by, last login — same semantics as allUsers() card fields (for profile view summary).
+     */
+    public function getUserListSupplement(int $userId): array
+    {
+        $sql = "
+            SELECT
+                (
+                    SELECT p.name
+                    FROM user_packages up
+                    INNER JOIN packages p ON p.id = up.package_id
+                    WHERE up.user_id = ud.id
+                    ORDER BY up.expires_at DESC
+                    LIMIT 1
+                ) AS active_plan_name,
+                (
+                    SELECT MAX(up.expires_at)
+                    FROM user_packages up
+                    WHERE up.user_id = ud.id
+                ) AS plan_expires_at,
+                COALESCE(NULLIF(TRIM(au.name), ''), NULLIF(TRIM(ud.lead), '')) AS added_by_name,
+                (
+                    SELECT MAX(mev.last_login)
+                    FROM members_email_verification mev
+                    WHERE NULLIF(TRIM(ud.email), '') IS NOT NULL
+                      AND LOWER(TRIM(mev.email)) = LOWER(TRIM(ud.email))
+                ) AS last_login
+            FROM user_details ud
+            LEFT JOIN admin_users au
+                ON ud.lead REGEXP '^[0-9]+$' AND au.id = CAST(ud.lead AS UNSIGNED)
+            WHERE ud.id = :id
+            LIMIT 1
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $userId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return is_array($row) ? $row : [];
     }
 
     public function getEditableColumns(): array

@@ -81,7 +81,7 @@ require __DIR__.'/partials/sidebar.php';
                 <div class="user-card-header">
                     <div class="user-left-title">
                         <input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>">
-                        <h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (NG<?= (int)$u['id'] ?>)</h5>
+                        <h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id'])) ?>)</h5>
                     </div>
                     <div class="approved-badge status-<?= strtolower((string)($u['status'] ?? 'unapproved')) ?>">
                         <?php if (strtolower((string)($u['status'] ?? '')) === 'approved'): ?>
@@ -140,7 +140,7 @@ require __DIR__.'/partials/sidebar.php';
                                 userId: '<?= (int)$u['id'] ?>',
                                 packageId: '<?= (int)($u['latest_package_id'] ?? 0) ?>',
                                 name: '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>',
-                                matri: 'NG<?= (int)$u['id'] ?>',
+                                matri: '<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id']), ENT_QUOTES) ?>',
                                 email: '<?= htmlspecialchars((string)($u['email'] ?? ''), ENT_QUOTES) ?>',
                                 phone: '<?= htmlspecialchars((string)($u['phone'] ?? ''), ENT_QUOTES) ?>',
                                 fee: '<?= htmlspecialchars((string)($u['final_fee'] ?? '50000'), ENT_QUOTES) ?>',

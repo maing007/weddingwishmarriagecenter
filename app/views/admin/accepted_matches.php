@@ -57,8 +57,8 @@ require __DIR__.'/partials/sidebar.php';
                     <?php foreach ($rows as $r): ?>
                         <tr class="searchable-row">
                             <td><input type="checkbox" class="row-checkbox"></td>
-                            <td><?= htmlspecialchars(trim(($r['my_first_name'] ?? '-') . ' ' . ($r['my_last_name'] ?? '')) . ' - (NG' . (int)($r['assigned_to'] ?? 0) . ')') ?></td>
-                            <td><?= htmlspecialchars(trim(($r['other_first_name'] ?? '-') . ' ' . ($r['other_last_name'] ?? '')) . ' - (NG' . (int)($r['assigned_member'] ?? 0) . ')') ?></td>
+                            <td><?= htmlspecialchars(trim(($r['my_first_name'] ?? '-') . ' ' . ($r['my_last_name'] ?? '')) . ' - (' . matri_id_display('', (int) ($r['assigned_to'] ?? 0)) . ')') ?></td>
+                            <td><?= htmlspecialchars(trim(($r['other_first_name'] ?? '-') . ' ' . ($r['other_last_name'] ?? '')) . ' - (' . matri_id_display('', (int) ($r['assigned_member'] ?? 0)) . ')') ?></td>
                             <td><?= htmlspecialchars((string)($r['staff_name'] ?? 'admin')) ?></td>
                             <td><?= htmlspecialchars((string)($r['team_name'] ?? 'admin')) ?></td>
                             <td><?= htmlspecialchars((string)($r['accepted_at'] ?? $r['updated_at'] ?? '-')) ?></td>

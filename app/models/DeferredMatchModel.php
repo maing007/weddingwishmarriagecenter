@@ -36,11 +36,11 @@ class DeferredMatchModel
             return;
         }
         $rows = [
-            ['NG17739', 'Miss rajpoot', 'NG15507', 'Syed Farhan Ahmad Bukhari', 'Ali Jawad', '2024-11-11 00:00:00', null],
-            ['NG18002', 'Ayesha Khan', 'NG16001', 'Muhammad Usman', 'Ali Jawad', '2024-10-28 14:30:00', null],
-            ['NG17200', 'Fatima Noor', 'NG15888', 'Hassan Raza', 'Samina Kashif', '2024-09-15 09:00:00', null],
-            ['NG19001', 'Zainab Malik', 'NG16222', 'Omar Sheikh', 'Ali Jawad', '2024-12-01 18:45:00', null],
-            ['NG16550', 'Sara Ahmed', 'NG17001', 'Bilal Hussain', 'Samina Kashif', '2024-08-20 00:00:00', null],
+            ['WW17739', 'Miss rajpoot', 'WW15507', 'Syed Farhan Ahmad Bukhari', 'Ali Jawad', '2024-11-11 00:00:00', null],
+            ['WW18002', 'Ayesha Khan', 'WW16001', 'Muhammad Usman', 'Ali Jawad', '2024-10-28 14:30:00', null],
+            ['WW17200', 'Fatima Noor', 'WW15888', 'Hassan Raza', 'Samina Kashif', '2024-09-15 09:00:00', null],
+            ['WW19001', 'Zainab Malik', 'WW16222', 'Omar Sheikh', 'Ali Jawad', '2024-12-01 18:45:00', null],
+            ['WW16550', 'Sara Ahmed', 'WW17001', 'Bilal Hussain', 'Samina Kashif', '2024-08-20 00:00:00', null],
         ];
         $stmt = $this->db->prepare('
             INSERT INTO deferred_matches (my_matri_id, my_name, other_matri_id, other_name, staff_name, deferred_at, auto_deferred)

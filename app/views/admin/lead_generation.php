@@ -139,7 +139,7 @@ require __DIR__ . '/partials/sidebar.php';
                         <p><strong>Interest Name</strong><span>:</span><span class="lg-val"><?= htmlspecialchars($na($lead['interest_name'] ?? '')) ?></span></p>
                         <p><strong>Team Assign</strong><span>:</span><span class="lg-val"><?= htmlspecialchars($na($lead['team_assign'] ?? '')) ?></span></p>
                         <p><strong>Importance</strong><span>:</span><span class="lg-val"><?= htmlspecialchars($na($lead['importance'] ?? '')) ?></span></p>
-                        <p><strong>Reg Matri Id</strong><span>:</span><span class="lg-val"><?= htmlspecialchars($na($lead['reg_matri_id'] ?? '')) ?></span></p>
+                        <p><strong>Reg Matri Id</strong><span>:</span><span class="lg-val"><?= htmlspecialchars($na(matri_id_display(trim((string) ($lead['reg_matri_id'] ?? ''))))) ?></span></p>
                     </div>
                     <div class="details-column details-grid lg-col-right">
                         <p><strong>Email</strong><span>:</span> <?= htmlspecialchars($na($lead['email'] ?? '')) ?></p>

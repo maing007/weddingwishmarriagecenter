@@ -45,19 +45,19 @@ class MemberSaleFeeModel
         }
 
         $reg = [
-            ['2026-03-28', 'Ali Jawad', 'Ali Jawad', 'NG21768', 'Syeda Zahra', 5000.00, 'Rhodium', 'Cash account', 'Unpaid', null, null],
-            ['2026-03-27', 'Ali Jawad', 'Sana Malik', 'NG21806', 'Syeda Abeer', 7500.00, 'Platinum', 'Jazz Cash', 'Paid', 'Meezan Bank', '2026-01-25'],
-            ['2026-03-26', 'Samina Kashif', 'Samina Kashif', 'NG19001', 'Zainab Malik', 5000.00, 'Rhodium', 'Meezan Bank', 'Unpaid', null, null],
-            ['2026-03-25', 'Ali Jawad', 'Ali Jawad', 'NG17200', 'Fatima Noor', 10000.00, 'Gold', 'Cash account', 'Paid', '-', null],
-            ['2026-03-24', 'Hira Khan', 'Ali Jawad', 'NG15507', 'Syed Farhan Ahmad Bukhari', 5000.00, 'Rhodium', 'Jazz Cash', 'Unpaid', null, null],
-            ['2026-03-22', 'Tooba Ahsan', 'Tooba Ahsan', 'NG18002', 'Ayesha Khan', 6500.00, 'Silver', 'Meezan Bank', 'Paid', 'Meezan Bank', '2026-02-10'],
+            ['2026-03-28', 'Ali Jawad', 'Ali Jawad', 'WW21768', 'Syeda Zahra', 5000.00, 'Rhodium', 'Cash account', 'Unpaid', null, null],
+            ['2026-03-27', 'Ali Jawad', 'Sana Malik', 'WW21806', 'Syeda Abeer', 7500.00, 'Platinum', 'Jazz Cash', 'Paid', 'Meezan Bank', '2026-01-25'],
+            ['2026-03-26', 'Samina Kashif', 'Samina Kashif', 'WW19001', 'Zainab Malik', 5000.00, 'Rhodium', 'Meezan Bank', 'Unpaid', null, null],
+            ['2026-03-25', 'Ali Jawad', 'Ali Jawad', 'WW17200', 'Fatima Noor', 10000.00, 'Gold', 'Cash account', 'Paid', '-', null],
+            ['2026-03-24', 'Hira Khan', 'Ali Jawad', 'WW15507', 'Syed Farhan Ahmad Bukhari', 5000.00, 'Rhodium', 'Jazz Cash', 'Unpaid', null, null],
+            ['2026-03-22', 'Tooba Ahsan', 'Tooba Ahsan', 'WW18002', 'Ayesha Khan', 6500.00, 'Silver', 'Meezan Bank', 'Paid', 'Meezan Bank', '2026-02-10'],
         ];
 
         $rishta = [
-            ['2026-03-29', 'Ali Jawad', 'Ali Jawad', 'NG21768', 'Syeda Zahra', 3000.00, 'Rhodium', 'Cash account', 'Unpaid', null, null],
-            ['2026-03-28', 'Samina Kashif', 'Samina Kashif', 'NG16001', 'Muhammad Usman', 4500.00, 'Platinum', 'Jazz Cash', 'Paid', '-', '2026-02-01'],
-            ['2026-03-27', 'Ali Jawad', 'Ali Jawad', 'NG16550', 'Sara Ahmed', 3000.00, 'Gold', 'Meezan Bank', 'Unpaid', null, null],
-            ['2026-03-20', 'Tooba Ahsan', 'Hira Khan', 'NG15888', 'Hassan Raza', 3500.00, 'Rhodium', 'Cash account', 'Paid', 'Meezan Bank', '2026-01-15'],
+            ['2026-03-29', 'Ali Jawad', 'Ali Jawad', 'WW21768', 'Syeda Zahra', 3000.00, 'Rhodium', 'Cash account', 'Unpaid', null, null],
+            ['2026-03-28', 'Samina Kashif', 'Samina Kashif', 'WW16001', 'Muhammad Usman', 4500.00, 'Platinum', 'Jazz Cash', 'Paid', '-', '2026-02-01'],
+            ['2026-03-27', 'Ali Jawad', 'Ali Jawad', 'WW16550', 'Sara Ahmed', 3000.00, 'Gold', 'Meezan Bank', 'Unpaid', null, null],
+            ['2026-03-20', 'Tooba Ahsan', 'Hira Khan', 'WW15888', 'Hassan Raza', 3500.00, 'Rhodium', 'Cash account', 'Paid', 'Meezan Bank', '2026-01-15'],
         ];
 
         $sql = '
@@ -134,7 +134,8 @@ class MemberSaleFeeModel
             FROM member_sale_fees msf
             LEFT JOIN user_details ud ON (
                 (NULLIF(TRIM(ud.matri_id), '') IS NOT NULL AND TRIM(ud.matri_id) = TRIM(msf.matri_id))
-                OR TRIM(msf.matri_id) = CONCAT('NG', ud.id)
+                OR TRIM(msf.matri_id) = CONCAT('" . MATRI_ID_PREFIX . "', ud.id)
+                OR TRIM(msf.matri_id) = CONCAT('" . MATRI_ID_PREFIX_LEGACY . "', ud.id)
             )
             WHERE msf.fee_type = ?
             ORDER BY msf.activation_date DESC, msf.id DESC
@@ -157,16 +158,19 @@ class MemberSaleFeeModel
 
     public function getLinkedUserIdForFee(int $feeId): ?int
     {
-        $sql = '
+        $p = MATRI_ID_PREFIX;
+        $leg = MATRI_ID_PREFIX_LEGACY;
+        $sql = "
             SELECT ud.id AS linked_user_id
             FROM member_sale_fees msf
             LEFT JOIN user_details ud ON (
-                (NULLIF(TRIM(ud.matri_id), \'\') IS NOT NULL AND TRIM(ud.matri_id) = TRIM(msf.matri_id))
-                OR TRIM(msf.matri_id) = CONCAT(\'NG\', ud.id)
+                (NULLIF(TRIM(ud.matri_id), '') IS NOT NULL AND TRIM(ud.matri_id) = TRIM(msf.matri_id))
+                OR TRIM(msf.matri_id) = CONCAT('{$p}', ud.id)
+                OR TRIM(msf.matri_id) = CONCAT('{$leg}', ud.id)
             )
             WHERE msf.id = :id
             LIMIT 1
-        ';
+        ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':id' => $feeId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -237,12 +241,13 @@ class MemberSaleFeeModel
 
             $mid = trim((string) ($ud['matri_id'] ?? ''));
             if ($mid === '') {
-                $mid = 'NG' . (int) $ud['id'];
+                $mid = MATRI_ID_PREFIX . (int) $ud['id'];
                 $fix = $this->db->prepare("UPDATE user_details SET matri_id = :m WHERE id = :id AND (matri_id IS NULL OR TRIM(matri_id) = '')");
                 $fix->execute([':m' => $mid, ':id' => $userDetailsId]);
             }
 
-            $ngKey = 'NG' . (int) $ud['id'];
+            $legacyMatriKey = MATRI_ID_PREFIX_LEGACY . (int) $ud['id'];
+            $prefixedMatriKey = MATRI_ID_PREFIX . (int) $ud['id'];
             $clientName = trim(($ud['first_name'] ?? '') . ' ' . ($ud['second_name'] ?? ''));
             if ($clientName === '') {
                 $clientName = 'Member';
@@ -257,11 +262,12 @@ class MemberSaleFeeModel
                   AND (
                       TRIM(matri_id) = TRIM(:m1)
                       OR TRIM(matri_id) = :m2
+                      OR TRIM(matri_id) = :m3
                   )
                 ORDER BY id DESC
                 LIMIT 1
             ");
-            $find->execute([':m1' => $mid, ':m2' => $ngKey]);
+            $find->execute([':m1' => $mid, ':m2' => $legacyMatriKey, ':m3' => $prefixedMatriKey]);
             $existingId = (int) ($find->fetchColumn() ?: 0);
 
             if ($existingId > 0) {
@@ -333,12 +339,13 @@ class MemberSaleFeeModel
 
             $mid = trim((string) ($ud['matri_id'] ?? ''));
             if ($mid === '') {
-                $mid = 'NG' . (int) $ud['id'];
+                $mid = MATRI_ID_PREFIX . (int) $ud['id'];
                 $fix = $this->db->prepare("UPDATE user_details SET matri_id = :m WHERE id = :id AND (matri_id IS NULL OR TRIM(matri_id) = '')");
                 $fix->execute([':m' => $mid, ':id' => $userDetailsId]);
             }
 
-            $ngKey = 'NG' . (int) $ud['id'];
+            $legacyMatriKey = MATRI_ID_PREFIX_LEGACY . (int) $ud['id'];
+            $prefixedMatriKey = MATRI_ID_PREFIX . (int) $ud['id'];
             $clientName = trim(($ud['first_name'] ?? '') . ' ' . ($ud['second_name'] ?? ''));
             if ($clientName === '') {
                 $clientName = 'Member';
@@ -353,11 +360,12 @@ class MemberSaleFeeModel
                   AND (
                       TRIM(matri_id) = TRIM(:m1)
                       OR TRIM(matri_id) = :m2
+                      OR TRIM(matri_id) = :m3
                   )
                 ORDER BY id DESC
                 LIMIT 1
             ");
-            $find->execute([':m1' => $mid, ':m2' => $ngKey]);
+            $find->execute([':m1' => $mid, ':m2' => $legacyMatriKey, ':m3' => $prefixedMatriKey]);
             $existingId = (int) ($find->fetchColumn() ?: 0);
 
             if ($existingId > 0) {
