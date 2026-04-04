@@ -1,128 +1,323 @@
 <?php
-$title = "Paid Profiles";
+$title = $pageHead ?? 'Members sales report';
+/** @var string $pageHead */
+/** @var string $search */
+/** @var string $saleScope */
+/** @var string $payFilter */
+/** @var string $filterStaff */
+/** @var int $limit */
+/** @var int $page */
+/** @var int $totalRows */
+/** @var int $totalPages */
+/** @var array $rows */
+/** @var array $tabCounts */
+/** @var array $staffFilterOptions */
+
+$fmtMoney = static function ($raw): string {
+    $n = (float) $raw;
+    if (floor($n) == $n) {
+        return (string) (int) $n;
+    }
+
+    return number_format($n, 2, '.', '');
+};
+
+$fmtDate = static function ($raw): string {
+    if ($raw === null || $raw === '') {
+        return '-';
+    }
+    $t = strtotime((string) $raw);
+
+    return $t ? date('Y-m-d', $t) : '-';
+};
+
+$payStLabel = static function ($raw): string {
+    $s = strtoupper(trim((string) ($raw ?? '')));
+
+    return $s !== '' ? $s : '-';
+};
+
+if ($saleScope === 'registration') {
+    $feeColLabel = 'Registration fee';
+} elseif ($saleScope === 'rishta') {
+    $feeColLabel = 'Rishta fee';
+} else {
+    $feeColLabel = 'Fee amount';
+}
+
+$msrQuery = static function (array $extra) use ($search, $saleScope, $payFilter, $filterStaff, $limit): string {
+    $q = array_merge([
+        'search_filed' => $search,
+        'sale_scope' => $saleScope,
+        'pay_filter' => $payFilter,
+        'filter_staff' => $filterStaff,
+        'limit_per_page' => $limit,
+    ], $extra);
+    $q = array_filter($q, static function ($v) {
+        return $v !== null && $v !== '';
+    });
+
+    return BASE_URL . '/admin/sales-report?' . http_build_query($q);
+};
+
 require __DIR__ . '/partials/header.php';
 require __DIR__ . '/partials/sidebar.php';
 ?>
-
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin-manage-members.css">
 <style>
-	.sales-main {
-		margin-left: var(--sidebar-width);
-		transition: margin-left .28s ease;
-		min-height: 100vh;
-		background: #efefef;
-	}
-	body.admin-sidebar-collapsed .sales-main { margin-left: var(--sidebar-collapsed-width); }
-	.sales-wrap { padding: 14px; }
-	.sales-title { font-size: 13px; font-weight: 700; color: #565656; margin-bottom: 10px; }
-	.sales-panel { background: #f8f8f8; border: 1px solid #d9d9d9; border-radius: 3px; padding: 12px; }
-	.sales-tabs { display: flex; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid #ddd; padding-bottom: 8px; margin-bottom: 10px; }
-	.sales-tab { background: #e8e8e8; border: 1px solid #d8d8d8; color: #444; text-decoration: none; border-radius: 3px 3px 0 0; padding: 8px 12px; font-size: 12px; font-weight: 700; }
-	.sales-tab small { display: block; font-size: 10px; color: #666; font-weight: 600; }
-	.sales-tab.active { background: #53c5eb; color: #fff; border-color: #49bbe0; }
-	.sales-tab.active small { color: #fff; }
-	.table-sm td, .table-sm th { font-size: 12px; }
-	.pagination-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 10px; flex-wrap: wrap; }
-	@media (max-width: 991.98px) {
-		.sales-main { margin-left: 0 !important; }
-		body.admin-sidebar-collapsed .sales-main { margin-left: 0 !important; }
-	}
+    .msr-topbar {
+        justify-content: flex-start;
+        padding-left: 12px;
+        padding-right: 16px;
+    }
+    .msr-topbar .msr-page-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #111;
+        margin-left: 8px;
+        margin-right: auto;
+        letter-spacing: 0.01em;
+    }
+    .msr-topbar .admin-profile {
+        margin-left: auto;
+    }
+    .btn-msr-teal {
+        background: #4da7ba;
+        border-color: #3d96a9;
+        color: #fff;
+        font-weight: 600;
+    }
+    .btn-msr-teal:hover {
+        background: #3d96a9;
+        border-color: #358999;
+        color: #fff;
+    }
+    .msr-panel {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 16px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, .06);
+    }
+    .msr-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+    }
+    .msr-tab {
+        background: #e8e8e8;
+        border: 1px solid #d8d8d8;
+        color: #444;
+        text-decoration: none;
+        border-radius: 4px 4px 0 0;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .msr-tab small {
+        font-size: 10px;
+        color: #666;
+        font-weight: 600;
+    }
+    .msr-tab.active {
+        background: #4da7ba;
+        color: #fff;
+        border-color: #3d96a9;
+    }
+    .msr-tab.active small {
+        color: #fff;
+    }
+    .msr-filter-panel {
+        display: none;
+        background: #f8f9fa;
+        border: 1px solid #e2e2e2;
+        border-radius: 4px;
+        padding: 12px 14px;
+        margin-bottom: 14px;
+    }
+    .msr-filter-panel.open {
+        display: block;
+    }
+    .msr-table-wrap {
+        overflow-x: auto;
+    }
+    .msr-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+    .msr-table thead th {
+        background: #555;
+        color: #fff;
+        font-weight: 600;
+        padding: 10px 8px;
+        border: 1px solid #444;
+        white-space: nowrap;
+    }
+    .msr-table tbody td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        vertical-align: middle;
+    }
+    .msr-table tbody tr:nth-child(even) {
+        background: #f5f5f5;
+    }
+    .msr-table tbody tr:nth-child(odd) {
+        background: #fff;
+    }
+    .msr-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+        font-size: 13px;
+    }
 </style>
 
-<div class="sales-main">
-	<div class="admin-topbar">
-		<button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa fa-bars"></i></button>
-		<div class="admin-profile" id="adminProfileTrigger">
-			<div class="admin-profile-box">
-				<span><?= htmlspecialchars($this->displayadminname()) ?></span>
-				<i class="fa fa-user"></i>
-			</div>
-			<div class="admin-dropdown" id="adminDropdown">
-				<a href="<?= BASE_URL ?>/admin/change-password"><i class="fa fa-key"></i> Change Password</a>
-				<a href="<?= BASE_URL ?>/admin/logout"><i class="fa fa-sign-out"></i> Logout</a>
-			</div>
-		</div>
-	</div>
-	<div class="sales-wrap">
-		<div class="sales-title">Members Sales Report</div>
-		<div class="sales-panel">
-			<form method="get" action="<?= BASE_URL ?>/admin/sales-report" class="row g-2 align-items-center mb-3">
-				<input type="hidden" name="tab" value="<?= htmlspecialchars($tab ?? 'reg_receivable') ?>">
-				<div class="col-lg-5">
-					<div class="input-group">
-						<input type="search" name="search_filed" class="form-control" value="<?= htmlspecialchars($search ?? '') ?>" placeholder="Search here..">
-						<button class="btn btn-primary" type="submit"><i class="fa fa-search"></i> Search</button>
-					</div>
-				</div>
-				<div class="col-lg-2">
-					<select name="limit_per_page" class="form-select" onchange="this.form.submit()">
-						<?php foreach ([1,2,3,5,10,25,50,100] as $n): ?>
-							<option value="<?= $n ?>" <?= ((int)($limit ?? 10) === $n) ? 'selected' : '' ?>>Show <?= $n ?></option>
-						<?php endforeach; ?>
-					</select>
-				</div>
-			</form>
+<div class="admin-main">
+    <div class="admin-topbar msr-topbar">
+        <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Open menu">
+            <i class="fa fa-bars"></i>
+        </button>
+        <div class="msr-page-title"><?= htmlspecialchars($pageHead, ENT_QUOTES, 'UTF-8') ?></div>
+        <div class="admin-profile" id="adminProfileTrigger">
+            <div class="admin-profile-box">
+                <span><?= htmlspecialchars($this->displayadminname(), ENT_QUOTES, 'UTF-8') ?></span>
+                <i class="fa fa-user"></i>
+            </div>
+            <div class="admin-dropdown" id="adminDropdown">
+                <a href="<?= BASE_URL ?>/admin/change-password"><i class="fa fa-key"></i> Change Password</a>
+                <a href="<?= BASE_URL ?>/admin/logout"><i class="fa fa-sign-out"></i> Logout</a>
+            </div>
+        </div>
+    </div>
 
-			<div class="sales-tabs">
-				<a class="sales-tab <?= ($tab ?? '') === 'reg_receivable' ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin/sales-report?tab=reg_receivable&search_filed=<?= urlencode($search ?? '') ?>&limit_per_page=<?= (int)($limit ?? 10) ?>">Registration fee receivable <small>(<?= (int)($tabCounts['reg_receivable'] ?? 0) ?>)</small></a>
-				<a class="sales-tab <?= ($tab ?? '') === 'reg_received' ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin/sales-report?tab=reg_received&search_filed=<?= urlencode($search ?? '') ?>&limit_per_page=<?= (int)($limit ?? 10) ?>">Registration fee received <small>(<?= (int)($tabCounts['reg_received'] ?? 0) ?>)</small></a>
-				<a class="sales-tab <?= ($tab ?? '') === 'rishta_receivable' ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin/sales-report?tab=rishta_receivable&search_filed=<?= urlencode($search ?? '') ?>&limit_per_page=<?= (int)($limit ?? 10) ?>">Rishta fee receivable <small>(<?= (int)($tabCounts['rishta_receivable'] ?? 0) ?>)</small></a>
-				<a class="sales-tab <?= ($tab ?? '') === 'rishta_received' ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin/sales-report?tab=rishta_received&search_filed=<?= urlencode($search ?? '') ?>&limit_per_page=<?= (int)($limit ?? 10) ?>">Rishta fee received <small>(<?= (int)($tabCounts['rishta_received'] ?? 0) ?>)</small></a>
-			</div>
+    <main class="admin-page">
+        <div class="admin-content">
+            <div class="container-fluid py-3">
+                <div class="msr-panel">
+                    <form method="get" action="<?= BASE_URL ?>/admin/sales-report" id="msrSearchForm" class="row g-2 align-items-center mb-3">
+                        <input type="hidden" name="sale_scope" value="<?= htmlspecialchars($saleScope, ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="pay_filter" value="<?= htmlspecialchars($payFilter, ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="filter_staff" value="<?= htmlspecialchars($filterStaff, ENT_QUOTES, 'UTF-8') ?>">
+                        <div class="col-lg-5 col-md-6">
+                            <div class="input-group">
+                                <input type="search" name="search_filed" class="form-control" value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>" placeholder="Search here…">
+                                <button class="btn btn-msr-teal" type="submit"><i class="fa fa-search"></i> Search</button>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4">
+                            <select name="limit_per_page" class="form-select" onchange="this.form.submit()">
+                                <?php foreach ([1, 2, 3, 5, 10, 25, 50, 100] as $n): ?>
+                                    <option value="<?= $n ?>" <?= ((int) $limit === $n) ? 'selected' : '' ?>>Show <?= $n ?> entries</option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-lg-5 col-md-12 text-md-end">
+                            <button type="button" class="btn btn-msr-teal" onclick="document.getElementById('msrFilterPanel').classList.toggle('open')">
+                                <i class="fa fa-filter"></i> Filter
+                            </button>
+                        </div>
+                    </form>
 
-			<?php if (empty($rows)): ?>
-				<div class="alert alert-warning mb-0">No record found.</div>
-			<?php else: ?>
-				<div class="table-responsive">
-					<table class="table table-bordered table-striped table-sm">
-						<thead>
-							<tr>
-								<th>ID</th>
-								<th>Matri ID</th>
-								<th>Name</th>
-								<th>Email</th>
-								<th>Mobile</th>
-								<th>City</th>
-								<th>Registration Fee</th>
-								<th>Rishta Fee</th>
-								<th>User Status</th>
-								<th>Featured Status</th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php foreach ($rows as $r): ?>
-								<tr>
-									<td><?= (int)$r['id'] ?></td>
-									<td><?= htmlspecialchars($r['matri_id'] ?? '-') ?></td>
-									<td><?= htmlspecialchars(trim(($r['first_name'] ?? '') . ' ' . ($r['second_name'] ?? ''))) ?></td>
-									<td><?= htmlspecialchars($r['email'] ?? '-') ?></td>
-									<td><?= htmlspecialchars($r['mobile_number'] ?? '-') ?></td>
-									<td><?= htmlspecialchars($r['city'] ?? '-') ?></td>
-									<td><?= number_format((float)($r['registration_fee'] ?? 0), 2) ?></td>
-									<td><?= number_format((float)($r['final_fee'] ?? 0), 2) ?></td>
-									<td><?= htmlspecialchars($r['user_status'] ?? '-') ?></td>
-									<td><?= htmlspecialchars($r['featured_status'] ?? '-') ?></td>
-								</tr>
-							<?php endforeach; ?>
-						</tbody>
-					</table>
-				</div>
-			<?php endif; ?>
+                    <div id="msrFilterPanel" class="msr-filter-panel <?= ($payFilter !== 'all' || $filterStaff !== '') ? 'open' : '' ?>">
+                        <form method="get" action="<?= BASE_URL ?>/admin/sales-report" class="row g-2 align-items-end">
+                            <input type="hidden" name="search_filed" value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="hidden" name="sale_scope" value="<?= htmlspecialchars($saleScope, ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="hidden" name="limit_per_page" value="<?= (int) $limit ?>">
+                            <div class="col-md-4">
+                                <label class="form-label small mb-1">Staff payment status</label>
+                                <select name="pay_filter" class="form-select form-select-sm">
+                                    <option value="all" <?= $payFilter === 'all' ? 'selected' : '' ?>>All</option>
+                                    <option value="unpaid" <?= $payFilter === 'unpaid' ? 'selected' : '' ?>>Unpaid</option>
+                                    <option value="paid" <?= $payFilter === 'paid' ? 'selected' : '' ?>>Paid</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small mb-1">Staff name</label>
+                                <select name="filter_staff" class="form-select form-select-sm">
+                                    <option value="">All staff</option>
+                                    <?php foreach ($staffFilterOptions as $sn): ?>
+                                        <option value="<?= htmlspecialchars($sn, ENT_QUOTES, 'UTF-8') ?>" <?= $filterStaff === $sn ? 'selected' : '' ?>><?= htmlspecialchars($sn, ENT_QUOTES, 'UTF-8') ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-msr-teal btn-sm">Apply filters</button>
+                                <a class="btn btn-outline-secondary btn-sm ms-1" href="<?= BASE_URL ?>/admin/sales-report?sale_scope=<?= urlencode($saleScope) ?>&limit_per_page=<?= (int) $limit ?>">Reset</a>
+                            </div>
+                        </form>
+                    </div>
 
-			<div class="pagination-row">
-				<div>Page <?= (int)($page ?? 1) ?> of <?= (int)($totalPages ?? 1) ?> | Total <?= (int)($totalRows ?? 0) ?> record(s)</div>
-				<div class="d-flex gap-2">
-					<?php
-						$prev = max(1, (int)($page ?? 1) - 1);
-						$next = min((int)($totalPages ?? 1), (int)($page ?? 1) + 1);
-						$q = urlencode($search ?? '');
-						$l = (int)($limit ?? 10);
-						$t = urlencode($tab ?? 'reg_receivable');
-					?>
-					<a class="btn btn-sm btn-outline-secondary <?= (int)($page ?? 1) <= 1 ? 'disabled' : '' ?>" href="<?= BASE_URL ?>/admin/sales-report?tab=<?= $t ?>&search_filed=<?= $q ?>&limit_per_page=<?= $l ?>&page=<?= $prev ?>">Prev</a>
-					<a class="btn btn-sm btn-outline-secondary <?= (int)($page ?? 1) >= (int)($totalPages ?? 1) ? 'disabled' : '' ?>" href="<?= BASE_URL ?>/admin/sales-report?tab=<?= $t ?>&search_filed=<?= $q ?>&limit_per_page=<?= $l ?>&page=<?= $next ?>">Next</a>
-				</div>
-			</div>
-		</div>
-	</div>
+                    <div class="msr-tabs">
+                        <a class="msr-tab <?= $saleScope === 'all' ? 'active' : '' ?>" href="<?= htmlspecialchars($msrQuery(['sale_scope' => 'all', 'page' => 1]), ENT_QUOTES, 'UTF-8') ?>">All <small>(<?= (int) ($tabCounts['all'] ?? 0) ?>)</small></a>
+                        <a class="msr-tab <?= $saleScope === 'registration' ? 'active' : '' ?>" href="<?= htmlspecialchars($msrQuery(['sale_scope' => 'registration', 'page' => 1]), ENT_QUOTES, 'UTF-8') ?>">Registration <small>(<?= (int) ($tabCounts['registration'] ?? 0) ?>)</small></a>
+                        <a class="msr-tab <?= $saleScope === 'rishta' ? 'active' : '' ?>" href="<?= htmlspecialchars($msrQuery(['sale_scope' => 'rishta', 'page' => 1]), ENT_QUOTES, 'UTF-8') ?>">Rishta <small>(<?= (int) ($tabCounts['rishta'] ?? 0) ?>)</small></a>
+                    </div>
+
+                    <?php if (empty($rows)): ?>
+                        <div class="alert alert-warning mb-0">No record found.</div>
+                    <?php else: ?>
+                        <div class="msr-table-wrap">
+                            <table class="msr-table">
+                                <thead>
+                                    <tr>
+                                        <th>Select</th>
+                                        <th>Activation date</th>
+                                        <th>Staff name</th>
+                                        <th>TI name</th>
+                                        <th>Matri Id</th>
+                                        <th>Client name</th>
+                                        <th><?= htmlspecialchars($feeColLabel, ENT_QUOTES, 'UTF-8') ?></th>
+                                        <th>Package</th>
+                                        <th>Payment mode</th>
+                                        <th>Staff payment status</th>
+                                        <th>Staff payment mode</th>
+                                        <th>Staff paid on</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($rows as $r): ?>
+                                        <tr>
+                                            <td><input type="checkbox" class="form-check-input msr-row-cb" name="fee_ids[]" value="<?= (int) ($r['id'] ?? 0) ?>" form="msrBulkForm" aria-label="Select row"></td>
+                                            <td><?= htmlspecialchars($fmtDate($r['activation_date'] ?? null), ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?= htmlspecialchars((string) ($r['staff_name'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?= htmlspecialchars((string) ($r['ti_name'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?= htmlspecialchars(trim((string) ($r['matri_id'] ?? '')) !== '' ? (string) $r['matri_id'] : '-', ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?= htmlspecialchars((string) ($r['client_name'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?= htmlspecialchars($fmtMoney($r['fee_amount'] ?? 0), ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?= htmlspecialchars(trim((string) ($r['package'] ?? '')) !== '' ? (string) $r['package'] : '-', ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?= htmlspecialchars(trim((string) ($r['payment_mode'] ?? '')) !== '' ? (string) $r['payment_mode'] : '-', ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?= htmlspecialchars($payStLabel($r['staff_payment_status'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?= htmlspecialchars(trim((string) ($r['staff_payment_mode'] ?? '')) !== '' ? (string) $r['staff_payment_mode'] : '-', ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?= htmlspecialchars($fmtDate($r['staff_paid_on'] ?? null), ENT_QUOTES, 'UTF-8') ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <form id="msrBulkForm" method="post" action="#" class="d-none" aria-hidden="true"></form>
+                    <?php endif; ?>
+
+                    <div class="msr-pagination">
+                        <div>Page <?= (int) $page ?> of <?= (int) $totalPages ?> | Total <?= (int) $totalRows ?> record(s)</div>
+                        <div class="d-flex gap-2">
+                            <?php
+                            $prev = max(1, (int) $page - 1);
+                            $next = min((int) $totalPages, (int) $page + 1);
+                            ?>
+                            <a class="btn btn-sm btn-outline-secondary <?= (int) $page <= 1 ? 'disabled' : '' ?>" href="<?= (int) $page <= 1 ? '#' : htmlspecialchars($msrQuery(['page' => $prev]), ENT_QUOTES, 'UTF-8') ?>">Prev</a>
+                            <a class="btn btn-sm btn-outline-secondary <?= (int) $page >= (int) $totalPages ? 'disabled' : '' ?>" href="<?= (int) $page >= (int) $totalPages ? '#' : htmlspecialchars($msrQuery(['page' => $next]), ENT_QUOTES, 'UTF-8') ?>">Next</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 </div>
 <?php require __DIR__ . '/partials/footer.php'; ?>

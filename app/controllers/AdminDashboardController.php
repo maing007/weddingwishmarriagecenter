@@ -51,36 +51,53 @@ class AdminDashboardController extends Controller
     }
     public function membersreport()
     {
-        require_once __DIR__ . '/../models/AdminSalesReportModel.php';
+        require_once __DIR__ . '/../models/MemberSaleFeeModel.php';
 
-        $model = new AdminSalesReportModel();
+        $model = new MemberSaleFeeModel();
 
-        $search = trim((string)($_GET['search_filed'] ?? ''));
-        $tab = strtolower(trim((string)($_GET['tab'] ?? 'reg_receivable')));
-        $allowedTabs = ['reg_receivable', 'reg_received', 'rishta_receivable', 'rishta_received'];
-        if (!in_array($tab, $allowedTabs, true)) {
-            $tab = 'reg_receivable';
+        $search = trim((string) ($_GET['search_filed'] ?? ''));
+
+        $saleScope = strtolower(trim((string) ($_GET['sale_scope'] ?? 'all')));
+        $allowedScopes = ['all', MemberSaleFeeModel::TYPE_REGISTRATION, MemberSaleFeeModel::TYPE_RISHTA];
+        if (!in_array($saleScope, $allowedScopes, true)) {
+            $saleScope = 'all';
         }
 
-        $limit = (int)($_GET['limit_per_page'] ?? 10);
+        $payFilter = strtolower(trim((string) ($_GET['pay_filter'] ?? 'all')));
+        if (!in_array($payFilter, ['all', 'paid', 'unpaid'], true)) {
+            $payFilter = 'all';
+        }
+
+        $filterStaff = trim((string) ($_GET['filter_staff'] ?? ''));
+
+        $limit = (int) ($_GET['limit_per_page'] ?? 10);
         if (!in_array($limit, [1, 2, 3, 5, 10, 25, 50, 100], true)) {
             $limit = 10;
         }
 
-        $page = (int)($_GET['page'] ?? 1);
+        $page = (int) ($_GET['page'] ?? 1);
         if ($page < 1) {
             $page = 1;
         }
 
-        $totalRows = $model->getTotalRows($search, $tab);
-        $totalPages = max(1, (int)ceil($totalRows / $limit));
+        $tabCounts = $model->salesReportScopeCounts($search);
+        $totalRows = $model->salesReportTotal($search, $saleScope, $payFilter, $filterStaff);
+        $totalPages = max(1, (int) ceil($totalRows / $limit));
         if ($page > $totalPages) {
             $page = $totalPages;
         }
 
         $offset = ($page - 1) * $limit;
-        $rows = $model->getRows($search, $tab, $limit, $offset);
-        $tabCounts = $model->getTabCounts($search);
+        $rows = $model->salesReportRows($search, $saleScope, $payFilter, $filterStaff, $limit, $offset);
+        $staffFilterOptions = $model->salesReportDistinctStaffNames();
+
+        if ($saleScope === MemberSaleFeeModel::TYPE_REGISTRATION) {
+            $pageHead = 'Manage Member Sale — Registration';
+        } elseif ($saleScope === MemberSaleFeeModel::TYPE_RISHTA) {
+            $pageHead = 'Manage Member Sale — Rishta';
+        } else {
+            $pageHead = 'Manage Member Sale — ALL';
+        }
 
         require_once __DIR__ . '/../views/admin/memberssalesreport.php';
     }

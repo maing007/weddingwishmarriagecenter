@@ -404,4 +404,102 @@ class MemberSaleFeeModel
             return false;
         }
     }
+
+    /**
+     * @return array{0: string, 1: array<string, mixed>}
+     */
+    private function salesReportWhere(string $search, string $scope, string $payFilter, string $staffEq = ''): array
+    {
+        $parts = ['1=1'];
+        $params = [];
+
+        if ($scope === self::TYPE_REGISTRATION) {
+            $parts[] = "fee_type = 'registration'";
+        } elseif ($scope === self::TYPE_RISHTA) {
+            $parts[] = "fee_type = 'rishta'";
+        }
+
+        if ($payFilter === 'paid') {
+            $parts[] = "LOWER(TRIM(COALESCE(staff_payment_status, ''))) = 'paid'";
+        } elseif ($payFilter === 'unpaid') {
+            $parts[] = "LOWER(TRIM(COALESCE(staff_payment_status, ''))) <> 'paid'";
+        }
+
+        $staffEq = trim($staffEq);
+        if ($staffEq !== '') {
+            $parts[] = 'TRIM(staff_name) = :stf';
+            $params[':stf'] = $staffEq;
+        }
+
+        if (trim($search) !== '') {
+            $parts[] = '(matri_id LIKE :s OR client_name LIKE :s OR staff_name LIKE :s OR ti_name LIKE :s OR package LIKE :s OR payment_mode LIKE :s OR COALESCE(staff_payment_mode, \'\') LIKE :s)';
+            $params[':s'] = '%' . $search . '%';
+        }
+
+        return [implode(' AND ', $parts), $params];
+    }
+
+    /** Row counts per scope for tabs (search only; ignores pay filter). */
+    public function salesReportScopeCounts(string $search): array
+    {
+        return [
+            'all' => $this->salesReportTotal($search, 'all', 'all'),
+            'registration' => $this->salesReportTotal($search, self::TYPE_REGISTRATION, 'all'),
+            'rishta' => $this->salesReportTotal($search, self::TYPE_RISHTA, 'all'),
+        ];
+    }
+
+    public function salesReportTotal(string $search, string $scope, string $payFilter, string $staffEq = ''): int
+    {
+        [$w, $p] = $this->salesReportWhere($search, $scope, $payFilter, $staffEq);
+        $sql = 'SELECT COUNT(*) FROM member_sale_fees WHERE ' . $w;
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($p);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function salesReportRows(string $search, string $scope, string $payFilter, string $staffEq, int $limit, int $offset): array
+    {
+        [$w, $p] = $this->salesReportWhere($search, $scope, $payFilter, $staffEq);
+        $sql = '
+            SELECT
+                id, fee_type, activation_date, staff_name, ti_name, matri_id, client_name,
+                fee_amount, package, payment_mode, staff_payment_status, staff_payment_mode,
+                staff_paid_on, created_at
+            FROM member_sale_fees
+            WHERE ' . $w . '
+            ORDER BY activation_date DESC, id DESC
+            LIMIT :lim OFFSET :off
+        ';
+        $stmt = $this->db->prepare($sql);
+        foreach ($p as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    /** Distinct staff names for filter dropdown. */
+    public function salesReportDistinctStaffNames(): array
+    {
+        $stmt = $this->db->query("
+            SELECT DISTINCT TRIM(staff_name) AS n
+            FROM member_sale_fees
+            WHERE staff_name IS NOT NULL AND TRIM(staff_name) <> ''
+            ORDER BY n ASC
+        ");
+        $out = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $out[] = (string) $row['n'];
+        }
+
+        return $out;
+    }
 }
