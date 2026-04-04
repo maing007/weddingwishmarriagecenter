@@ -6,6 +6,34 @@
 
 $title = $pageTitle;
 $isRishta = stripos($feeColumnLabel, 'rishta') !== false;
+$planPackages = $planPackages ?? [];
+$planStaff = $planStaff ?? [];
+$planPackagesJson = [];
+foreach ($planPackages as $pp) {
+    $pid = (int) ($pp['id'] ?? 0);
+    if ($pid <= 0) {
+        continue;
+    }
+    $planPackagesJson[$pid] = [
+        'name' => (string) ($pp['name'] ?? ''),
+        'price' => (float) ($pp['price'] ?? 0),
+        'duration_days' => (int) ($pp['duration_days'] ?? 0),
+    ];
+}
+$teamOptions = [];
+foreach ($planStaff as $adm) {
+    $tl = trim((string) ($adm['team_leader'] ?? ''));
+    if ($tl !== '' && !in_array($tl, $teamOptions, true)) {
+        $teamOptions[] = $tl;
+    }
+}
+foreach ($planStaff as $adm) {
+    $n = trim((string) ($adm['name'] ?? ''));
+    if ($n !== '' && !in_array($n, $teamOptions, true)) {
+        $teamOptions[] = $n;
+    }
+}
+sort($teamOptions);
 
 $fmtMoney = static function ($raw): string {
     $n = (float) $raw;
@@ -119,6 +147,95 @@ require __DIR__ . '/partials/sidebar.php';
         pointer-events: none;
         cursor: not-allowed;
     }
+    #planAssignOverlay.custom-popup-overlay {
+        z-index: 1060;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        box-sizing: border-box;
+    }
+    .plan-assign-dialog {
+        background: #fff;
+        border-radius: 6px;
+        width: 100%;
+        max-width: min(720px, 96vw);
+        max-height: min(92vh, 900px);
+        overflow: auto;
+        box-shadow: 0 12px 40px rgba(0,0,0,.2);
+        margin: auto;
+        flex-shrink: 0;
+        align-self: center;
+    }
+    .plan-assign-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e8e8e8;
+        font-size: 17px;
+        font-weight: 600;
+        color: #2d3436;
+    }
+    .plan-assign-body { padding: 18px 20px 22px; }
+    .plan-assign-user {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+    .plan-assign-user img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 4px;
+        background: #eef2f3;
+        border: 1px solid #dde3e5;
+    }
+    .plan-assign-user .meta p { margin: 0 0 8px; font-size: 14px; color: #444; }
+    .plan-assign-user .meta strong { color: #111; }
+    .plan-assign-row {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 10px 16px;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    .plan-assign-row label { font-weight: 600; font-size: 13px; color: #333; margin: 0; }
+    .plan-assign-row input[readonly] { background: #f1f3f4; }
+    #planDetailBox {
+        display: none;
+        margin-top: 14px;
+        padding: 12px 14px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        font-size: 13px;
+        color: #444;
+        line-height: 1.5;
+    }
+    .plan-assign-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid #eee;
+    }
+    .plan-assign-actions .btn-pa-submit {
+        background: #0096c7;
+        color: #fff;
+        border: none;
+        padding: 10px 28px;
+        font-weight: 700;
+        border-radius: 4px;
+    }
+    .plan-assign-actions .btn-pa-close {
+        background: #fff;
+        border: 1px solid #ccc;
+        padding: 10px 22px;
+        border-radius: 4px;
+        color: #555;
+    }
 </style>
 
 <div class="admin-main">
@@ -190,11 +307,11 @@ require __DIR__ . '/partials/sidebar.php';
                     </div>
                 </div>
                 <div class="users-status-wrap text-end">
-                    <div class="status-pill-row">
+                    <!-- <div class="status-pill-row">
                         <button type="button" class="status-pill sp-approved" onclick="submitFeeBulkStatus('approved')">Approved</button>
                         <button type="button" class="status-pill sp-unapproved" onclick="submitFeeBulkStatus('unapproved')">Unapproved</button>
                         <button type="button" class="status-pill sp-suspended" onclick="submitFeeBulkStatus('suspended')"><i class="fa fa-user-times"></i> Suspended</button>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
@@ -255,9 +372,10 @@ require __DIR__ . '/partials/sidebar.php';
                 $tabStatus = $uid > 0 ? strtolower((string) ($r['user_status'] ?? 'unapproved')) : 'unlinked';
                 $actTs = strtotime((string) ($r['activation_date'] ?? '')) ?: 0;
                 $paySt = strtolower(trim((string) ($r['staff_payment_status'] ?? '')));
+                $isPendingPlan = (strcasecmp(trim((string) ($r['staff_payment_status'] ?? '')), 'Pending Plan') === 0);
                 $badgeClass = ($paySt === 'paid') ? 'status-approved' : 'status-unapproved';
                 $badgeIcon = ($paySt === 'paid') ? 'fa-thumbs-up' : 'fa-clock-o';
-                $badgeText = strtoupper((string) ($r['staff_payment_status'] ?? 'UNPAID'));
+                $badgeText = $isPendingPlan ? 'PENDING PLAN' : strtoupper((string) ($r['staff_payment_status'] ?? 'UNPAID'));
 
                 $photo = '';
                 if ($uid > 0) {
@@ -370,9 +488,37 @@ require __DIR__ . '/partials/sidebar.php';
                             <input type="hidden" name="user_id" value="<?= (int) $uid ?>">
                             <button class="btn-action btn-action-teal" type="submit">Email Confirmation</button>
                         </form>
-                        <?php if ($paySt === 'paid'): ?>
+                        <?php if (!$isRishta && $isPendingPlan):
+                            $locParts = array_filter([
+                                trim((string) ($r['country'] ?? '')),
+                                trim((string) ($r['state'] ?? '')),
+                                trim((string) ($r['city'] ?? '')),
+                            ]);
+                            $locDisp = $locParts !== [] ? implode(', ', $locParts) : 'N/A';
+                            $planModalPayload = [
+                                'feeId' => (int) $feeId,
+                                'userId' => (int) $uid,
+                                'name' => $displayName,
+                                'matri' => $matriShow,
+                                'email' => (string) ($r['email'] ?? ''),
+                                'phone' => trim((string) ($r['mobile_number'] ?? '')) !== '' ? (string) $r['mobile_number'] : (string) ($r['phone'] ?? ''),
+                                'location' => $locDisp,
+                                'rishta' => (float) ($r['ud_final_fee'] ?? 0),
+                                'gender' => strtolower((string) ($r['gender'] ?? '')),
+                            ];
+                            ?>
+                            <button type="button" class="btn-action btn-action-green plan-assign-open" data-plan="<?= htmlspecialchars(json_encode($planModalPayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8') ?>">Approve as Paid</button>
+                        <?php endif; ?>
+                        <?php if (!$isRishta && !$isPendingPlan && $paySt === 'paid'): ?>
                             <span class="btn-action btn-action-muted" title="This fee is already marked paid">Marked paid</span>
-                        <?php else: ?>
+                        <?php elseif (!$isRishta && !$isPendingPlan && $paySt !== 'paid'): ?>
+                            <form method="post" action="<?= BASE_URL ?>/admin/accounts/income/fee-paid-approved" class="btn-action-form" onsubmit="return confirm('Mark this fee as Paid and set linked member to Approved?');">
+                                <input type="hidden" name="fee_id" value="<?= (int) $feeId ?>">
+                                <button class="btn-action btn-action-green" type="submit">Paid as Approved</button>
+                            </form>
+                        <?php elseif ($isRishta && $paySt === 'paid'): ?>
+                            <span class="btn-action btn-action-muted" title="This fee is already marked paid">Marked paid</span>
+                        <?php elseif ($isRishta && $paySt !== 'paid'): ?>
                             <form method="post" action="<?= BASE_URL ?>/admin/accounts/income/fee-paid-approved" class="btn-action-form" onsubmit="return confirm('Mark this fee as Paid and set linked member to Approved?');">
                                 <input type="hidden" name="fee_id" value="<?= (int) $feeId ?>">
                                 <button class="btn-action btn-action-green" type="submit">Paid as Approved</button>
@@ -404,6 +550,97 @@ require __DIR__ . '/partials/sidebar.php';
         </div>
     </div>
 </div>
+
+<?php if (!$isRishta && $planPackages !== [] && $planStaff !== []): ?>
+<div id="planAssignOverlay" class="custom-popup-overlay" style="display:none;" aria-hidden="true">
+    <div class="plan-assign-dialog" role="dialog" aria-labelledby="planAssignTitle">
+        <div class="plan-assign-head">
+            <span id="planAssignTitle">Plan Assignment</span>
+            <button type="button" class="close-popup border-0 bg-transparent fs-4 lh-1" onclick="closePlanAssignModal()" aria-label="Close">&times;</button>
+        </div>
+        <form class="plan-assign-body" method="post" action="<?= BASE_URL ?>/admin/accounts/income/assign-plan" id="planAssignForm">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="fee_id" id="pa_fee_id" value="">
+            <input type="hidden" name="user_id" id="pa_user_id" value="">
+            <div class="plan-assign-user">
+                <div>
+                    <img src="" alt="" id="pa_avatar">
+                </div>
+                <div class="meta flex-grow-1">
+                    <p id="pa_line_name"><span class="fa fa-user"></span> <strong id="pa_name"></strong></p>
+                    <p><span class="fa fa-envelope"></span> <span id="pa_email"></span></p>
+                    <p><span class="fa fa-phone"></span> <span id="pa_phone"></span></p>
+                    <p><span class="fa fa-map-marker"></span> <span id="pa_loc"></span></p>
+                </div>
+            </div>
+            <div class="plan-assign-row">
+                <label for="pa_plan_id">Plan</label>
+                <select class="form-control" name="plan_id" id="pa_plan_id" required>
+                    <option value="">Select Plan</option>
+                    <?php foreach ($planPackages as $pp):
+                        $pid = (int) ($pp['id'] ?? 0);
+                        if ($pid <= 0) {
+                            continue;
+                        }
+                        $pn = htmlspecialchars((string) ($pp['name'] ?? ''), ENT_QUOTES, 'UTF-8');
+                        $pr = htmlspecialchars($fmtMoney($pp['price'] ?? 0), ENT_QUOTES, 'UTF-8');
+                        ?>
+                        <option value="<?= $pid ?>"><?= $pn ?> (PKR <?= $pr ?>)</option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="plan-assign-row">
+                <label for="pa_plan_amount">Plan Amount</label>
+                <input type="text" class="form-control" name="plan_amount" id="pa_plan_amount" value="0" readonly>
+            </div>
+            <div class="plan-assign-row">
+                <label for="pa_staff_id">Staff</label>
+                <select class="form-control" name="staff_id" id="pa_staff_id" required>
+                    <option value="">Select Staff</option>
+                    <?php foreach ($planStaff as $adm):
+                        $aid = (int) ($adm['id'] ?? 0);
+                        if ($aid <= 0) {
+                            continue;
+                        }
+                        ?>
+                        <option value="<?= $aid ?>" data-team="<?= htmlspecialchars(trim((string) ($adm['team_leader'] ?? '')), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($adm['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="plan-assign-row">
+                <label for="pa_team_label">Team</label>
+                <select class="form-control" name="team_label" id="pa_team_label" required>
+                    <option value="">Select Team</option>
+                    <?php foreach ($teamOptions as $to): ?>
+                        <option value="<?= htmlspecialchars($to, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($to, ENT_QUOTES, 'UTF-8') ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="plan-assign-row">
+                <label for="pa_rishta_fee">Final Rishta Fee</label>
+                <input type="number" class="form-control" name="rishta_fee" id="pa_rishta_fee" step="0.01" min="0" required value="0">
+            </div>
+            <div class="plan-assign-row">
+                <label for="pa_bonus_days">Bonus Days</label>
+                <input type="number" class="form-control" name="bonus_days" id="pa_bonus_days" step="1" min="0" required value="0">
+            </div>
+            <div class="plan-assign-row">
+                <label for="pa_discount">Discount</label>
+                <input type="number" class="form-control" name="discount" id="pa_discount" step="0.01" min="0" required value="0">
+            </div>
+            <div id="planDetailBox"></div>
+            <div class="plan-assign-row" style="grid-template-columns:140px 1fr; align-items:start; margin-top:14px;">
+                <label for="pa_payment_note">Description</label>
+                <textarea class="form-control" name="payment_note" id="pa_payment_note" rows="4" placeholder="Enter Payment Note"></textarea>
+            </div>
+            <div class="plan-assign-actions">
+                <button type="submit" class="btn-pa-submit">Submit</button>
+                <button type="button" class="btn-pa-close" onclick="closePlanAssignModal()">Close</button>
+            </div>
+        </form>
+    </div>
+</div>
+<?php endif; ?>
 
 <div id="feeFilterPopup" class="custom-popup-overlay" style="display:none;">
     <div class="custom-popup">
@@ -759,6 +996,112 @@ function submitFeeBulkStatus(statusValue) {
     form.submit();
 }
 
+const PLANS_MAP = <?= json_encode($planPackagesJson) ?>;
+const PA_BASE = <?= json_encode(rtrim(BASE_URL, '/')) ?>;
+const PA_DESC_PREFIX = <?= json_encode($isRishta ? 'Rishta Fee Invoice Created For ' : 'Registration Fee Invoice Created For ') ?>;
+
+function syncPaPaymentNote() {
+    const ta = document.getElementById('pa_payment_note');
+    if (!ta) return;
+    const m = window.paPlanMember || { name: '', matri: '' };
+    const staffSel = document.getElementById('pa_staff_id');
+    const teamSel = document.getElementById('pa_team_label');
+    let staff = '';
+    let team = '';
+    if (staffSel && staffSel.selectedIndex > 0) {
+        staff = (staffSel.options[staffSel.selectedIndex].textContent || '').replace(/\s+/g, ' ').trim();
+    }
+    if (teamSel && teamSel.selectedIndex > 0) {
+        team = (teamSel.options[teamSel.selectedIndex].textContent || '').replace(/\s+/g, ' ').trim();
+    }
+    ta.value = PA_DESC_PREFIX + (m.name || '') + ' - ' + (m.matri || '') + ' By Staff: ' + staff + ' Team: ' + team + '.';
+}
+
+function openPlanAssignModal(d) {
+    const ov = document.getElementById('planAssignOverlay');
+    if (!ov) return;
+    window.paPlanMember = { name: (d.name || '').trim(), matri: (d.matri || '').trim() };
+    document.getElementById('pa_fee_id').value = d.feeId;
+    document.getElementById('pa_user_id').value = d.userId;
+    document.getElementById('pa_name').textContent = d.name + ' - ' + d.matri;
+    document.getElementById('pa_email').textContent = d.email || '—';
+    document.getElementById('pa_phone').textContent = d.phone || '—';
+    document.getElementById('pa_loc').textContent = d.location || 'N/A';
+    let av = PA_BASE + '/assets/images/male.png';
+    if ((d.gender || '').indexOf('female') >= 0) {
+        av = PA_BASE + '/assets/images/female.png';
+    }
+    document.getElementById('pa_avatar').src = av;
+    document.getElementById('pa_rishta_fee').value = d.rishta != null ? d.rishta : 0;
+    document.getElementById('pa_plan_id').value = '';
+    document.getElementById('pa_discount').value = 0;
+    document.getElementById('pa_bonus_days').value = 0;
+    const staffEl = document.getElementById('pa_staff_id');
+    const teamEl = document.getElementById('pa_team_label');
+    if (staffEl) staffEl.selectedIndex = 0;
+    if (teamEl) teamEl.selectedIndex = 0;
+    refreshPlanAmount();
+    syncPaPaymentNote();
+    ov.style.display = 'flex';
+    ov.setAttribute('aria-hidden', 'false');
+}
+function closePlanAssignModal() {
+    const ov = document.getElementById('planAssignOverlay');
+    if (ov) {
+        ov.style.display = 'none';
+        ov.setAttribute('aria-hidden', 'true');
+    }
+}
+function refreshPlanAmount() {
+    const planEl = document.getElementById('pa_plan_id');
+    if (!planEl) return;
+    const id = planEl.value;
+    const amt = document.getElementById('pa_plan_amount');
+    const box = document.getElementById('planDetailBox');
+    if (!id || !PLANS_MAP[id]) {
+        amt.value = '0';
+        if (box) box.style.display = 'none';
+        return;
+    }
+    const p = PLANS_MAP[id];
+    amt.value = String(p.price);
+    if (box) {
+        box.style.display = 'block';
+        box.innerHTML = '<div class="row g-2"><div class="col-md-6"><strong>Plan Name</strong><br>' + escapeHtmlFee(p.name) + '</div>'
+            + '<div class="col-md-6"><strong>Plan Amount</strong><br>PKR ' + escapeHtmlFee(String(p.price)) + '</div>'
+            + '<div class="col-md-6"><strong>Plan Duration</strong><br>' + escapeHtmlFee(String(p.duration_days)) + ' Days</div></div>';
+    }
+    syncPaPaymentNote();
+}
+const paPlanEl = document.getElementById('pa_plan_id');
+if (paPlanEl) paPlanEl.addEventListener('change', refreshPlanAmount);
+const paStaffEl = document.getElementById('pa_staff_id');
+if (paStaffEl) {
+    paStaffEl.addEventListener('change', function () {
+        const sel = this.options[this.selectedIndex];
+        const team = sel.getAttribute('data-team') || '';
+        const teamSel = document.getElementById('pa_team_label');
+        if (team && teamSel) {
+            for (let i = 0; i < teamSel.options.length; i++) {
+                if (teamSel.options[i].value === team) {
+                    teamSel.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+        syncPaPaymentNote();
+    });
+}
+const paTeamEl = document.getElementById('pa_team_label');
+if (paTeamEl) paTeamEl.addEventListener('change', syncPaPaymentNote);
+document.querySelectorAll('.plan-assign-open').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        try {
+            openPlanAssignModal(JSON.parse(this.getAttribute('data-plan')));
+        } catch (e) {}
+    });
+});
+
 updateFeeList();
 
 window.addEventListener('click', function (e) {
@@ -772,6 +1115,8 @@ window.addEventListener('click', function (e) {
     if (vc && e.target === vc) vc.style.display = 'none';
     const teamPop = document.getElementById('dynamicTeamPopup');
     if (teamPop && e.target === teamPop) teamPop.style.display = 'none';
+    const pa = document.getElementById('planAssignOverlay');
+    if (pa && e.target === pa) closePlanAssignModal();
 });
 </script>
 
