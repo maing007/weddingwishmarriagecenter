@@ -37,7 +37,7 @@
         }
 
         window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
+            if (window.innerWidth > 991) {
                 closeSidebar();
             }
         });

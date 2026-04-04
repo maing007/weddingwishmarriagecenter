@@ -3,6 +3,7 @@ $title = "All Users";
 require __DIR__.'/partials/header.php';
 require __DIR__.'/partials/sidebar.php';
 ?>
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin-manage-members.css">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <?php
@@ -102,7 +103,7 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
                     <div class="status-pill-row">
                         <button type="button" class="status-pill sp-approved" onclick="submitBulkStatus('approved')">Approved</button>
                         <button type="button" class="status-pill sp-unapproved" onclick="submitBulkStatus('unapproved')">Unapproved</button>
-                        <button type="button" class="status-pill sp-suspended" onclick="submitBulkStatus('suspended')">Suspended</button>
+                        <button type="button" class="status-pill sp-suspended" onclick="submitBulkStatus('suspended')"><i class="fa fa-user-times"></i> Suspended</button>
                     </div>
                 </div>
             </div>
@@ -167,7 +168,14 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
                         <input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>">
                         <h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (NG<?= $u['id'] ?>)</h5>
                     </div>
-                    <div class="approved-badge status-<?= strtolower($u['status'] ?? 'approved') ?>"><?= strtoupper($u['status'] ?? 'APPROVED') ?></div>
+                    <div class="approved-badge status-<?= strtolower($u['status'] ?? 'approved') ?>">
+                        <?php if (strtolower((string)($u['status'] ?? '')) === 'approved'): ?>
+                            <i class="fa fa-thumbs-up" aria-hidden="true"></i>
+                        <?php elseif (strtolower((string)($u['status'] ?? '')) === 'suspended'): ?>
+                            <i class="fa fa-user-times" aria-hidden="true"></i>
+                        <?php endif; ?>
+                        <?= strtoupper(htmlspecialchars((string)($u['status'] ?? 'approved'))) ?>
+                    </div>
                 </div>
 
                 <!-- COUNTER ROW -->
@@ -204,17 +212,19 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
 
                 <!-- ACTION BUTTONS -->
                 <div class="action-row">
-                    <button type="button" class="btn-action dark" onclick="openCommentPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">Add Comment</button>
-                    <button type="button" class="btn-action lightblue" onclick="openViewCommentsPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">View Comments</button>
-                    <a class="btn-action blue" href="<?= BASE_URL ?>/admin/users/profile-view?id=<?= (int)$u['id'] ?>">View Profile</a>
-                    <a class="btn-action lightblue" href="<?= BASE_URL ?>/admin/users/edit-steps?id=<?= (int)$u['id'] ?>">Edit Profile</a>
-                    <a class="btn-action dark" target="_blank" href="<?= BASE_URL ?>/profile/<?= (int)$u['id'] ?>">Profile Link</a>
-                    <a class="btn-action green" target="_blank" href="<?= BASE_URL ?>/admin/users/profile-pdf-template?id=<?= (int)$u['id'] ?>">Profile PDF</a>
-                    <form method="post" action="<?= BASE_URL ?>/admin/users/send-email-confirmation">
+                    <a class="btn-action btn-action-teal" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Open Task</a>
+                    <button type="button" class="btn-action btn-action-cyan" onclick="openDynamicTeamPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">
+                        View Team</button>
+                    <button type="button" class="btn-action btn-action-teal" onclick="openCommentPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">Add Comment</button>
+                    <a class="btn-action btn-action-teal" href="<?= BASE_URL ?>/admin/users/profile-view?id=<?= (int)$u['id'] ?>">View Profile</a>
+                    <button type="button" class="btn-action btn-action-amber" onclick="openViewCommentsPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">View Comments</button>
+                    <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/users/edit-steps?id=<?= (int)$u['id'] ?>">Edit Profile</a>
+                    <a class="btn-action btn-action-cyan" target="_blank" href="<?= BASE_URL ?>/profile/<?= (int)$u['id'] ?>">Profile Link</a>
+                    <a class="btn-action btn-action-green" target="_blank" href="<?= BASE_URL ?>/admin/users/profile-pdf-template?id=<?= (int)$u['id'] ?>">Profile PDF</a>
+                    <form method="post" action="<?= BASE_URL ?>/admin/users/send-email-confirmation" class="btn-action-form">
                         <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
-                        <button class="btn-action blue" type="submit">Email Confirmation</button>
+                        <button class="btn-action btn-action-teal" type="submit">Email Confirmation</button>
                     </form>
-                    <a class="btn-action red" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Open Task</a>
                 </div>
 
             </div>
@@ -364,111 +374,23 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
         </div>
     </div>
 </div>
-<!-- STYLES -->
-<style>
-    .filter-btn{display: none !important;}
-    .admin-content{padding:14px;background:#efefef;}
-    .page-head{font-size:13px;font-weight:700;color:#535353;margin-bottom:8px;}
-    .top-controls{background:#f8f8f8;padding:14px 14px 16px;border:1px solid #d7d7d7;border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
-    .controls-row .btn{font-size:12px;padding:6px 14px;border-radius:3px;line-height:1.2;}
-    .controls-row .btn-danger{background:#ef4c5a;border-color:#ef4c5a;}
-    .controls-row .btn-info{background:#44c0df;border-color:#44c0df;}
-    .controls-row .btn-primary{background:#0e98d3;border-color:#0e98d3;}
-    .controls-row .input-group{display:flex;flex-wrap:nowrap;width:100%;}
-    .controls-row .input-group .form-control{height:34px;font-size:12px;border-color:#d8d8d8;min-width:0;flex:1 1 auto;}
-    .controls-row .input-group .btn{height:34px;}
-    .controls-row-top{margin-bottom:10px;}
-    .controls-row-mid{margin-top:2px;margin-bottom:12px;}
-    .controls-row-bottom{margin-top:4px;margin-bottom:10px;}
-    .users-top-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap;}
-    .users-search-wrap{flex:0 1 560px;max-width:560px;min-width:360px;}
-    .users-actions-wrap{flex:0 0 auto;white-space:nowrap;}
-    .users-mid-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap;}
-    .users-select-wrap{flex:0 0 auto;}
-    .users-status-wrap{flex:0 0 auto;white-space:nowrap;}
-    .users-bottom-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap;}
-    .users-show-wrap{flex:0 0 auto;}
-    .users-sort-wrap{flex:0 0 auto;white-space:nowrap;}
-    .search-clear-btn{padding:6px 10px;background:#fff;color:#777;}
-    .show-entry-wrap,.sort-wrap{display:inline-flex;align-items:center;}
-    .status-pill-row{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;}
-    .status-pill{display:inline-block;padding:5px 12px;border-radius:3px;font-size:11px;font-weight:700;color:#fff;line-height:1;border:0;cursor:pointer;}
-    .sp-approved{background:#32c766;}
-    .sp-unapproved{background:#f0bc45;color:#6f5100;}
-    .sp-suspended{background:#ed4e58;}
-    .applied-filter-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap;}
-    .applied-filter-chip{background:#eef6ff;color:#2a6cab;border:1px solid #cfe3fb;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;}
-    .clear-filter-link{font-size:11px;color:#d9534f;text-decoration:none;}
-    .clear-filter-link:hover{text-decoration:underline;}
-    .custom-tabs{border-bottom:1px solid #d7d7d7;padding-top:6px;gap:8px;display:flex;flex-wrap:wrap;margin-bottom:0;}
-    .custom-tabs .nav-link{background:#e9e9e9;border:1px solid #d9d9d9;border-bottom:0;border-radius:3px 3px 0 0;color:#333;font-size:11px;font-weight:700;padding:8px 14px;min-width:112px;text-align:center;}
-    .custom-tabs .nav-link small{display:block;font-size:10px;font-weight:600;color:#666;}
-    .custom-tabs .nav-link.active{background:#56c8ed;color:#fff;border-color:#48bde4;}
-    .custom-tabs .nav-link.active small{color:#fff;}
-    .user-card{background:#f3f3f3;border:1px solid #d9d9d9;border-radius:2px;padding:10px;margin-bottom:14px;}
-    .user-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-bottom:1px solid #e1e1e1;padding-bottom:6px;}
-    .user-left-title h5{margin:0;font-size:30px; font-size:16px;font-weight:500;color:#4e4e4e;}
-    .approved-badge{font-size:12px;font-weight:700;padding:5px 14px;border-radius:3px;color:#fff;}
-    .status-approved{background:#36c66a;}
-    .status-unapproved{background:#efc145;color:#6b4f00;}
-    .status-suspended{background:#ef4c5a;}
-    .counter-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
-    .counter-box{flex:1;min-width:120px;padding:5px 8px;color:white;text-align:center;border-radius:0;font-size:11px;}
-    .blue{background:#1399c8} .yellow{background:#efc145;color:#fff} .red{background:#d96958} .cyan{background:#45bdd2} .green{background:#2fc66f}
-    .user-main-content{display:flex;gap:12px;}
-    .profile-image-box img{width:120px;height:120px;object-fit:cover;border-radius:0;border:1px solid #ddd;}
-    .details-column{flex:1;min-width:230px;}
-    .details-grid p{display:grid;grid-template-columns:130px 12px 1fr;margin:0 0 5px;font-size:11px;color:#565656;}
-    .details-grid p strong{font-weight:600;}
-    .action-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:flex-end;}
-    .btn-action{padding:6px 12px;border:none;color:white;border-radius:2px;text-decoration:none;font-size:11px;min-width:110px;text-align:center;}
-    .lightblue{background:#54c3da} .dark{background:#34495e}
 
-.custom-popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background: rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1050;}
-.custom-popup{background:#fff;padding:20px;border-radius:8px;width:400px;max-width:90%;box-shadow:0 4px 15px rgba(0,0,0,0.2);}
-.popup-header{display:flex;justify-content: space-between;align-items:center;margin-bottom:15px;}
-.popup-header h3{margin:0;}
-.close-popup{cursor:pointer;font-size:24px;}
-.popup-body .form-group{margin-bottom:15px;}
-.popup-footer{display:flex;justify-content:flex-end;gap:10px;}
-.custom-popup-overlay{
-    position: fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background: rgba(0,0,0,0.5);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    z-index:1050;
-}
-
-.custom-popup{
-    background:#fff;
-    padding:20px;
-    border-radius:8px;
-    width:400px;
-    max-width:90%;
-}
-.custom-popup-lg{width:620px;}
-.custom-popup-xl{width:900px;}
-.comment-item{border:1px solid #e4e4e4;background:#fbfbfb;padding:10px;border-radius:4px;margin-bottom:10px;}
-.comment-meta{font-size:11px;color:#666;margin-bottom:6px;}
-@media(max-width:768px){
-    .controls-row .btn{margin-top:6px;}
-    .status-pill-row{justify-content:flex-start;width:100%;margin-top:4px;}
-    .show-entry-wrap,.sort-wrap{width:100%;justify-content:flex-start;}
-    .users-top-row,.users-mid-row,.users-bottom-row{flex-wrap:wrap;}
-    .users-search-wrap{flex:1 1 100%;max-width:100%;min-width:0;}
-    .users-actions-wrap,.users-status-wrap,.users-sort-wrap{width:100%;text-align:left;}
-    .controls-row-top,.controls-row-mid,.controls-row-bottom{margin-bottom:8px;}
-    .custom-tabs .nav-link{flex:1 1 calc(50% - 8px);}
-    .user-main-content{flex-direction:column;}
-    .profile-image-box img{width:100%;height:auto;}
-    .action-row{justify-content:flex-start;}
-}
-</style>
+<!-- DYNAMIC ASSIGN TEAM POPUP -->
+<div id="dynamicTeamPopup" class="custom-popup-overlay" style="display:none;">
+    <div class="custom-popup custom-popup-lg">
+        <div class="popup-header">
+            <h3 id="dynamicTeamPopupTitle">Dynamic assign team</h3>
+            <span class="close-popup" onclick="closeDynamicTeamPopup()">&times;</span>
+        </div>
+        <div class="popup-body">
+            <div id="dynamicTeamMeta" class="mb-3 small text-muted"></div>
+            <div id="dynamicTeamResults"></div>
+        </div>
+        <div class="popup-footer">
+            <button type="button" class="btn-cancel" onclick="closeDynamicTeamPopup()">Close</button>
+        </div>
+    </div>
+</div>
 <!-- SCRIPTS -->
 <script>
 const searchInput = document.getElementById("userSearch");
@@ -558,6 +480,55 @@ function openViewCommentsPopup(userId, userName){
 }
 function closeViewCommentsPopup(){
     document.getElementById("viewCommentsPopup").style.display = "none";
+}
+function openDynamicTeamPopup(userId, userName){
+    document.getElementById("dynamicTeamPopupTitle").innerText = "Dynamic assign team — " + userName;
+    document.getElementById("dynamicTeamMeta").innerHTML = "";
+    document.getElementById("dynamicTeamResults").innerHTML = '<div class="text-muted">Loading…</div>';
+    document.getElementById("dynamicTeamPopup").style.display = "flex";
+    const url = `<?= BASE_URL ?>/admin/users/member-dynamic-team-json?user_id=${encodeURIComponent(userId)}`;
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            const meta = document.getElementById("dynamicTeamMeta");
+            const wrap = document.getElementById("dynamicTeamResults");
+            if (!data.ok) {
+                wrap.innerHTML = '<div class="alert alert-warning mb-0">Unable to load team.</div>';
+                return;
+            }
+            let metaParts = [];
+            if (data.team_name) {
+                metaParts.push("<strong>Team</strong>: " + escapeHtml(data.team_name));
+            }
+            if (data.primary_lead_name) {
+                metaParts.push("<strong>Assigned lead</strong>: " + escapeHtml(data.primary_lead_name));
+            }
+            meta.innerHTML = metaParts.length ? metaParts.join(" &nbsp;|&nbsp; ") : "<span>Staff linked to tasks, matches, or team grouping from this profile.</span>";
+            if (!data.rows || data.rows.length === 0) {
+                wrap.innerHTML = '<div class="alert alert-warning mb-0">No assigned team staff found. Set <strong>lead</strong> on the member profile or assign tasks / matches.</div>';
+                return;
+            }
+            const rowsHtml = data.rows.map(function(row){
+                const dept = escapeHtml(row.department || "—");
+                let desig = escapeHtml(row.designation || "Staff");
+                if (row.is_primary) {
+                    desig += ' <span class="badge bg-success ms-1">Primary lead</span>';
+                }
+                const name = escapeHtml(row.name || "");
+                const contact = row.contact ? "(" + escapeHtml(row.contact) + ")" : "";
+                const off = row.official ? '<span class="badge bg-success ms-1">Official</span>' : "";
+                return `<tr><td>${dept}</td><td>${desig}</td><td>${name} ${contact} ${off}</td></tr>`;
+            }).join("");
+            wrap.innerHTML = `<div class="table-responsive"><table class="table table-sm table-striped align-middle mb-0" style="background:#fff;border:1px solid #e9ecef;border-radius:6px;">
+                <thead><tr><th>Department</th><th>Designation</th><th>Name</th></tr></thead>
+                <tbody>${rowsHtml}</tbody></table></div>`;
+        })
+        .catch(function(){
+            document.getElementById("dynamicTeamResults").innerHTML = '<div class="alert alert-danger mb-0">Unable to load team.</div>';
+        });
+}
+function closeDynamicTeamPopup(){
+    document.getElementById("dynamicTeamPopup").style.display = "none";
 }
 function escapeHtml(str){
     return (str || '').replace(/[&<>"']/g, function(m){
@@ -658,6 +629,10 @@ window.addEventListener("click", function(e){
     let popup = document.getElementById("filterPopup");
     if(e.target === popup){
         popup.style.display = "none";
+    }
+    let teamPop = document.getElementById("dynamicTeamPopup");
+    if (teamPop && e.target === teamPop) {
+        teamPop.style.display = "none";
     }
 });
 </script>

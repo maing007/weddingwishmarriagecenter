@@ -33,6 +33,12 @@ class UserDetails
             $stmt->bindValue(":$key", $value);
         }
 
-        return $stmt->execute();
+        if (!$stmt->execute()) {
+            return false;
+        }
+
+        $id = (int) $this->db->lastInsertId();
+
+        return $id > 0 ? $id : false;
     }
 }

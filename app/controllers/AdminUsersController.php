@@ -335,16 +335,25 @@ class AdminUsersController
             exit;
         }
 
+        $interaction_member = $this->model->getMemberInteractionCounts($userId);
+        if (!$interaction_member) {
+            $_SESSION['flash_error'] = 'Member not found.';
+            header('Location: ' . BASE_URL . '/admin/users');
+            exit;
+        }
+
         $titleMap = [
-            'opened' => 'Opened Profiles',
-            'deferred' => 'Deferred Profiles',
-            'declined' => 'Declined Profiles',
-            'meeting' => 'Meeting Profiles',
-            'accepted' => 'Accepted Profiles',
+            'opened' => 'Opened',
+            'deferred' => 'Deferred',
+            'declined' => 'Declined',
+            'meeting' => 'Meeting',
+            'accepted' => 'Accepted',
         ];
 
         $rows = $this->model->getInteractionDetails($userId, $action);
         $reportTitle = $titleMap[$action];
+        $interaction_action = $action;
+        $interaction_user_id = $userId;
 
         require __DIR__ . '/../views/admin/user_interactions.php';
     }
@@ -660,6 +669,21 @@ class AdminUsersController
         exit;
     }
 
+    public function memberDynamicTeamJson()
+    {
+        $userId = (int) ($_GET['user_id'] ?? 0);
+        if ($userId <= 0) {
+            header('Content-Type: application/json');
+            echo json_encode(['ok' => false, 'message' => 'Invalid user.']);
+            exit;
+        }
+
+        $data = $this->model->getMemberDynamicAssignTeam($userId);
+        header('Content-Type: application/json');
+        echo json_encode(['ok' => true] + $data);
+        exit;
+    }
+
     public function adminProfileView()
     {
         $id = (int)($_GET['id'] ?? 0);
@@ -726,6 +750,76 @@ class AdminUsersController
         exit;
     }
 
+    /**
+     * Basic-details completeness for an existing member row (edit wizard).
+     * Same required fields as add-member basic step, except password only must exist in DB.
+     */
+    private function editStepsBasicIncompleteMessage(array $user): ?string
+    {
+        if (trim((string) ($user['lead'] ?? '')) === '') {
+            return 'Please complete the Basic Details form first (lead is required).';
+        }
+        if (trim((string) ($user['gender'] ?? '')) === '') {
+            return 'Please complete the Basic Details form first (gender is required).';
+        }
+        if (trim((string) ($user['first_name'] ?? '')) === '') {
+            return 'Please complete the Basic Details form first (first name is required).';
+        }
+        $last = trim((string) ($user['second_name'] ?? ''));
+        if ($last === '') {
+            $last = trim((string) ($user['last_name'] ?? ''));
+        }
+        if ($last === '') {
+            return 'Please complete the Basic Details form first (last name is required).';
+        }
+        $email = trim((string) ($user['email'] ?? ''));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return 'Please complete the Basic Details form first (valid email is required).';
+        }
+        if (trim((string) ($user['password'] ?? '')) === '') {
+            return 'Please complete the Basic Details form first (account must have a password).';
+        }
+        if (trim((string) ($user['mobile_number'] ?? '')) === '') {
+            return 'Please complete the Basic Details form first (mobile number is required).';
+        }
+
+        return null;
+    }
+
+    /** Validate basic fields submitted from edit-steps (password optional if left blank). */
+    private function validateEditStepsSubmitBasic(array $post): ?string
+    {
+        if (trim((string) ($post['lead'] ?? '')) === '') {
+            return 'Please select a lead in Basic Details.';
+        }
+        if (trim((string) ($post['gender'] ?? '')) === '') {
+            return 'Please select gender in Basic Details.';
+        }
+        if (trim((string) ($post['first_name'] ?? '')) === '') {
+            return 'Please enter first name in Basic Details.';
+        }
+        $last = trim((string) ($post['second_name'] ?? ''));
+        if ($last === '') {
+            $last = trim((string) ($post['last_name'] ?? ''));
+        }
+        if ($last === '') {
+            return 'Please enter last name in Basic Details.';
+        }
+        $email = trim((string) ($post['email'] ?? ''));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return 'Please enter a valid email in Basic Details.';
+        }
+        $pwd = (string) ($post['password'] ?? '');
+        if (trim($pwd) !== '' && strlen($pwd) < 6) {
+            return 'Password must be at least 6 characters.';
+        }
+        if (trim((string) ($post['mobile_number'] ?? '')) === '') {
+            return 'Please enter mobile number in Basic Details.';
+        }
+
+        return null;
+    }
+
     public function editProfileSteps()
     {
         $id = (int)($_GET['id'] ?? 0);
@@ -736,6 +830,9 @@ class AdminUsersController
             exit;
         }
         $columns = $this->model->getEditableColumns();
+        $admin_details = $this->admin->get_admin_details();
+        $edit_basic_incomplete_message = $this->editStepsBasicIncompleteMessage($user);
+        $edit_basic_locked = ($edit_basic_incomplete_message !== null);
         require __DIR__ . '/../views/admin/edit_user_profile_steps.php';
     }
 
@@ -751,7 +848,20 @@ class AdminUsersController
             header('Location: ' . BASE_URL . '/admin/users');
             exit;
         }
-        $updated = $this->model->updateAllUserDetails($id, $_POST);
+        $basicErr = $this->validateEditStepsSubmitBasic($_POST);
+        if ($basicErr !== null) {
+            $_SESSION['flash_error'] = $basicErr;
+            header('Location: ' . BASE_URL . '/admin/users/edit-steps?id=' . $id);
+            exit;
+        }
+        $post = $_POST;
+        $newPwd = trim((string)($post['password'] ?? ''));
+        if ($newPwd === '') {
+            unset($post['password']);
+        } else {
+            $post['password'] = password_hash($newPwd, PASSWORD_BCRYPT);
+        }
+        $updated = $this->model->updateAllUserDetails($id, $post);
         $_SESSION['flash_' . ($updated ? 'success' : 'error')] =
             $updated ? 'Profile updated successfully.' : 'No fields updated.';
         header('Location: ' . BASE_URL . '/admin/users');

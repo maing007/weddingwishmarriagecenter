@@ -3,6 +3,7 @@ $title = "Member Followup Report";
 require __DIR__.'/partials/header.php';
 require __DIR__.'/partials/sidebar.php';
 ?>
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin-manage-members.css">
 
 <div class="admin-main">
 <div class="admin-topbar">
@@ -54,10 +55,17 @@ require __DIR__.'/partials/sidebar.php';
             <div class="user-card searchable-card" data-date="<?= strtotime($u['created_at']) ?>" data-name="<?= strtolower($u['first_name'].' '.$u['last_name']) ?>">
                 <div class="user-card-header">
                     <div class="user-left-title"><input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>"><h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (NG<?= (int)$u['id'] ?>)</h5></div>
-                    <div class="approved-badge status-<?= strtolower((string)($u['status'] ?? 'unapproved')) ?>"><?= strtoupper((string)($u['status'] ?? 'UNAPPROVED')) ?></div>
+                    <div class="approved-badge status-<?= strtolower((string)($u['status'] ?? 'unapproved')) ?>">
+                        <?php if (strtolower((string)($u['status'] ?? '')) === 'approved'): ?>
+                            <i class="fa fa-thumbs-up" aria-hidden="true"></i>
+                        <?php elseif (strtolower((string)($u['status'] ?? '')) === 'suspended'): ?>
+                            <i class="fa fa-user-times" aria-hidden="true"></i>
+                        <?php endif; ?>
+                        <?= strtoupper(htmlspecialchars((string)($u['status'] ?? 'UNAPPROVED'))) ?>
+                    </div>
                 </div>
                 <div class="user-main-content">
-                    <div class="profile-image-box"><img src="<?= BASE_URL ?>/assets/images/default-avatar.png" alt=""></div>
+                    <div class="profile-image-box"><img src="<?= BASE_URL . (!empty($u['avatar']) ? $u['avatar'] : '/assets/images/default-avatar.png') ?>" alt=""></div>
                     <div class="details-column details-grid">
                         <p><strong>Gender</strong><span>:</span> <?= htmlspecialchars($u['gender'] ?? '-') ?></p>
                         <p><strong>Mobile</strong><span>:</span> <?= htmlspecialchars($u['phone'] ?? '-') ?></p>
@@ -119,34 +127,6 @@ require __DIR__.'/partials/sidebar.php';
         <div class="popup-footer"><button type="button" class="btn-cancel" onclick="closeViewCommentsPopup()">Close</button></div>
     </div>
 </div>
-
-<style>
-    .admin-content{padding:14px;background:#efefef}.page-head{font-size:13px;font-weight:700;color:#535353;margin-bottom:8px}
-    .top-controls{background:#f8f8f8;padding:14px 14px 16px;border:1px solid #d7d7d7;border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
-    .controls-row .btn{font-size:12px;padding:6px 14px;border-radius:3px;line-height:1.2}.controls-row .btn-info{background:#44c0df;border-color:#44c0df}.controls-row .btn-primary{background:#0e98d3;border-color:#0e98d3}
-    .controls-row .input-group{display:flex;flex-wrap:nowrap;width:100%}.controls-row .input-group .form-control{height:34px;font-size:12px;border-color:#d8d8d8;min-width:0;flex:1 1 auto}.controls-row .input-group .btn{height:34px}
-    .controls-row-top{margin-bottom:10px}.controls-row-mid{margin-top:2px;margin-bottom:12px}.controls-row-bottom{margin-top:4px;margin-bottom:10px}
-    .cm-top-row,.cm-mid-row,.cm-bottom-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap}
-    .cm-search-wrap{flex:0 1 560px;max-width:560px;min-width:360px}.cm-actions-wrap,.cm-sort-wrap{flex:0 0 auto;white-space:nowrap}.cm-select-wrap,.cm-show-wrap{flex:0 0 auto}
-    .search-clear-btn{padding:6px 10px;background:#fff;color:#777}.show-entry-wrap,.sort-wrap{display:inline-flex;align-items:center}
-    .custom-tabs{border-bottom:1px solid #d7d7d7;padding-top:6px;gap:8px;display:flex;flex-wrap:wrap;margin-bottom:0}
-    .custom-tabs .nav-link{background:#e9e9e9;border:1px solid #d9d9d9;border-bottom:0;border-radius:3px 3px 0 0;color:#333;font-size:11px;font-weight:700;padding:8px 14px;min-width:112px;text-align:center}
-    .custom-tabs .nav-link small{display:block;font-size:10px;font-weight:600;color:#666}.custom-tabs .nav-link.active{background:#56c8ed;color:#fff;border-color:#48bde4}.custom-tabs .nav-link.active small{color:#fff}
-    .user-card{background:#f3f3f3;border:1px solid #d9d9d9;border-radius:2px;padding:10px;margin-bottom:14px}
-    .user-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-bottom:1px solid #e1e1e1;padding-bottom:6px}
-    .user-left-title h5{margin:0;font-size:16px;font-weight:500;color:#4e4e4e}
-    .approved-badge{font-size:12px;font-weight:700;padding:5px 14px;border-radius:3px}.status-approved{background:#e6f7ef;color:#1aa260}.status-unapproved{background:#fff4e5;color:#ff9800}
-    .user-main-content{display:flex;gap:12px}.profile-image-box img{width:120px;height:120px;object-fit:cover;border:1px solid #ddd}
-    .details-column{flex:1;min-width:230px}.details-grid p{display:grid;grid-template-columns:130px 12px 1fr;margin:0 0 5px;font-size:11px;color:#565656}
-    .action-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:flex-end}
-    .btn-action{padding:6px 12px;border:none;color:#fff;border-radius:2px;text-decoration:none;font-size:11px;min-width:110px;text-align:center}.dark{background:#34495e}.blue{background:#1399c8}.yellow-btn{background:#efc145;color:#6f5100}
-    .custom-popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:center;z-index:1050}
-    .custom-popup{background:#fff;padding:20px;border-radius:8px;width:400px;max-width:90%;box-shadow:0 4px 15px rgba(0,0,0,.2)}.custom-popup-lg{width:620px}.custom-popup-xl{width:900px}
-    .popup-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.close-popup{cursor:pointer;font-size:24px}.popup-body .form-group{margin-bottom:15px}.popup-footer{display:flex;justify-content:flex-end;gap:10px}
-    .btn-submit{background:#0e98d3;color:#fff;border:0;padding:7px 14px;border-radius:3px}.btn-cancel{background:#e4e4e4;color:#333;border:0;padding:7px 14px;border-radius:3px}
-    .comment-item{border:1px solid #e4e4e4;background:#fbfbfb;padding:10px;border-radius:4px;margin-bottom:10px}.comment-meta{font-size:11px;color:#666;margin-bottom:6px}
-    @media(max-width:991px){.cm-top-row,.cm-mid-row,.cm-bottom-row{flex-wrap:wrap}.cm-search-wrap{flex:1 1 100%;max-width:100%;min-width:0}.cm-actions-wrap,.cm-sort-wrap{width:100%;text-align:left}}
-</style>
 
 <script>
 const searchInput=document.getElementById("userSearch");const sortSelect=document.getElementById("sortUsers");const showEntries=document.getElementById("showEntries");const cards=Array.from(document.querySelectorAll(".searchable-card"));

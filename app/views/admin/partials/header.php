@@ -11,8 +11,10 @@
 
     <style>
         :root {
-            --sidebar-width: 240px;
-            --sidebar-bg: #4b5873;
+            --sidebar-width: 268px;
+            --sidebar-collapsed-width: 78px;
+            --sidebar-bg: #495469;
+            --sidebar-bg-active: #3e4759;
             --content-bg: #efefef;
             --topbar-height: 56px;
         }
@@ -20,7 +22,7 @@
         * { box-sizing: border-box; }
         body {
             margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
             background: var(--content-bg);
             color: #444;
         }
@@ -30,7 +32,11 @@
         .admin-main {
             margin-left: var(--sidebar-width);
             min-height: 100vh;
-            transition: margin-left .25s ease;
+            transition: margin-left .28s ease;
+        }
+
+        body.admin-sidebar-collapsed .admin-main {
+            margin-left: var(--sidebar-collapsed-width);
         }
 
         .admin-topbar {
@@ -52,12 +58,12 @@
 
         .mobile-menu-btn {
             display: none;
-            width: 34px;
-            height: 34px;
+            width: 40px;
+            height: 40px;
             border: 0;
-            border-radius: 4px;
+            border-radius: 6px;
             color: #fff;
-            background: #4b5873;
+            background: var(--sidebar-bg);
             margin-right: auto;
         }
 
@@ -106,7 +112,8 @@
 .nav .open > a:focus { background: none!important; }
 
         @media (max-width: 991.98px) {
-            .admin-main { margin-left: 0; }
+            .admin-main { margin-left: 0 !important; }
+            body.admin-sidebar-collapsed .admin-main { margin-left: 0 !important; }
             .mobile-menu-btn { display: inline-flex; align-items: center; justify-content: center; }
         }
     </style>

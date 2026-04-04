@@ -20,6 +20,7 @@ $na = static function ($v) {
 require __DIR__ . '/partials/header.php';
 require __DIR__ . '/partials/sidebar.php';
 ?>
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin-manage-members.css">
 
 <div class="admin-main lead-gen-report-page amch-page">
 <div class="admin-topbar">
@@ -124,109 +125,6 @@ require __DIR__ . '/partials/sidebar.php';
 </div>
 </main>
 </div>
-
-<style>
-    .amch-page .report-page-heading { font-size: 15px; font-weight: 700; color: #333; }
-    .lead-gen-report-page .admin-topbar { justify-content: space-between; padding-left: 12px; padding-right: 16px; }
-    .admin-topbar-left { display: flex; align-items: center; gap: 12px; margin-right: auto; }
-    .admin-topbar-title { font-size: 13px; font-weight: 700; color: #333; white-space: nowrap; }
-    .admin-content { padding: 14px; background: #efefef; }
-    .report-panel {
-        background: #fff;
-        border: 1px solid #d7d7d7;
-        border-radius: 4px;
-        box-shadow: 0 1px 4px rgba(0,0,0,.06);
-        padding: 14px 16px 0;
-    }
-    .report-search-wrap { max-width: 560px; width: 100%; }
-    .report-controls-top .lgr-search-group {
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        width: 100%;
-    }
-    .report-controls-top .lgr-search-input {
-        flex: 1 1 auto;
-        min-width: 0;
-        width: 1%;
-        height: 34px;
-        font-size: 12px;
-        border-color: #d8d8d8;
-    }
-    .report-controls-top .lgr-search-group > .btn {
-        height: 34px;
-        font-size: 12px;
-        padding: 6px 14px;
-        white-space: nowrap;
-    }
-    .report-controls-top .btn-primary { background: #0e98d3; border-color: #0e98d3; }
-    .lgr-clear-search { color: #777; padding: 6px 10px; }
-    .show-entry-wrap { display: inline-flex; align-items: center; font-size: 12px; }
-    .lgr-tabs {
-        border-bottom: 1px solid #d7d7d7;
-        padding-top: 6px;
-        gap: 8px;
-    }
-    .lgr-tabs .nav-link {
-        background: #e9e9e9;
-        border: 1px solid #d9d9d9;
-        border-bottom: 0;
-        border-radius: 3px 3px 0 0;
-        color: #333;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 8px 14px;
-        min-width: 112px;
-        text-align: center;
-        cursor: default;
-    }
-    .lgr-tabs .nav-link.active {
-        background: #fff;
-        color: #0e98d3;
-        border-top: 3px solid #56c8ed;
-        border-color: #d9d9d9 #d9d9d9 #fff;
-        margin-bottom: -1px;
-        padding-top: 6px;
-    }
-    .lgr-tabs .nav-link small { display: block; font-size: 10px; font-weight: 600; color: #666; }
-    .lgr-tabs .nav-link.active small { color: #0e98d3; }
-    .lgr-table-wrap { border: 1px solid #dee2e6; border-top: 0; }
-    .lgr-table { font-size: 12px; }
-    .lgr-table thead.table-dark th {
-        background-color: #4a5568 !important;
-        border-color: #3d4556;
-        color: #fff;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-    .lgr-th-sort { white-space: nowrap; }
-    .lgr-table tbody tr:nth-child(even) { background-color: #f9f9f9; }
-    .lgr-trash { font-size: 14px; text-decoration: none !important; }
-    .lgr-trash:hover { color: #a71d2a !important; }
-    .amch-pagination.pagination-sm .page-link { padding: 0.25rem 0.5rem; font-size: 12px; }
-    .amch-pagination .page-item.active .page-link {
-        background-color: #0e98d3;
-        border-color: #0e98d3;
-        color: #fff;
-    }
-    .amch-pagination .page-item:not(.active):not(.disabled) .page-link {
-        color: #0e98d3;
-        background-color: #fff;
-        border: 1px solid #c5c5c5;
-    }
-    .amch-pagination .page-item.disabled .page-link {
-        color: #888;
-        background-color: #f3f3f3;
-        border-color: #ddd;
-    }
-    .lgr-footer-bar { border-top: 1px solid #eee; }
-    @media (min-width: 768px) {
-        .lgr-footer-bar { flex-wrap: nowrap !important; }
-    }
-    @media (max-width: 991px) {
-        .report-search-wrap { max-width: 100%; }
-    }
-</style>
 
 <script>
 (function(){

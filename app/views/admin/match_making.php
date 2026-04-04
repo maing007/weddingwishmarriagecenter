@@ -3,6 +3,7 @@ $title = "Member Match - ALL";
 require __DIR__.'/partials/header.php';
 require __DIR__.'/partials/sidebar.php';
 ?>
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin-manage-members.css">
 
 <div class="admin-main">
 <div class="admin-topbar">
@@ -54,7 +55,14 @@ require __DIR__.'/partials/sidebar.php';
             <div class="user-card searchable-card" data-date="<?= strtotime($u['created_at']) ?>" data-name="<?= strtolower($u['first_name'].' '.$u['last_name']) ?>">
                 <div class="user-card-header">
                     <div class="user-left-title"><input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>"><h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (NG<?= (int)$u['id'] ?>)</h5></div>
-                    <div class="approved-badge status-<?= strtolower((string)($u['status'] ?? 'unapproved')) ?>"><?= strtoupper((string)($u['status'] ?? 'UNAPPROVED')) ?></div>
+                    <div class="approved-badge status-<?= strtolower((string)($u['status'] ?? 'unapproved')) ?>">
+                        <?php if (strtolower((string)($u['status'] ?? '')) === 'approved'): ?>
+                            <i class="fa fa-thumbs-up" aria-hidden="true"></i>
+                        <?php elseif (strtolower((string)($u['status'] ?? '')) === 'suspended'): ?>
+                            <i class="fa fa-user-times" aria-hidden="true"></i>
+                        <?php endif; ?>
+                        <?= strtoupper(htmlspecialchars((string)($u['status'] ?? 'UNAPPROVED'))) ?>
+                    </div>
                 </div>
                 <div class="counter-row">
                     <a class="counter-box blue text-decoration-none" href="<?= BASE_URL ?>/admin/users/interactions?id=<?= (int)$u['id'] ?>&action=opened">Opened (<?= (int)($u['opened_count'] ?? 0) ?>)</a>
@@ -89,15 +97,15 @@ require __DIR__.'/partials/sidebar.php';
                     </div>
                 </div>
                 <div class="action-row">
-                    <a class="btn-action blue" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Open Task</a>
-                    <a class="btn-action lightblue" href="<?= BASE_URL ?>/admin/member-evaluation?id=<?= (int)$u['id'] ?>">MEF</a>
-                    <button type="button" class="btn-action blue" onclick="openCommentPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">Add Comment</button>
-                    <button type="button" class="btn-action yellow-btn" onclick="openViewCommentsPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">View Comment</button>
-                    <a class="btn-action blue" href="<?= BASE_URL ?>/admin/users/profile-view?id=<?= (int)$u['id'] ?>">View Profile</a>
-                    <a class="btn-action lightblue" href="<?= BASE_URL ?>/admin/users/edit-steps?id=<?= (int)$u['id'] ?>">Edit Profile</a>
-                    <a class="btn-action green" target="_blank" href="<?= BASE_URL ?>/admin/users/profile-pdf-template?id=<?= (int)$u['id'] ?>">Profile (PDF)</a>
-                    <a class="btn-action lightblue" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Team List (1)</a>
-                    <form method="post" action="<?= BASE_URL ?>/admin/users/send-email-confirmation"><input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>"><button class="btn-action blue" type="submit">Confirm email</button></form>
+                    <a class="btn-action btn-action-teal" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Open Task</a>
+                    <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/member-evaluation?id=<?= (int)$u['id'] ?>">MEF</a>
+                    <button type="button" class="btn-action btn-action-teal" onclick="openCommentPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">Add Comment</button>
+                    <button type="button" class="btn-action btn-action-amber" onclick="openViewCommentsPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">View Comments</button>
+                    <a class="btn-action btn-action-teal" href="<?= BASE_URL ?>/admin/users/profile-view?id=<?= (int)$u['id'] ?>">View Profile</a>
+                    <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/users/edit-steps?id=<?= (int)$u['id'] ?>">Edit Profile</a>
+                    <a class="btn-action btn-action-green" target="_blank" href="<?= BASE_URL ?>/admin/users/profile-pdf-template?id=<?= (int)$u['id'] ?>&from=match">Profile (PDF)</a>
+                    <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Team List (1)</a>
+                    <form method="post" action="<?= BASE_URL ?>/admin/users/send-email-confirmation" class="btn-action-form"><input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>"><button class="btn-action btn-action-teal" type="submit">Email Confirmation</button></form>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -116,36 +124,6 @@ require __DIR__.'/partials/sidebar.php';
 </div>
 <div id="commentPopup" class="custom-popup-overlay" style="display:none;"><div class="custom-popup custom-popup-lg"><div class="popup-header"><h3 id="commentPopupTitle">Add Comment</h3><span class="close-popup" onclick="closeCommentPopup()">&times;</span></div><form method="POST" action="<?= BASE_URL ?>/admin/users/comment"><div class="popup-body"><input type="hidden" name="user_id" id="comment_user_id"><div class="form-group"><label>Type</label><select class="form-control" name="comment_type"><option value="general">General</option><option value="follow_up">Follow Up</option><option value="warning">Warning</option><option value="approval_note">Approval Note</option></select></div><div class="form-group"><label>Comment</label><textarea class="form-control" name="comment" rows="6" required></textarea></div></div><div class="popup-footer"><button type="submit" class="btn-submit">Save Comment</button><button type="button" class="btn-cancel" onclick="closeCommentPopup()">Cancel</button></div></form></div></div>
 <div id="viewCommentsPopup" class="custom-popup-overlay" style="display:none;"><div class="custom-popup custom-popup-xl"><div class="popup-header"><h3 id="viewCommentPopupTitle">View Comments</h3><span class="close-popup" onclick="closeViewCommentsPopup()">&times;</span></div><div class="popup-body"><input type="hidden" id="view_comment_user_id"><div class="row g-2 mb-3"><div class="col-md-4"><label>Type</label><select id="filter_comment_type" class="form-control"><option value="">All</option><option value="general">General</option><option value="follow_up">Follow Up</option><option value="warning">Warning</option><option value="approval_note">Approval Note</option></select></div><div class="col-md-4"><label>From</label><input type="date" id="filter_comment_from" class="form-control"></div><div class="col-md-4"><label>To</label><input type="date" id="filter_comment_to" class="form-control"></div></div><button type="button" class="btn btn-primary btn-sm mb-3" onclick="loadProfileComments()">Apply Filter</button><div id="commentsResults" style="max-height:380px;overflow:auto;"></div></div><div class="popup-footer"><button type="button" class="btn-cancel" onclick="closeViewCommentsPopup()">Close</button></div></div></div>
-
-<style>
-    .admin-content{padding:14px;background:#efefef}.page-head{font-size:13px;font-weight:700;color:#535353;margin-bottom:8px}
-    .top-controls{background:#f8f8f8;padding:14px 14px 16px;border:1px solid #d7d7d7;border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
-    .controls-row .btn{font-size:12px;padding:6px 14px;border-radius:3px;line-height:1.2}.controls-row .btn-info{background:#44c0df;border-color:#44c0df}.controls-row .btn-primary{background:#0e98d3;border-color:#0e98d3}
-    .controls-row .input-group{display:flex;flex-wrap:nowrap;width:100%}.controls-row .input-group .form-control{height:34px;font-size:12px;border-color:#d8d8d8;min-width:0;flex:1 1 auto}.controls-row .input-group .btn{height:34px}
-    .controls-row-top{margin-bottom:10px}.controls-row-mid{margin-top:2px;margin-bottom:12px}.controls-row-bottom{margin-top:4px;margin-bottom:10px}
-    .mm-top-row,.mm-mid-row,.mm-bottom-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap}
-    .mm-search-wrap{flex:0 1 560px;max-width:560px;min-width:360px}.mm-actions-wrap,.mm-sort-wrap{flex:0 0 auto;white-space:nowrap}.mm-select-wrap,.mm-show-wrap{flex:0 0 auto}
-    .search-clear-btn{padding:6px 10px;background:#fff;color:#777}.show-entry-wrap,.sort-wrap{display:inline-flex;align-items:center}
-    .custom-tabs{border-bottom:1px solid #d7d7d7;padding-top:6px;gap:8px;display:flex;flex-wrap:wrap;margin-bottom:0}
-    .custom-tabs .nav-link{background:#e9e9e9;border:1px solid #d9d9d9;border-bottom:0;border-radius:3px 3px 0 0;color:#333;font-size:11px;font-weight:700;padding:8px 14px;min-width:112px;text-align:center}
-    .custom-tabs .nav-link small{display:block;font-size:10px;font-weight:600;color:#666}.custom-tabs .nav-link.active{background:#56c8ed;color:#fff;border-color:#48bde4}.custom-tabs .nav-link.active small{color:#fff}
-    .user-card{background:#f3f3f3;border:1px solid #d9d9d9;border-radius:2px;padding:10px;margin-bottom:14px}
-    .user-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-bottom:1px solid #e1e1e1;padding-bottom:6px}
-    .user-left-title h5{margin:0;font-size:32px;font-size:30px;font-weight:500;color:#4e4e4e}
-    .approved-badge{font-size:18px;font-size:16px;font-weight:700;padding:5px 14px;border-radius:3px}.status-approved{background:#e6f7ef;color:#1aa260}.status-unapproved{background:#fff4e5;color:#ff9800}.status-suspended{background:#fdecec;color:#d9534f}
-    .counter-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}.counter-box{flex:1;min-width:120px;padding:5px 8px;color:#fff;text-align:center;border-radius:0;font-size:11px}
-    .blue{background:#1399c8}.yellow{background:#efc145}.red{background:#d96958}.cyan{background:#45bdd2}.green{background:#2fc66f}
-    .user-main-content{display:flex;gap:12px}.profile-image-box img{width:120px;height:120px;object-fit:cover;border:1px solid #ddd}
-    .details-column{flex:1;min-width:230px}.details-grid p{display:grid;grid-template-columns:130px 12px 1fr;margin:0 0 5px;font-size:11px;color:#565656}
-    .action-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:flex-end}
-    .btn-action{padding:6px 12px;border:none;color:#fff;border-radius:2px;text-decoration:none;font-size:11px;min-width:110px;text-align:center}.lightblue{background:#54c3da}.yellow-btn{background:#efc145;color:#6f5100}
-    .custom-popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:center;z-index:1050}
-    .custom-popup{background:#fff;padding:20px;border-radius:8px;width:400px;max-width:90%;box-shadow:0 4px 15px rgba(0,0,0,.2)}.custom-popup-lg{width:620px}.custom-popup-xl{width:900px}
-    .popup-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.close-popup{cursor:pointer;font-size:24px}.popup-body .form-group{margin-bottom:15px}.popup-footer{display:flex;justify-content:flex-end;gap:10px}
-    .btn-submit{background:#0e98d3;color:#fff;border:0;padding:7px 14px;border-radius:3px}.btn-cancel{background:#e4e4e4;color:#333;border:0;padding:7px 14px;border-radius:3px}
-    .comment-item{border:1px solid #e4e4e4;background:#fbfbfb;padding:10px;border-radius:4px;margin-bottom:10px}.comment-meta{font-size:11px;color:#666;margin-bottom:6px}
-    @media(max-width:991px){.mm-top-row,.mm-mid-row,.mm-bottom-row{flex-wrap:wrap}.mm-search-wrap{flex:1 1 100%;max-width:100%;min-width:0}.mm-actions-wrap,.mm-sort-wrap{width:100%;text-align:left}}
-</style>
 
 <script>
 const searchInput = document.getElementById("userSearch");const sortSelect = document.getElementById("sortUsers");const showEntries = document.getElementById("showEntries");const cards = Array.from(document.querySelectorAll(".searchable-card"));

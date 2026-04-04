@@ -23,11 +23,80 @@ class AdminUserDetailsController
         require __DIR__ . '/../views/admin/partials/header.php';
     }
 
+    /**
+     * Validate basic-details payload. Returns null if OK, or a human-readable error string.
+     */
+    private function validateBasicPayload(array $data): ?string
+    {
+        $lead = trim((string) ($data['lead'] ?? ''));
+        if ($lead === '') {
+            return 'Please select a lead.';
+        }
+        $gender = trim((string) ($data['gender'] ?? ''));
+        if ($gender === '') {
+            return 'Please select gender.';
+        }
+        $first = trim((string) ($data['first_name'] ?? ''));
+        if ($first === '') {
+            return 'Please enter first name.';
+        }
+        $last = trim((string) ($data['second_name'] ?? ''));
+        if ($last === '') {
+            return 'Please enter last name.';
+        }
+        $email = trim((string) ($data['email'] ?? ''));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return 'Please enter a valid email address.';
+        }
+        $password = (string) ($data['password'] ?? '');
+        if (trim($password) === '') {
+            return 'Please enter a password.';
+        }
+        if (strlen($password) < 6) {
+            return 'Password must be at least 6 characters.';
+        }
+        $mobile = trim((string) ($data['mobile_number'] ?? ''));
+        if ($mobile === '') {
+            return 'Please enter mobile number.';
+        }
+
+        return null;
+    }
+
+    /** True when basic step was saved and still passes validation (session may be stale). */
+    private function isBasicStepComplete(): bool
+    {
+        $basic = $_SESSION['user_form']['basic'] ?? null;
+        if (!is_array($basic) || $basic === []) {
+            return false;
+        }
+
+        return $this->validateBasicPayload($basic) === null;
+    }
+
+    /** Block later wizard steps until basic details are completed. */
+    private function requireBasicComplete(): void
+    {
+        if ($this->isBasicStepComplete()) {
+            return;
+        }
+        $_SESSION['flash_error'] = 'Please complete the Basic Details form first.';
+        header('Location: ' . BASE_URL . '/admin/add_user/user/basic');
+        exit;
+    }
+
     /* ===============================
        1. BASIC DETAILS SUBMIT
     =============================== */
     public function saveBasicDetails()
     {
+        $error = $this->validateBasicPayload($_POST);
+        if ($error !== null) {
+            $_SESSION['flash_error'] = $error;
+            header('Location: ' . BASE_URL . '/admin/add_user/user/basic');
+            exit;
+        }
+
         $_SESSION['user_form']['basic'] = $_POST;
 
         header('Location: ' . BASE_URL . '/admin/add_user/user/residence');
@@ -39,6 +108,7 @@ class AdminUserDetailsController
     =============================== */
     public function saveResidence()
     {
+        $this->requireBasicComplete();
         $_SESSION['user_form']['residence'] = $_POST;
 
 
@@ -51,7 +121,7 @@ class AdminUserDetailsController
     =============================== */
     public function savePhysical()
     {
-
+        $this->requireBasicComplete();
         $_SESSION['user_form']['physical'] = $_POST;
 
         header('Location: ' . BASE_URL . '/admin/add_user/user/other');
@@ -62,10 +132,8 @@ class AdminUserDetailsController
        4. OTHER INFO
     =============================== */
     public function saveOtherInfo()
-
     {
-
-
+        $this->requireBasicComplete();
         $_SESSION['user_form']['other'] = $_POST;
 
         header('Location: ' . BASE_URL . '/admin/add_user/user/partner');
@@ -77,7 +145,7 @@ class AdminUserDetailsController
     =============================== */
     public function savePartner()
     {
-
+        $this->requireBasicComplete();
         $_SESSION['user_form']['partner'] = $_POST;
 
         header('Location: ' . BASE_URL . '/admin/add_user/user/upload');
@@ -110,7 +178,7 @@ class AdminUserDetailsController
     =============================== */
     public function submitAll()
     {
-
+        $this->requireBasicComplete();
 
         $model = new UserDetails();
 
@@ -139,7 +207,13 @@ class AdminUserDetailsController
         /* ===============================
            SAVE TO DATABASE
         =============================== */
-        $model->create($data);
+        $newId = $model->create($data);
+        if ($newId) {
+            require_once __DIR__ . '/../models/MemberSaleFeeModel.php';
+            $feeModel = new MemberSaleFeeModel();
+            $feeModel->syncRegistrationSaleRowFromUserDetails((int) $newId);
+            $feeModel->syncRishtaSaleRowFromUserDetails((int) $newId);
+        }
 
         /* ===============================
            CLEAR SESSION
@@ -163,30 +237,35 @@ class AdminUserDetailsController
     // 2. Residence
     public function residenceForm()
     {
+        $this->requireBasicComplete();
         require __DIR__ . '/../views/admin/user_details_form/residence_form.php';
     }
 
     // 3. Physical
     public function physicalForm()
     {
+        $this->requireBasicComplete();
         require __DIR__ . '/../views/admin/user_details_form/physical_form.php';
     }
 
     // 4. Other
     public function otherForm()
     {
+        $this->requireBasicComplete();
         require __DIR__ . '/../views/admin/user_details_form/other_info.php';
     }
 
     // 5. Partner
     public function partnerForm()
     {
+        $this->requireBasicComplete();
         require __DIR__ . '/../views/admin/user_details_form/partner_form.php';
     }
 
     // 6. Upload
     public function uploadForm()
     {
+        $this->requireBasicComplete();
         require __DIR__ . '/../views/admin/user_details_form/upload_form.php';
     }
 }

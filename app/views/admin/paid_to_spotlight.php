@@ -3,6 +3,7 @@ $title = "Paid to Spotlight";
 require __DIR__.'/partials/header.php';
 require __DIR__.'/partials/sidebar.php';
 ?>
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin-manage-members.css">
 
 <div class="admin-main">
 <div class="admin-topbar">
@@ -98,6 +99,11 @@ require __DIR__.'/partials/sidebar.php';
                         <h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (NG<?= (int)$u['id'] ?>)</h5>
                     </div>
                     <div class="approved-badge <?= strtolower((string)($u['featured_status'] ?? 'non_featured')) === 'featured' ? 'status-featured' : 'status-nonfeatured' ?>">
+                        <?php if (strtolower((string)($u['featured_status'] ?? 'non_featured')) === 'featured'): ?>
+                            <i class="fa fa-star" aria-hidden="true"></i>
+                        <?php else: ?>
+                            <i class="fa fa-star-o" aria-hidden="true"></i>
+                        <?php endif; ?>
                         <?= strtoupper(strtolower((string)($u['featured_status'] ?? 'non_featured')) === 'featured' ? 'FEATURED' : 'NON FEATURED') ?>
                     </div>
                 </div>
@@ -129,12 +135,12 @@ require __DIR__.'/partials/sidebar.php';
                 </div>
 
                 <div class="action-row">
-                    <a class="btn-action green" target="_blank" href="<?= BASE_URL ?>/admin/users/profile-pdf-template?id=<?= (int)$u['id'] ?>">Profile PDF</a>
-                    <a class="btn-action dark" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Team List</a>
-                    <button type="button" class="btn-action dark" onclick="openCommentPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">Add Comment</button>
-                    <button type="button" class="btn-action lightblue" onclick="openViewCommentsPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">View Comment</button>
-                    <a class="btn-action blue" href="<?= BASE_URL ?>/admin/users/profile-view?id=<?= (int)$u['id'] ?>">View Profile</a>
-                    <a class="btn-action lightblue" href="<?= BASE_URL ?>/admin/users/edit-steps?id=<?= (int)$u['id'] ?>">Edit Profile</a>
+                    <a class="btn-action btn-action-teal" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Team List</a>
+                    <button type="button" class="btn-action btn-action-teal" onclick="openCommentPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">Add Comment</button>
+                    <a class="btn-action btn-action-teal" href="<?= BASE_URL ?>/admin/users/profile-view?id=<?= (int)$u['id'] ?>">View Profile</a>
+                    <button type="button" class="btn-action btn-action-amber" onclick="openViewCommentsPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">View Comment</button>
+                    <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/users/edit-steps?id=<?= (int)$u['id'] ?>">Edit Profile</a>
+                    <a class="btn-action btn-action-green" target="_blank" href="<?= BASE_URL ?>/admin/users/profile-pdf-template?id=<?= (int)$u['id'] ?>">Profile PDF</a>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -189,59 +195,6 @@ require __DIR__.'/partials/sidebar.php';
         <div class="popup-footer"><button type="button" class="btn-cancel" onclick="closeViewCommentsPopup()">Close</button></div>
     </div>
 </div>
-
-<style>
-    .admin-content{padding:14px;background:#efefef}.page-head{font-size:13px;font-weight:700;color:#535353;margin-bottom:8px}
-    .top-controls{background:#f8f8f8;padding:14px 14px 16px;border:1px solid #d7d7d7;border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
-    .controls-row-top{margin-bottom:10px}
-    .controls-row-mid{margin-top:2px;margin-bottom:12px}
-    .controls-row-bottom{margin-top:4px;margin-bottom:10px}
-    .controls-row .btn{font-size:12px;padding:6px 14px;border-radius:3px;line-height:1.2}
-    .controls-row-top .input-group{display:flex;width:100%}
-    .spotlight-top-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap}
-    .spotlight-search-wrap{flex:0 1 560px;max-width:560px;min-width:360px}
-    .spotlight-actions-wrap{flex:0 0 auto;white-space:nowrap}
-    .spotlight-mid-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap}
-    .spotlight-select-wrap{flex:0 0 auto}
-    .spotlight-feature-wrap{flex:0 0 auto;white-space:nowrap}
-    .spotlight-bottom-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap}
-    .spotlight-show-wrap{flex:0 0 auto}
-    .spotlight-sort-wrap{flex:0 0 auto;white-space:nowrap}
-    .controls-row .input-group .form-control{height:34px;font-size:12px;border-color:#d8d8d8}
-    .controls-row .input-group .btn{height:34px}
-    .search-clear-btn{padding:6px 10px;background:#fff;color:#777}
-    .show-entry-wrap,.sort-wrap{display:inline-flex;align-items:center}
-    .status-pill{display:inline-block;padding:5px 12px;border-radius:3px;font-size:11px;font-weight:700;color:#fff;line-height:1;border:0;cursor:pointer}
-    .sp-featured{background:#2fc66f}.sp-nonfeatured{background:#efc145;color:#6f5100}
-    .custom-tabs{border-bottom:1px solid #d7d7d7;padding-top:6px;gap:8px;display:flex;flex-wrap:wrap;margin-bottom:0}
-    .custom-tabs .nav-link{background:#e9e9e9;border:1px solid #d9d9d9;border-bottom:0;border-radius:3px 3px 0 0;color:#333;font-size:11px;font-weight:700;padding:8px 14px;min-width:112px;text-align:center}
-    .custom-tabs .nav-link small{display:block;font-size:10px;font-weight:600;color:#666}
-    .custom-tabs .nav-link.active{background:#56c8ed;color:#fff;border-color:#48bde4}.custom-tabs .nav-link.active small{color:#fff}
-    .user-card{background:#f3f3f3;border:1px solid #d9d9d9;border-radius:2px;padding:10px;margin-bottom:14px}
-    .user-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-bottom:1px solid #e1e1e1;padding-bottom:6px}
-    .user-left-title h5{margin:0;font-size:16px;font-weight:500;color:#4e4e4e}
-    .approved-badge{font-size:12px;font-weight:700;padding:5px 14px;border-radius:3px;color:#fff}.status-featured{background:#32c766}.status-nonfeatured{background:#efc145;color:#6f5100}
-    .counter-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}.counter-box{flex:1;min-width:120px;padding:5px 8px;color:#fff;text-align:center;border-radius:0;font-size:11px}
-    .blue{background:#1399c8}.yellow{background:#efc145}.red{background:#d96958}.cyan{background:#45bdd2}.green{background:#2fc66f}
-    .user-main-content{display:flex;gap:12px}.profile-image-box img{width:120px;height:120px;object-fit:cover;border:1px solid #ddd}
-    .details-column{flex:1;min-width:230px}.details-grid p{display:grid;grid-template-columns:130px 12px 1fr;margin:0 0 5px;font-size:11px;color:#565656}
-    .action-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:flex-end}
-    .btn-action{padding:6px 12px;border:none;color:#fff;border-radius:2px;text-decoration:none;font-size:11px;min-width:110px;text-align:center}.lightblue{background:#54c3da}.dark{background:#34495e}.blue{background:#1399c8}
-    .custom-popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:center;z-index:1050}
-    .custom-popup{background:#fff;padding:20px;border-radius:8px;width:400px;max-width:90%;box-shadow:0 4px 15px rgba(0,0,0,.2)}.custom-popup-lg{width:620px}.custom-popup-xl{width:900px}
-    .popup-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.close-popup{cursor:pointer;font-size:24px}.popup-body .form-group{margin-bottom:15px}.popup-footer{display:flex;justify-content:flex-end;gap:10px}
-    .comment-item{border:1px solid #e4e4e4;background:#fbfbfb;padding:10px;border-radius:4px;margin-bottom:10px}.comment-meta{font-size:11px;color:#666;margin-bottom:6px}
-    @media (max-width: 991px){
-        .spotlight-top-row{flex-wrap:wrap}
-        .spotlight-search-wrap{flex:1 1 100%;max-width:100%;min-width:0}
-        .spotlight-actions-wrap{width:100%;text-align:left}
-        .spotlight-mid-row{flex-wrap:wrap}
-        .spotlight-feature-wrap{width:100%;text-align:left}
-        .spotlight-bottom-row{flex-wrap:wrap}
-        .spotlight-sort-wrap{width:100%;text-align:left}
-        .controls-row-top,.controls-row-mid,.controls-row-bottom{margin-bottom:8px}
-    }
-</style>
 
 <script>
 document.getElementById("selectAllUsers").addEventListener("change", function () {

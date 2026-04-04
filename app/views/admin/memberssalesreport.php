@@ -5,7 +5,13 @@ require __DIR__ . '/partials/sidebar.php';
 ?>
 
 <style>
-	.sales-main { margin-left: 240px; min-height: 100vh; background: #efefef; }
+	.sales-main {
+		margin-left: var(--sidebar-width);
+		transition: margin-left .28s ease;
+		min-height: 100vh;
+		background: #efefef;
+	}
+	body.admin-sidebar-collapsed .sales-main { margin-left: var(--sidebar-collapsed-width); }
 	.sales-wrap { padding: 14px; }
 	.sales-title { font-size: 13px; font-weight: 700; color: #565656; margin-bottom: 10px; }
 	.sales-panel { background: #f8f8f8; border: 1px solid #d9d9d9; border-radius: 3px; padding: 12px; }
@@ -16,7 +22,10 @@ require __DIR__ . '/partials/sidebar.php';
 	.sales-tab.active small { color: #fff; }
 	.table-sm td, .table-sm th { font-size: 12px; }
 	.pagination-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 10px; flex-wrap: wrap; }
-	@media (max-width: 991.98px) { .sales-main { margin-left: 0; } }
+	@media (max-width: 991.98px) {
+		.sales-main { margin-left: 0 !important; }
+		body.admin-sidebar-collapsed .sales-main { margin-left: 0 !important; }
+	}
 </style>
 
 <div class="sales-main">

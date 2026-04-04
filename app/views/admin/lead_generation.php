@@ -35,6 +35,7 @@ $headSuffix = $tabLabels[$tab] ?? 'ALL';
 require __DIR__ . '/partials/header.php';
 require __DIR__ . '/partials/sidebar.php';
 ?>
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin-manage-members.css">
 
 <div class="admin-main lead-gen-page">
 <div class="admin-topbar">
@@ -73,7 +74,7 @@ require __DIR__ . '/partials/sidebar.php';
                 </div>
                 <div class="mm-actions-wrap text-end lg-actions-top">
                     <a href="<?= BASE_URL ?>/admin/lead-generation/add" class="btn btn-danger text-white btn-sm lg-btn-add"><i class="fa fa-plus"></i> Add New</a>
-                    <button class="btn btn-info text-white btn-sm" type="button" onclick="openFilter1Popup()"><i class="bi bi-funnel"></i> Filter1</button>
+                    <button class="btn btn-primary text-white btn-sm" type="button" onclick="openFilter1Popup()"><i class="bi bi-funnel"></i> Filter1</button>
                     <button class="btn btn-info text-white btn-sm" type="button" onclick="openFilterPopup()"><i class="bi bi-funnel-fill"></i> Filter</button>
                 </div>
             </div>
@@ -154,10 +155,10 @@ require __DIR__ . '/partials/sidebar.php';
                     </div>
                 </div>
                 <div class="action-row">
-                    <button type="button" class="btn-action blue" onclick="openLeadCommentPopup(<?= (int) $lead['id'] ?>, '<?= htmlspecialchars($lead['full_name'] ?? '', ENT_QUOTES) ?>')">Add Comment</button>
-                    <button type="button" class="btn-action yellow-btn" onclick="openLeadViewCommentsPopup(<?= (int) $lead['id'] ?>, '<?= htmlspecialchars($lead['full_name'] ?? '', ENT_QUOTES) ?>')">View Comment</button>
-                    <a class="btn-action lightblue" href="<?= BASE_URL ?>/admin/lead-generation/edit?id=<?= (int) $lead['id'] ?>">Edit Lead</a>
-                    <a class="btn-action darkblue" href="<?= BASE_URL ?>/admin/lead-generation/task?lead_id=<?= (int) $lead['id'] ?>">Open Task</a>
+                    <button type="button" class="btn-action btn-action-teal" onclick="openLeadCommentPopup(<?= (int) $lead['id'] ?>, '<?= htmlspecialchars($lead['full_name'] ?? '', ENT_QUOTES) ?>')">Add Comment</button>
+                    <button type="button" class="btn-action btn-action-amber" onclick="openLeadViewCommentsPopup(<?= (int) $lead['id'] ?>, '<?= htmlspecialchars($lead['full_name'] ?? '', ENT_QUOTES) ?>')">View Comments</button>
+                    <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/lead-generation/edit?id=<?= (int) $lead['id'] ?>">Edit Lead</a>
+                    <a class="btn-action btn-action-teal" href="<?= BASE_URL ?>/admin/lead-generation/task?lead_id=<?= (int) $lead['id'] ?>">Open Task</a>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -197,47 +198,6 @@ require __DIR__ . '/partials/sidebar.php';
 
 <div id="commentPopup" class="custom-popup-overlay" style="display:none;"><div class="custom-popup custom-popup-lg"><div class="popup-header"><h3 id="commentPopupTitle">Add Comment</h3><span class="close-popup" onclick="closeLeadCommentPopup()">&times;</span></div><form method="POST" action="<?= BASE_URL ?>/admin/lead-generation/comment"><div class="popup-body"><input type="hidden" name="lead_id" id="comment_lead_id"><div class="form-group"><label>Type</label><select class="form-control" name="comment_type"><option value="general">General</option><option value="follow_up">Follow Up</option><option value="warning">Warning</option><option value="approval_note">Approval Note</option></select></div><div class="form-group"><label>Comment</label><textarea class="form-control" name="comment" rows="6" required></textarea></div></div><div class="popup-footer"><button type="submit" class="btn-submit">Save Comment</button><button type="button" class="btn-cancel" onclick="closeLeadCommentPopup()">Cancel</button></div></form></div></div>
 <div id="viewCommentsPopup" class="custom-popup-overlay" style="display:none;"><div class="custom-popup custom-popup-xl"><div class="popup-header"><h3 id="viewCommentPopupTitle">View Comments</h3><span class="close-popup" onclick="closeLeadViewCommentsPopup()">&times;</span></div><div class="popup-body"><input type="hidden" id="view_comment_lead_id"><div class="row g-2 mb-3"><div class="col-md-4"><label>Type</label><select id="filter_comment_type" class="form-control"><option value="">All</option><option value="general">General</option><option value="follow_up">Follow Up</option><option value="warning">Warning</option><option value="approval_note">Approval Note</option></select></div><div class="col-md-4"><label>From</label><input type="date" id="filter_comment_from" class="form-control"></div><div class="col-md-4"><label>To</label><input type="date" id="filter_comment_to" class="form-control"></div></div><button type="button" class="btn btn-primary btn-sm mb-3" onclick="loadLeadComments()">Apply Filter</button><div id="commentsResults" style="max-height:380px;overflow:auto;"></div></div><div class="popup-footer"><button type="button" class="btn-cancel" onclick="closeLeadViewCommentsPopup()">Close</button></div></div></div>
-
-<style>
-    .lead-gen-page .admin-topbar { justify-content: space-between; padding-left: 12px; padding-right: 16px; }
-    .admin-topbar-left { display: flex; align-items: center; gap: 12px; margin-right: auto; }
-    .admin-topbar-title { font-size: 13px; font-weight: 700; color: #333; white-space: nowrap; }
-    .admin-content{padding:14px;background:#efefef}.page-head{font-size:13px;font-weight:700;color:#535353;margin-bottom:8px}
-    .top-controls{background:#f8f8f8;padding:14px 14px 16px;border:1px solid #d7d7d7;border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
-    .controls-row .btn{font-size:12px;padding:6px 14px;border-radius:3px;line-height:1.2}.controls-row .btn-info{background:#44c0df;border-color:#44c0df}.controls-row .btn-primary{background:#0e98d3;border-color:#0e98d3}
-    .controls-row .input-group{display:flex;flex-wrap:nowrap;width:100%}.controls-row .input-group .form-control{height:34px;font-size:12px;border-color:#d8d8d8;min-width:0;flex:1 1 auto}.controls-row .input-group .btn{height:34px}
-    .controls-row-top{margin-bottom:10px}.controls-row-mid{margin-top:2px;margin-bottom:12px}.controls-row-bottom{margin-top:4px;margin-bottom:10px}
-    .mm-top-row,.mm-mid-row,.mm-bottom-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap}
-    .lg-mid-row{justify-content:flex-start;gap:18px;flex-wrap:wrap}
-    .mm-search-wrap{flex:0 1 560px;max-width:560px;min-width:360px}.mm-actions-wrap,.mm-sort-wrap{flex:0 0 auto;white-space:nowrap}.mm-select-wrap,.mm-show-wrap{flex:0 0 auto}
-    .lg-actions-top .btn{margin-left:6px}
-    .lg-btn-add{font-weight:600}
-    .search-clear-btn{padding:6px 10px;background:#fff;color:#777}.show-entry-wrap,.sort-wrap{display:inline-flex;align-items:center}
-    .lg-bulk-box{border:1px solid #c8c8c8;padding:8px 14px;border-radius:3px;background:#fff;display:inline-flex;align-items:center}
-    .btn-change-interest{background:#f0ad4e;border:1px solid #eea236;color:#fff;font-weight:600}
-    .btn-change-interest:hover{background:#ec971f;color:#fff}
-    .custom-tabs{border-bottom:1px solid #d7d7d7;padding-top:6px;gap:8px;display:flex;flex-wrap:wrap;margin-bottom:0}
-    .custom-tabs .nav-link{background:#e9e9e9;border:1px solid #d9d9d9;border-bottom:0;border-radius:3px 3px 0 0;color:#333;font-size:11px;font-weight:700;padding:8px 14px;min-width:112px;text-align:center}
-    .custom-tabs .nav-link small{display:block;font-size:10px;font-weight:600;color:#666}.custom-tabs .nav-link.active{background:#56c8ed;color:#fff;border-color:#48bde4}.custom-tabs .nav-link.active small{color:#fff}
-    .lead-card{background:#fff;border:1px solid #d9d9d9;border-radius:4px;padding:12px 14px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-    .lead-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:1px solid #e8e8e8;padding-bottom:8px}
-    .lead-left-title{display:flex;align-items:center;gap:12px}
-    .lead-left-title .lead-checkbox{width:18px;height:18px;accent-color:#0e98d3;cursor:pointer}
-    .lead-left-title h5{margin:0;font-size:22px;font-weight:500;color:#4e4e4e}
-    .lead-three-col{display:grid;grid-template-columns:1fr 1fr;gap:28px}
-    @media(max-width:991px){.lead-three-col{grid-template-columns:1fr}}
-    .lg-col-left .details-grid p{grid-template-columns:130px 12px 1fr}
-    .details-column{flex:1;min-width:200px}.details-grid p{display:grid;grid-template-columns:130px 12px 1fr;margin:0 0 5px;font-size:11px;color:#565656}
-    .action-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;justify-content:flex-end}
-    .btn-action{padding:6px 12px;border:none;color:#fff;border-radius:2px;text-decoration:none;font-size:11px;min-width:110px;text-align:center;cursor:pointer}.lightblue{background:#54c3da}.yellow-btn{background:#efc145;color:#6f5100}.darkblue{background:#2c6fad}
-    .btn-action.blue{background:#1399c8}
-    .custom-popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:center;z-index:1050}
-    .custom-popup{background:#fff;padding:20px;border-radius:8px;width:400px;max-width:90%;box-shadow:0 4px 15px rgba(0,0,0,.2)}.custom-popup-lg{width:620px}.custom-popup-xl{width:900px}
-    .popup-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.close-popup{cursor:pointer;font-size:24px}.popup-body .form-group{margin-bottom:15px}.popup-footer{display:flex;justify-content:flex-end;gap:10px}
-    .btn-submit{background:#0e98d3;color:#fff;border:0;padding:7px 14px;border-radius:3px}.btn-cancel{background:#e4e4e4;color:#333;border:0;padding:7px 14px;border-radius:3px}
-    .comment-item{border:1px solid #e4e4e4;background:#fbfbfb;padding:10px;border-radius:4px;margin-bottom:10px}.comment-meta{font-size:11px;color:#666;margin-bottom:6px}
-    @media(max-width:991px){.mm-top-row,.mm-mid-row,.mm-bottom-row{flex-wrap:wrap}.mm-search-wrap{flex:1 1 100%;max-width:100%;min-width:0}.mm-actions-wrap,.mm-sort-wrap{width:100%;text-align:left}}
-</style>
 
 <script>
 const searchInput=document.getElementById("leadSearch");const sortSelect=document.getElementById("sortLeads");const showEntries=document.getElementById("showEntries");let advFilterState={interest:"",team:"",importance:"",country:""};

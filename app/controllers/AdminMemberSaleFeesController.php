@@ -32,18 +32,44 @@ class AdminMemberSaleFeesController
     public function registrationFee(): void
     {
         $feeType = MemberSaleFeeModel::TYPE_REGISTRATION;
-        $pageTitle = 'Manage Member Sale - ALL';
+        $pageTitle = 'Manage Registration Fee — ALL';
+        $pageHead = 'Manage Registration Fee — ALL';
         $feeColumnLabel = 'Registration Fee';
-        $rows = $this->model->allByType($feeType);
-        require __DIR__ . '/../views/admin/payment_fee_report.php';
+        $rows = $this->model->allByTypeForIncomeUi($feeType);
+        require __DIR__ . '/../views/admin/income_fee_members.php';
     }
 
     public function rishtaFee(): void
     {
         $feeType = MemberSaleFeeModel::TYPE_RISHTA;
-        $pageTitle = 'Manage Rishta Fee - ALL';
+        $pageTitle = 'Manage Rishta Fee — ALL';
+        $pageHead = 'Manage Rishta Fee — ALL';
         $feeColumnLabel = 'Rishta Fee';
-        $rows = $this->model->allByType($feeType);
-        require __DIR__ . '/../views/admin/payment_fee_report.php';
+        $rows = $this->model->allByTypeForIncomeUi($feeType);
+        require __DIR__ . '/../views/admin/income_fee_members.php';
+    }
+
+    public function feePaidApproved(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/admin/accounts/income/registration-fee');
+            exit;
+        }
+        $feeId = (int) ($_POST['fee_id'] ?? 0);
+        $row = $feeId > 0 ? $this->model->findById($feeId) : null;
+        if (!$row) {
+            $_SESSION['flash_error'] = 'Fee record not found.';
+            header('Location: ' . BASE_URL . '/admin/accounts/income/registration-fee');
+            exit;
+        }
+        $ok = $this->model->markFeePaidAndApproveMember($feeId);
+        $_SESSION['flash_' . ($ok ? 'success' : 'error')] = $ok
+            ? 'Marked as paid and member approved (when profile is linked).'
+            : 'Could not update fee / member. Try again.';
+        $dest = (($row['fee_type'] ?? '') === MemberSaleFeeModel::TYPE_RISHTA)
+            ? '/admin/accounts/income/rishta-fee'
+            : '/admin/accounts/income/registration-fee';
+        header('Location: ' . BASE_URL . $dest);
+        exit;
     }
 }

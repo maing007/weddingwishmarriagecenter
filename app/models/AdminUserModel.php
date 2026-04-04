@@ -405,6 +405,49 @@ class AdminUserModel
         return $stmt->execute($params);
     }
 
+    public function getMemberInteractionCounts(int $userId): ?array
+    {
+        $stmt = $this->db->prepare("
+            SELECT
+                id,
+                first_name,
+                second_name AS last_name,
+                email,
+                (
+                    SELECT COALESCE(SUM(ma.opened_count), 0)
+                    FROM member_assignments ma
+                    WHERE ma.assigned_to = user_details.id
+                ) AS opened_count,
+                (
+                    SELECT COUNT(*)
+                    FROM member_assignments ma
+                    WHERE ma.assigned_to = user_details.id AND LOWER(COALESCE(ma.status, '')) = 'pending'
+                ) AS deferred_count,
+                (
+                    SELECT COUNT(*)
+                    FROM member_assignments ma
+                    WHERE ma.assigned_to = user_details.id AND LOWER(COALESCE(ma.status, '')) = 'declined'
+                ) AS declined_count,
+                (
+                    SELECT COUNT(*)
+                    FROM member_assignments ma
+                    WHERE ma.assigned_to = user_details.id AND LOWER(COALESCE(ma.status, '')) = 'meeting'
+                ) AS meeting_count,
+                (
+                    SELECT COUNT(*)
+                    FROM member_assignments ma
+                    WHERE ma.assigned_to = user_details.id AND LOWER(COALESCE(ma.status, '')) = 'accepted'
+                ) AS accepted_count
+            FROM user_details
+            WHERE id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $userId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
+
     public function getInteractionDetails(int $assignedTo, string $action): array
     {
         $action = strtolower(trim($action));
@@ -568,8 +611,14 @@ class AdminUserModel
             if (!array_key_exists($col, $input)) {
                 continue;
             }
+            $val = $input[$col];
+            if (is_array($val)) {
+                $val = json_encode(array_values($val));
+            } elseif ($val === '' || $val === null) {
+                $val = null;
+            }
             $setParts[] = "`$col` = :$col";
-            $params[":$col"] = $input[$col] === '' ? null : $input[$col];
+            $params[":$col"] = $val;
         }
 
         if (empty($setParts)) {
@@ -578,7 +627,15 @@ class AdminUserModel
 
         $sql = "UPDATE user_details SET " . implode(', ', $setParts) . " WHERE id = :id";
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute($params);
+        $ok = $stmt->execute($params);
+        if ($ok) {
+            require_once __DIR__ . '/MemberSaleFeeModel.php';
+            $feeModel = new MemberSaleFeeModel();
+            $feeModel->syncRegistrationSaleRowFromUserDetails($id);
+            $feeModel->syncRishtaSaleRowFromUserDetails($id);
+        }
+
+        return $ok;
     }
 
     private function distinctValues(string $table, string $column): array
@@ -794,6 +851,138 @@ class AdminUserModel
             ':admin_id' => $adminId,
             ':answers' => $json,
         ]);
+    }
+
+    /**
+     * Staff tied to a member: assigned lead (user_details.lead), their department/team_leader peers,
+     * admins assigned on open tasks, and admins who created member_assignments for this member.
+     */
+    public function getMemberDynamicAssignTeam(int $userId): array
+    {
+        $ud = $this->getUserDetailsById($userId);
+        if (!$ud) {
+            return ['team_name' => '', 'primary_admin_id' => 0, 'primary_lead_name' => '', 'rows' => []];
+        }
+
+        $leadRaw = $ud['lead'] ?? null;
+        $primaryId = 0;
+        if ($leadRaw !== null && $leadRaw !== '') {
+            $leadStr = trim((string) $leadRaw);
+            if ($leadStr !== '' && ctype_digit($leadStr)) {
+                $primaryId = (int) $leadStr;
+            } elseif ($leadStr !== '') {
+                $stmt = $this->db->prepare('SELECT id FROM admin_users WHERE name = ? OR email = ? LIMIT 1');
+                $stmt->execute([$leadStr, $leadStr]);
+                $r = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($r) {
+                    $primaryId = (int) $r['id'];
+                }
+            }
+        }
+
+        $byId = [];
+        $addAdminRow = function (array $au) use (&$byId, $primaryId): void {
+            $id = (int) ($au['id'] ?? 0);
+            if ($id <= 0) {
+                return;
+            }
+            $designation = trim((string) ($au['role'] ?? ''));
+            if ($designation === '') {
+                $designation = 'Staff';
+            }
+            $byId[$id] = [
+                'admin_id' => $id,
+                'department' => (string) ($au['department'] ?? ''),
+                'designation' => $designation,
+                'name' => (string) ($au['name'] ?? ''),
+                'contact' => trim((string) ($au['email'] ?? '')),
+                'official' => strtolower((string) ($au['status'] ?? '')) === 'approved',
+                'is_primary' => $primaryId > 0 && $id === $primaryId,
+            ];
+        };
+
+        $primary = null;
+        if ($primaryId > 0) {
+            $stmt = $this->db->prepare('SELECT * FROM admin_users WHERE id = ? LIMIT 1');
+            $stmt->execute([$primaryId]);
+            $primary = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        }
+
+        if ($primary) {
+            $dept = trim((string) ($primary['department'] ?? ''));
+            $tl = trim((string) ($primary['team_leader'] ?? ''));
+            $sql = "SELECT * FROM admin_users au
+                WHERE LOWER(COALESCE(au.status, '')) = 'approved'
+                AND (
+                    au.id = :pid
+                    OR (:dept <> '' AND au.department = :dept2)
+                    OR (:tl <> '' AND au.team_leader = :tl2)
+                )";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':pid' => $primaryId,
+                ':dept' => $dept,
+                ':dept2' => $dept,
+                ':tl' => $tl,
+                ':tl2' => $tl,
+            ]);
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                $addAdminRow($row);
+            }
+        }
+
+        $stmt = $this->db->prepare(
+            'SELECT DISTINCT au.* FROM admin_tasks t
+            INNER JOIN admin_users au ON au.id = t.assigned_admin_id
+            WHERE t.user_id = :uid AND t.assigned_admin_id IS NOT NULL'
+        );
+        $stmt->execute([':uid' => $userId]);
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $addAdminRow($row);
+        }
+
+        $stmt = $this->db->prepare(
+            'SELECT DISTINCT au.* FROM member_assignments ma
+            INNER JOIN admin_users au ON au.id = ma.assigned_by
+            WHERE ma.assigned_to = :uid AND ma.assigned_by IS NOT NULL'
+        );
+        $stmt->execute([':uid' => $userId]);
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $addAdminRow($row);
+        }
+
+        $teamName = '';
+        if ($primary) {
+            $teamName = trim((string) ($primary['team_leader'] ?? ''));
+            if ($teamName === '') {
+                $teamName = trim((string) ($primary['name'] ?? ''));
+            }
+            if ($teamName === '') {
+                $teamName = trim((string) ($primary['department'] ?? ''));
+            }
+        }
+
+        $rows = array_values($byId);
+        usort($rows, static function (array $a, array $b): int {
+            if (($a['is_primary'] ?? false) !== ($b['is_primary'] ?? false)) {
+                return ($a['is_primary'] ?? false) ? -1 : 1;
+            }
+            return strcasecmp($a['name'] ?? '', $b['name'] ?? '');
+        });
+
+        if ($teamName === '' && $rows !== []) {
+            $deps = array_values(array_unique(array_filter(array_map(static function ($r) {
+                return trim((string) ($r['department'] ?? ''));
+            }, $rows))));
+            $teamName = count($deps) === 1 ? $deps[0] : 'Assigned staff';
+        }
+
+        return [
+            'team_name' => $teamName,
+            'primary_admin_id' => $primaryId,
+            'primary_lead_name' => $primary ? (string) ($primary['name'] ?? '') : '',
+            'rows' => $rows,
+        ];
     }
 
     public function acceptedMatches(): array

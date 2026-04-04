@@ -5,15 +5,34 @@ require __DIR__.'/partials/sidebar.php';
 ?>
 <style>
     .admin-page {
-        padding-top: 10px;
+        padding-top: 12px;
         padding-bottom: 18px;
     }
 
-    .dashboard-title {
+    .admin-dashboard-topbar {
+        justify-content: flex-start;
+        padding: 0 18px;
+    }
+
+    .admin-dashboard-topbar .mobile-menu-btn {
+        margin-right: 14px;
+        flex-shrink: 0;
+    }
+
+    .admin-dashboard-topbar .admin-topbar-title {
         font-size: 13px;
-        font-weight: 700;
+        font-weight: 600;
         color: #565656;
-        margin: 4px 0 12px;
+        line-height: 1.5;
+    }
+
+    .admin-dashboard-topbar .admin-profile {
+        margin-left: auto;
+    }
+
+    .admin-dashboard-topbar .admin-profile-box {
+        font-size: 13px;
+        line-height: 1.5;
     }
 
     .stats-row { --bs-gutter-x: 12px; --bs-gutter-y: 12px; }
@@ -102,19 +121,23 @@ require __DIR__.'/partials/sidebar.php';
         font-weight: 600;
         color: #5e5e5e;
         border-bottom: 1px solid #e2e2e2;
-        font-size: 11px;
+        font-size: 12px;
         text-transform: none;
         white-space: nowrap;
-        padding: 8px;
+        padding: 8px 10px;
     }
     .dashboard-table td {
-        color: #6c6c6c;
-        font-size: 11px;
+        color: #444;
+        font-size: 12px;
+        line-height: 1.5;
         border-top: 1px solid #efefef;
         vertical-align: top;
-        padding: 7px 8px;
+        padding: 8px 10px;
     }
-    .cell-sub { display: block; color: #9d9d9d; font-size: 10px; line-height: 1.25; }
+    .dashboard-table tbody tr:nth-child(even) {
+        background: #fafafa;
+    }
+    .cell-sub { display: block; color: #9d9d9d; font-size: 11px; line-height: 1.25; }
     .text-nowrap { white-space: nowrap; }
 
     @media (max-width: 991.98px) {
@@ -162,10 +185,12 @@ require __DIR__.'/partials/sidebar.php';
 ?>
 
 <div class="admin-main">
-    <div class="admin-topbar">
+    <div class="admin-topbar admin-dashboard-topbar">
         <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Open menu">
             <i class="fa fa-bars"></i>
         </button>
+
+        <span class="admin-topbar-title">Dashboard</span>
 
         <div class="admin-profile" id="adminProfileTrigger">
             <div class="admin-profile-box">
@@ -181,7 +206,6 @@ require __DIR__.'/partials/sidebar.php';
     </div>
 
     <main class="admin-page">
-    <div class="dashboard-title">Dashboard</div>
 
     <div class="row stats-row">
         <div class="col-md-3 col-sm-6">

@@ -3,6 +3,7 @@ $title = "Manage Accepted Member - ALL";
 require __DIR__.'/partials/header.php';
 require __DIR__.'/partials/sidebar.php';
 ?>
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin-manage-members.css">
 
 <div class="admin-main">
 <div class="admin-topbar">
@@ -72,24 +73,6 @@ require __DIR__.'/partials/sidebar.php';
 </div>
 </main>
 </div>
-
-<style>
-.admin-content{padding:14px;background:#efefef}.page-head{font-size:13px;font-weight:700;color:#535353;margin-bottom:8px}
-.top-controls{background:#f8f8f8;padding:14px 14px 16px;border:1px solid #d7d7d7;border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
-.controls-row .btn{font-size:12px;padding:6px 14px;border-radius:3px;line-height:1.2}.controls-row .btn-primary{background:#0e98d3;border-color:#0e98d3}
-.controls-row .input-group{display:flex;flex-wrap:nowrap;width:100%}.controls-row .input-group .form-control{height:34px;font-size:12px;border-color:#d8d8d8;min-width:0;flex:1 1 auto}.controls-row .input-group .btn{height:34px}
-.am-top-row,.am-bottom-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap}
-.am-search-wrap{flex:0 1 560px;max-width:560px;min-width:360px}.am-show-wrap{flex:0 0 auto}
-.search-clear-btn{padding:6px 10px;background:#fff;color:#777}.show-entry-wrap{display:inline-flex;align-items:center}
-.custom-tabs{border-bottom:1px solid #d7d7d7;padding-top:6px;gap:8px;display:flex;flex-wrap:wrap;margin-bottom:0}
-.custom-tabs .nav-link{background:#56c8ed;border:1px solid #48bde4;border-bottom:0;border-radius:3px 3px 0 0;color:#fff;font-size:11px;font-weight:700;padding:8px 14px;min-width:112px;text-align:center}
-.custom-tabs .nav-link small{display:block;font-size:10px;font-weight:600;color:#fff}
-.table-wrap{background:#fff;border:1px solid #d7d7d7}
-#acceptedTable thead th{background:#7f7f7f;color:#fff;font-size:12px;font-weight:600;padding:8px}
-#acceptedTable tbody td{font-size:12px;color:#5a5a5a;padding:8px;background:#f7f7f7}
-#acceptedTable tbody tr:nth-child(even) td{background:#f1f1f1}
-@media(max-width:991px){.am-top-row,.am-bottom-row{flex-wrap:wrap}.am-search-wrap{flex:1 1 100%;max-width:100%;min-width:0}}
-</style>
 
 <script>
 const rowSearch=document.getElementById('rowSearch');const showEntries=document.getElementById('showEntries');const rows=Array.from(document.querySelectorAll('.searchable-row'));

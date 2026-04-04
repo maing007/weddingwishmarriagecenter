@@ -66,15 +66,15 @@ $renderOptions = static function (array $items, string $selectedValue, string $p
                 </div>
                 <div class="form-row">
                     <label>Department Filter</label>
-                    <div class="field"><select name="department_filter" class="form-select"><?php $renderOptions($options['department'] ?? [], (string)($filters['department_filter'] ?? ''), 'Select Department Filter'); ?></select></div>
+                    <div class="field"><select name="department_filter" class="form-select form-control"><?php $renderOptions($options['department'] ?? [], (string)($filters['department_filter'] ?? ''), 'Select Department Filter'); ?></select></div>
                 </div>
                 <div class="form-row">
                     <label>Team Leader Filter</label>
-                    <div class="field"><select name="team_leader_filter" class="form-select"><?php $renderOptions($options['team_leader'] ?? [], (string)($filters['team_leader_filter'] ?? ''), 'Select Team Leader Filter'); ?></select></div>
+                    <div class="field"><select name="team_leader_filter" class="form-select form-control"><?php $renderOptions($options['team_leader'] ?? [], (string)($filters['team_leader_filter'] ?? ''), 'Select Team Leader Filter'); ?></select></div>
                 </div>
                 <div class="form-row">
                     <label>Added By Filter</label>
-                    <div class="field"><select name="added_by_filter" class="form-select"><?php $renderOptions($options['added_by'] ?? [], (string)($filters['added_by_filter'] ?? ''), 'Select Added By Filter'); ?></select></div>
+                    <div class="field"><select name="added_by_filter" class="form-select form-control"><?php $renderOptions($options['added_by'] ?? [], (string)($filters['added_by_filter'] ?? ''), 'Select Added By Filter'); ?></select></div>
                 </div>
                 <div class="form-row">
                     <label>Keyword</label>
@@ -96,48 +96,48 @@ $renderOptions = static function (array $items, string $selectedValue, string $p
                 </div>
                 <div class="form-row">
                     <label>Mothertongue</label>
-                    <div class="field"><select name="mother_tongue" class="form-select"><?php $renderOptions($options['mother_tongue'] ?? [], (string)($filters['mother_tongue'] ?? ''), 'Select Mothertongue'); ?></select></div>
+                    <div class="field"><select name="mother_tongue" class="form-select form-control"><?php $renderOptions($options['mother_tongue'] ?? [], (string)($filters['mother_tongue'] ?? ''), 'Select Mothertongue'); ?></select></div>
                 </div>
                 <div class="form-row">
                     <label>Marital Status</label>
-                    <div class="field"><select name="marital_status" class="form-select"><?php $renderOptions($options['marital_status'] ?? [], (string)($filters['marital_status'] ?? ''), 'Select Marital Status'); ?></select></div>
+                    <div class="field"><select name="marital_status" class="form-select form-control"><?php $renderOptions($options['marital_status'] ?? [], (string)($filters['marital_status'] ?? ''), 'Select Marital Status'); ?></select></div>
                 </div>
                 <div class="form-row">
                     <label>Religion</label>
-                    <div class="field"><select name="religion" class="form-select"><?php $renderOptions($options['religion'] ?? [], (string)($filters['religion'] ?? ''), 'Select Religion'); ?></select></div>
+                    <div class="field"><select name="religion" class="form-select form-control"><?php $renderOptions($options['religion'] ?? [], (string)($filters['religion'] ?? ''), 'Select Religion'); ?></select></div>
                 </div>
                 <div class="form-row">
                     <label>Caste</label>
-                    <div class="field"><select name="caste" class="form-select"><?php $renderOptions($options['caste'] ?? [], (string)($filters['caste'] ?? ''), 'Select Caste'); ?></select></div>
+                    <div class="field"><select name="caste" class="form-select form-control"><?php $renderOptions($options['caste'] ?? [], (string)($filters['caste'] ?? ''), 'Select Caste'); ?></select></div>
                 </div>
                 <div class="form-row">
                     <label>Country / State / City</label>
                     <div class="field three-col">
-                        <select name="country" class="form-select"><?php $renderOptions($options['country'] ?? [], (string)($filters['country'] ?? ''), 'Country'); ?></select>
-                        <select name="state" class="form-select"><?php $renderOptions($options['state'] ?? [], (string)($filters['state'] ?? ''), 'State'); ?></select>
-                        <select name="city" class="form-select"><?php $renderOptions($options['city'] ?? [], (string)($filters['city'] ?? ''), 'City'); ?></select>
+                        <select name="country" class="form-select form-control"><?php $renderOptions($options['country'] ?? [], (string)($filters['country'] ?? ''), 'Country'); ?></select>
+                        <select name="state" class="form-select form-control"><?php $renderOptions($options['state'] ?? [], (string)($filters['state'] ?? ''), 'State'); ?></select>
+                        <select name="city" class="form-select form-control"><?php $renderOptions($options['city'] ?? [], (string)($filters['city'] ?? ''), 'City'); ?></select>
                     </div>
                 </div>
                 <div class="form-row">
                     <label>Education</label>
-                    <div class="field"><select name="education" class="form-select"><?php $renderOptions($options['education'] ?? [], (string)($filters['education'] ?? ''), 'Select Education'); ?></select></div>
+                    <div class="field"><select name="education" class="form-select form-control"><?php $renderOptions($options['education'] ?? [], (string)($filters['education'] ?? ''), 'Select Education'); ?></select></div>
                 </div>
                 <div class="form-row">
                     <label>Occupation</label>
-                    <div class="field"><select name="occupation" class="form-select"><?php $renderOptions($options['occupation'] ?? [], (string)($filters['occupation'] ?? ''), 'Select Occupation'); ?></select></div>
+                    <div class="field"><select name="occupation" class="form-select form-control"><?php $renderOptions($options['occupation'] ?? [], (string)($filters['occupation'] ?? ''), 'Select Occupation'); ?></select></div>
                 </div>
                 <div class="form-row">
                     <label>Residence</label>
-                    <div class="field"><select name="residence" class="form-select"><?php $renderOptions($options['residence'] ?? [], (string)($filters['residence'] ?? ''), 'Select Residence'); ?></select></div>
+                    <div class="field"><select name="residence" class="form-select form-control"><?php $renderOptions($options['residence'] ?? [], (string)($filters['residence'] ?? ''), 'Select Residence'); ?></select></div>
                 </div>
                 <div class="form-row">
                     <label>Plan Name</label>
-                    <div class="field"><select name="plan_name" class="form-select"><?php $renderOptions($options['plan_name'] ?? [], (string)($filters['plan_name'] ?? ''), 'Select Plan Name'); ?></select></div>
+                    <div class="field"><select name="plan_name" class="form-select form-control"><?php $renderOptions($options['plan_name'] ?? [], (string)($filters['plan_name'] ?? ''), 'Select Plan Name'); ?></select></div>
                 </div>
                 <div class="form-row">
                     <label>Plan Status</label>
                     <div class="field">
-                        <select name="plan_status" class="form-select">
+                        <select name="plan_status" class="form-select form-control">
                             <option value="All" <?= strtolower((string)($filters['plan_status'] ?? 'all')) === 'all' ? 'selected' : '' ?>>All</option>
                             <option value="Paid" <?= strtolower((string)($filters['plan_status'] ?? '')) === 'paid' ? 'selected' : '' ?>>Paid</option>
                             <option value="Not_Paid" <?= strtolower((string)($filters['plan_status'] ?? '')) === 'not_paid' ? 'selected' : '' ?>>Not Paid</option>

@@ -4,6 +4,12 @@ require __DIR__ . '/partials/header.php';
 require __DIR__ . '/partials/sidebar.php';
 
 $fullName = trim(($user['first_name'] ?? '') . ' ' . ($user['second_name'] ?? ''));
+$genderLabel = trim((string) ($user['gender'] ?? ''));
+$uid = (int) ($user['id'] ?? 0);
+$headLine = '(NG' . $uid . ') ' . ($fullName !== '' ? $fullName : 'Member Profile');
+if ($genderLabel !== '') {
+    $headLine .= ' — ' . $genderLabel;
+}
 
 $steps = [
     'basic' => [
@@ -28,33 +34,90 @@ $steps = [
     ],
     'upload' => [
         'title' => 'Step 6: Uploads & Fee',
-        'fields' => ['photo1_status', 'photo_visibility', 'photo2_url', 'photo3_url', 'photo4_url', 'photo5_url', 'photo6_url', 'id_proof_status', 'id_proof_file', 'cv_file', 'registration_fee', 'final_fee'],
+        'fields' => ['photo_visibility', 'registration_fee', 'final_fee', 'cv_file'],
     ],
 ];
 
 $formatLabel = static function ($key) {
-    return ucwords(str_replace('_', ' ', (string)$key));
+    return ucwords(str_replace('_', ' ', (string) $key));
 };
 
 $formatValue = static function ($value) {
     if ($value === null || $value === '') {
-        return '-';
+        return 'N/A';
     }
     if (is_string($value) && (str_starts_with($value, '[') || str_starts_with($value, '{'))) {
         $decoded = json_decode($value, true);
         if (json_last_error() === JSON_ERROR_NONE) {
             if (is_array($decoded)) {
-                return implode(', ', array_map(static fn($item) => (string)$item, $decoded));
+                return implode(', ', array_map(static fn ($item) => (string) $item, $decoded));
             }
-            return (string)$decoded;
+
+            return (string) $decoded;
         }
     }
-    return (string)$value;
+
+    return (string) $value;
 };
+
+$proseFields = ['about_us', 'family_details', 'expectations', 'hobby', 'work_detail'];
+$badgeFields = ['user_status', 'featured_status'];
+
+$profileBadgeClass = static function (string $field, $raw): string {
+    $v = strtolower(trim((string) $raw));
+    if ($field === 'featured_status') {
+        if ($v === '' || strpos($v, 'non') !== false) {
+            return 'nonfeatured';
+        }
+
+        return 'featured';
+    }
+    $v = preg_replace('/[^a-z]/', '', $v);
+    if ($v === 'approved') {
+        return 'approved';
+    }
+    if ($v === 'suspended') {
+        return 'suspended';
+    }
+
+    return 'unapproved';
+};
+
+$photoSlots = [
+    ['key' => 'photo1_status', 'label' => 'Photo 1'],
+    ['key' => 'photo2_url', 'label' => 'Photo 2'],
+    ['key' => 'photo3_url', 'label' => 'Photo 3'],
+    ['key' => 'photo4_url', 'label' => 'Photo 4'],
+    ['key' => 'photo5_url', 'label' => 'Photo 5'],
+    ['key' => 'photo6_url', 'label' => 'Photo 6'],
+];
+
+$resolveMediaUrl = static function (string $path): string {
+    $path = trim($path);
+    if ($path === '') {
+        return '';
+    }
+    if (preg_match('#^https?://#i', $path)) {
+        return $path;
+    }
+
+    return rtrim(BASE_URL, '/') . '/' . ltrim($path, '/');
+};
+
+$memberListStatus = strtolower((string) ($user['user_status'] ?? 'unapproved'));
+$photoBadgeApproved = in_array($memberListStatus, ['approved'], true);
 ?>
-<div class="admin-main">
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin-manage-members.css">
+
+<div class="admin-main admin-profile-view-page">
     <div class="admin-topbar">
-        <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa fa-bars"></i></button>
+        <div class="admin-topbar-left">
+            <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa fa-bars"></i></button>
+            <div class="apv-topbar-titles">
+                <div class="apv-topbar-title"><?= htmlspecialchars($headLine) ?></div>
+                <div class="apv-topbar-sub">Matri ID: <?= htmlspecialchars((string) ($user['matri_id'] ?? '—')) ?></div>
+            </div>
+        </div>
         <div class="admin-profile" id="adminProfileTrigger">
             <div class="admin-profile-box"><span><?= htmlspecialchars($this->displayadminname()) ?></span><i class="fa fa-user"></i></div>
             <div class="admin-dropdown" id="adminDropdown">
@@ -66,76 +129,143 @@ $formatValue = static function ($value) {
     <main class="admin-page">
         <div class="admin-content">
             <div class="container-fluid">
-                <div class="profile-head">
-                    <div>
-                        <h4 class="mb-1"><?= htmlspecialchars($fullName !== '' ? $fullName : 'Member Profile') ?></h4>
-                        <small>ID: <?= (int)($user['id'] ?? 0) ?> | Matri ID: <?= htmlspecialchars((string)($user['matri_id'] ?? '-')) ?></small>
-                    </div>
-                    <a href="<?= BASE_URL ?>/admin/users" class="btn btn-sm btn-primary">Back</a>
+                <div class="apv-back-wrap">
+                    <a href="<?= BASE_URL ?>/admin/users" class="btn-action btn-action-cyan"><i class="fa fa-arrow-left"></i> Back to list</a>
                 </div>
 
-                <ul class="nav nav-pills profile-steps mb-3" id="viewStepTabs">
-                    <?php $stepIndex = 1; foreach ($steps as $key => $step): ?>
-                        <li class="nav-item">
-                            <button type="button" class="nav-link <?= $stepIndex === 1 ? 'active' : '' ?>" data-step="<?= htmlspecialchars($key) ?>">
-                                <?= $stepIndex ?>. <?= htmlspecialchars(str_replace('Step ' . $stepIndex . ': ', '', $step['title'])) ?>
-                            </button>
-                        </li>
-                    <?php $stepIndex++; endforeach; ?>
-                </ul>
-
-                <?php $stepIndex = 1; foreach ($steps as $key => $step): ?>
-                    <div class="card profile-step-pane <?= $stepIndex === 1 ? 'active' : '' ?>" data-pane="<?= htmlspecialchars($key) ?>">
-                        <div class="card-header">
-                            <strong><?= htmlspecialchars($step['title']) ?></strong>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <?php foreach ($step['fields'] as $field): ?>
-                                    <div class="col-lg-6 mb-2">
-                                        <div class="detail-row">
-                                            <span class="detail-label"><?= htmlspecialchars($formatLabel($field)) ?></span>
-                                            <span class="detail-value"><?= htmlspecialchars($formatValue($user[$field] ?? null)) ?></span>
+                <div class="apv-accordion">
+                    <?php
+                    $stepIndex = 0;
+                    foreach ($steps as $key => $step):
+                        $stepIndex++;
+                        $openAttr = $stepIndex === 1 ? ' open' : '';
+                        ?>
+                    <details class="apv-details"<?= $openAttr ?>>
+                        <summary class="apv-acc-header">
+                            <span><?= htmlspecialchars($step['title']) ?></span>
+                            <i class="fa fa-chevron-down apv-acc-chevron" aria-hidden="true"></i>
+                        </summary>
+                        <div class="apv-acc-body">
+                            <?php if ($key === 'upload'): ?>
+                                <h3 class="apv-subsection-title">Member Photos</h3>
+                                <div class="apv-photo-grid">
+                                    <?php foreach ($photoSlots as $slot):
+                                        $raw = (string) ($user[$slot['key']] ?? '');
+                                        $src = $resolveMediaUrl($raw);
+                                        ?>
+                                    <div class="apv-photo-slot">
+                                        <div class="apv-photo-label"><?= htmlspecialchars($slot['label']) ?></div>
+                                        <div class="apv-photo-frame">
+                                            <?php if ($src !== ''): ?>
+                                                <img src="<?= htmlspecialchars($src) ?>" alt="">
+                                            <?php else: ?>
+                                                <span class="apv-photo-placeholder" aria-hidden="true"><i class="fa fa-picture-o"></i></span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="apv-photo-badge <?= $photoBadgeApproved ? 'is-approved' : 'is-unapproved' ?>">
+                                            <?php if ($photoBadgeApproved): ?>
+                                                <i class="fa fa-thumbs-up" aria-hidden="true"></i> APPROVED
+                                            <?php else: ?>
+                                                <i class="fa fa-thumbs-down" aria-hidden="true"></i> UNAPPROVED
+                                            <?php endif; ?>
                                         </div>
                                     </div>
+                                    <?php endforeach; ?>
+                                </div>
+
+                                <h3 class="apv-subsection-title">Member ID Proof</h3>
+                                <div class="apv-id-proof-row">
+                                    <?php
+                                    $idPath = (string) ($user['id_proof_file'] ?? '');
+                                    $idSrc = $resolveMediaUrl($idPath);
+                                    ?>
+                                    <div class="apv-photo-slot apv-photo-slot-wide">
+                                        <div class="apv-photo-label">ID document</div>
+                                        <div class="apv-photo-frame apv-photo-frame-wide">
+                                            <?php if ($idSrc !== ''): ?>
+                                                <img src="<?= htmlspecialchars($idSrc) ?>" alt="ID proof">
+                                            <?php else: ?>
+                                                <span class="apv-photo-placeholder" aria-hidden="true"><i class="fa fa-file-text-o"></i></span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="apv-detail-row apv-detail-row-inline mt-2">
+                                            <span class="apv-detail-label">ID proof status</span>
+                                            <span class="apv-detail-value"><?= htmlspecialchars($formatValue($user['id_proof_status'] ?? null)) ?></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="row apv-field-rows">
+                                <?php foreach ($step['fields'] as $field):
+                                    if (in_array($field, $proseFields, true)): ?>
+                                <div class="col-12">
+                                    <div class="apv-detail-prose">
+                                        <span class="apv-detail-label"><?= htmlspecialchars($formatLabel($field)) ?></span>
+                                        <?php
+                                            $val = $formatValue($user[$field] ?? null);
+                                            $isNa = ($val === 'N/A' || $val === '-');
+                                        ?>
+                                        <div class="apv-detail-value <?= $isNa ? 'apv-value-na' : '' ?>"><?= $isNa ? 'N/A' : htmlspecialchars($val) ?></div>
+                                    </div>
+                                </div>
+                                    <?php continue; endif;
+                                    if (in_array($field, $badgeFields, true)):
+                                        $rawBadge = $user[$field] ?? null;
+                                        $bc = $profileBadgeClass($field, $rawBadge);
+                                        $disp = strtoupper((string) $formatValue($rawBadge));
+                                        if ($disp === '-' || $disp === '') {
+                                            $disp = 'N/A';
+                                        }
+                                        ?>
+                                <div class="col-lg-6">
+                                    <div class="apv-detail-row">
+                                        <span class="apv-detail-label"><?= htmlspecialchars($formatLabel($field)) ?></span>
+                                        <span class="apv-detail-value apv-detail-value-badge">
+                                            <span class="approved-badge status-<?= htmlspecialchars($bc) ?>">
+                                                <?php if ($field === 'user_status'): ?>
+                                                    <?php if ($bc === 'approved'): ?>
+                                                        <i class="fa fa-thumbs-up" aria-hidden="true"></i>
+                                                    <?php elseif ($bc === 'suspended'): ?>
+                                                        <i class="fa fa-user-times" aria-hidden="true"></i>
+                                                    <?php endif; ?>
+                                                <?php endif; ?>
+                                                <?= htmlspecialchars($disp) ?>
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                                    <?php continue; endif;
+                                    $val = $formatValue($user[$field] ?? null);
+                                    $isNa = ($val === 'N/A' || $val === '-');
+                                    ?>
+                                <div class="col-lg-6">
+                                    <div class="apv-detail-row">
+                                        <span class="apv-detail-label"><?= htmlspecialchars($formatLabel($field)) ?></span>
+                                        <span class="apv-detail-value <?= $isNa ? 'apv-value-na' : '' ?>"><?= $isNa ? 'N/A' : htmlspecialchars($val) ?></span>
+                                    </div>
+                                </div>
                                 <?php endforeach; ?>
                             </div>
                         </div>
-                    </div>
-                <?php $stepIndex++; endforeach; ?>
+                    </details>
+                    <?php endforeach; ?>
+                </div>
             </div>
         </div>
     </main>
 </div>
 
-<style>
-    .profile-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;padding:12px 14px;background:#fff;border:1px solid #dfe3e8;border-radius:6px}
-    .profile-head small{color:#6c757d}
-    .profile-steps{display:flex;flex-wrap:wrap;gap:8px}
-    .profile-steps .nav-link{border:1px solid #d8dee5;background:#f6f9fc;color:#3b4b5a;font-size:12px}
-    .profile-steps .nav-link.active{background:#22a7d8;border-color:#22a7d8;color:#fff}
-    .profile-step-pane{display:none}
-    .profile-step-pane.active{display:block}
-    .detail-row{display:flex;justify-content:space-between;gap:16px;border-bottom:1px dashed #e7ebef;padding:7px 0}
-    .detail-label{font-weight:600;color:#3f4f5e}
-    .detail-value{color:#5d6d7e;text-align:right;max-width:58%}
-    @media (max-width: 768px){
-        .detail-row{flex-direction:column;gap:2px}
-        .detail-value{text-align:left;max-width:100%}
-    }
-</style>
+<button type="button" class="apv-scroll-top" id="apvScrollTop" aria-label="Scroll to top"><i class="fa fa-arrow-up"></i></button>
 
 <script>
-(() => {
-    const tabs = Array.from(document.querySelectorAll('#viewStepTabs .nav-link'));
-    const panes = Array.from(document.querySelectorAll('.profile-step-pane'));
-    tabs.forEach((tab) => {
-        tab.addEventListener('click', () => {
-            const key = tab.dataset.step;
-            tabs.forEach((t) => t.classList.toggle('active', t === tab));
-            panes.forEach((pane) => pane.classList.toggle('active', pane.dataset.pane === key));
+(function () {
+    var btn = document.getElementById('apvScrollTop');
+    if (btn) {
+        btn.addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
-    });
+    }
 })();
 </script>
 
