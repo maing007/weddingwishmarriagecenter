@@ -44,6 +44,9 @@ class AdminUsersController
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         }
 
+        require_once __DIR__ . '/../models/MemberSaleFeeModel.php';
+        new MemberSaleFeeModel();
+
         $filterLabels = [
             'today' => 'Today Member(s)',
             'last_week' => 'Last Week Member(s)',
@@ -104,11 +107,20 @@ class AdminUsersController
             exit;
         }
 
-        $updated = $this->model->bulkUpdateUserStatus($ids, $status);
-        if ($updated) {
-            $_SESSION['flash_success'] = 'Selected users updated to ' . ucfirst($status) . '.';
+        if ($status === 'approved') {
+            require_once __DIR__ . '/../models/MemberSaleFeeModel.php';
+            new MemberSaleFeeModel();
+            $ok = $this->model->queueSelectedForRegistrationFee($ids);
+            $_SESSION['flash_' . ($ok ? 'success' : 'error')] = $ok
+                ? 'Selected members were sent to Registration Fee (assign plan there to approve).'
+                : 'Could not queue members for registration fee.';
         } else {
-            $_SESSION['flash_error'] = 'No user status was updated.';
+            $updated = $this->model->bulkUpdateUserStatus($ids, $status);
+            if ($updated) {
+                $_SESSION['flash_success'] = 'Selected users updated to ' . ucfirst($status) . '.';
+            } else {
+                $_SESSION['flash_error'] = 'No user status was updated.';
+            }
         }
 
         header('Location: ' . BASE_URL . '/admin/users');

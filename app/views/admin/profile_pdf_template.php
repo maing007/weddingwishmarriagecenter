@@ -49,9 +49,30 @@ foreach (['photo3_url', 'photo4_url', 'photo5_url', 'photo6_url'] as $pk) {
         $photoRaw = trim((string) ($user[$pk] ?? ''));
     }
 }
-$profileImageUrl = $resolveMediaUrl($photoRaw);
+
+$baseUrl = rtrim((string) BASE_URL, '/');
+$photoUsable = $photoRaw !== '';
+if ($photoUsable) {
+    $norm = strtolower(str_replace('\\', '/', $photoRaw));
+    if (strpos($norm, 'uploads/avatars/default') !== false
+        || strpos($norm, 'default-avatar') !== false
+        || strpos($norm, 'avatar-placeholder') !== false) {
+        $photoUsable = false;
+    }
+}
+$profileImageUrl = '';
+if ($photoUsable) {
+    $profileImageUrl = $resolveMediaUrl($photoRaw);
+}
 if ($profileImageUrl === '') {
-    $profileImageUrl = rtrim(BASE_URL, '/') . '/assets/images/default-avatar.png';
+    $g = strtolower(trim((string) ($user['gender'] ?? '')));
+    if ($g === 'female' || strncmp($g, 'female', 6) === 0) {
+        $profileImageUrl = $baseUrl . '/assets/images/female.svg';
+    } elseif ($g === 'male' || strncmp($g, 'male', 4) === 0) {
+        $profileImageUrl = $baseUrl . '/assets/images/male.svg';
+    } else {
+        $profileImageUrl = $baseUrl . '/assets/images/male.svg';
+    }
 }
 
 $heightStr = trim((string) ($user['height'] ?? ''));

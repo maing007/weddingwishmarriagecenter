@@ -171,6 +171,9 @@ $router->get('/admin/reports/payments/rishta-fee', 'AdminMemberSaleFeesControlle
 $router->get('/admin/accounts/income/registration-fee', 'AdminMemberSaleFeesController@registrationFee');
 $router->get('/admin/accounts/income/rishta-fee', 'AdminMemberSaleFeesController@rishtaFee');
 $router->post('/admin/accounts/income/fee-paid-approved', 'AdminMemberSaleFeesController@feePaidApproved');
+$router->post('/admin/accounts/income/assign-plan', 'AdminMemberSaleFeesController@assignPlanSubmit');
+$router->post('/admin/accounts/income/payment-proof', 'AdminMemberSaleFeesController@paymentProofSubmit');
+$router->get('/admin/accounts/invoice/registration', 'AdminMemberSaleFeesController@registrationInvoice');
 
 $router->get('/admin/reports/meetings/meeting-summary', 'AdminMeetingSummaryController@index');
 

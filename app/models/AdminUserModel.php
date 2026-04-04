@@ -86,6 +86,7 @@ class AdminUserModel
             SELECT
                 ud.id,
                 COALESCE(
+                    NULLIF(TRIM(COALESCE(ud.photo1_status, '')), ''),
                     NULLIF(TRIM(COALESCE(ud.photo2_url, '')), ''),
                     NULLIF(TRIM(COALESCE(ud.photo3_url, '')), ''),
                     NULLIF(TRIM(COALESCE(ud.photo4_url, '')), ''),
@@ -164,7 +165,8 @@ class AdminUserModel
                     FROM member_assignments ma
                     WHERE ma.assigned_to = ud.id AND LOWER(COALESCE(ma.status, '')) = 'accepted'
                 ) AS accepted_count,
-                ud.created_at
+                ud.created_at,
+                COALESCE(ud.registration_fee_queued, 0) AS registration_fee_queued
             FROM user_details ud
             LEFT JOIN admin_users au
                 ON ud.lead REGEXP '^[0-9]+$' AND au.id = CAST(ud.lead AS UNSIGNED)
@@ -436,11 +438,37 @@ class AdminUserModel
         }
 
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        $sql = "UPDATE user_details SET user_status = ? WHERE id IN ($placeholders)";
+        $clearQ = '';
+        if (in_array($status, ['unapproved', 'suspended'], true)) {
+            $clearQ = ', registration_fee_queued = 0';
+        }
+        $sql = "UPDATE user_details SET user_status = ?{$clearQ} WHERE id IN ($placeholders)";
         $stmt = $this->db->prepare($sql);
 
         $params = array_merge([$status], array_map('intval', $ids));
         return $stmt->execute($params);
+    }
+
+    /**
+     * "Approve" on All Members: send to Registration Fee list (Pending Plan), stay unapproved for site.
+     */
+    public function queueSelectedForRegistrationFee(array $ids): bool
+    {
+        $ids = array_values(array_filter(array_map('intval', $ids), static fn ($id) => $id > 0));
+        if ($ids === []) {
+            return false;
+        }
+
+        require_once __DIR__ . '/MemberSaleFeeModel.php';
+        $feeModel = new MemberSaleFeeModel();
+
+        foreach ($ids as $id) {
+            $stmt = $this->db->prepare("UPDATE user_details SET user_status = 'unapproved', registration_fee_queued = 1 WHERE id = ?");
+            $stmt->execute([$id]);
+            $feeModel->upsertPendingPlanRegistrationRow($id);
+        }
+
+        return true;
     }
 
     public function bulkUpdateFeaturedStatus(array $ids, string $status): bool

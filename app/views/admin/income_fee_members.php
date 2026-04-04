@@ -1027,9 +1027,9 @@ function openPlanAssignModal(d) {
     document.getElementById('pa_email').textContent = d.email || '—';
     document.getElementById('pa_phone').textContent = d.phone || '—';
     document.getElementById('pa_loc').textContent = d.location || 'N/A';
-    let av = PA_BASE + '/assets/images/male.png';
+    let av = PA_BASE + '/assets/images/male.svg';
     if ((d.gender || '').indexOf('female') >= 0) {
-        av = PA_BASE + '/assets/images/female.png';
+        av = PA_BASE + '/assets/images/female.svg';
     }
     document.getElementById('pa_avatar').src = av;
     document.getElementById('pa_rishta_fee').value = d.rishta != null ? d.rishta : 0;

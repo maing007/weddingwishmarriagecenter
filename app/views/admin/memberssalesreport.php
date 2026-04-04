@@ -612,13 +612,13 @@ require __DIR__ . '/partials/sidebar.php';
                         </form>
                     </div>
 
-                    <div class="msr-tabs">
+                    <!-- <div class="msr-tabs">
                         <?php if (!$msrLockScope): ?>
                             <a class="msr-tab <?= $saleScope === 'all' ? 'active' : '' ?>" href="<?= htmlspecialchars($msrTabHref('all'), ENT_QUOTES, 'UTF-8') ?>">All <small>(<?= (int) ($tabCounts['all'] ?? 0) ?>)</small></a>
                         <?php endif; ?>
                         <a class="msr-tab <?= $saleScope === 'registration' ? 'active' : '' ?>" href="<?= htmlspecialchars($msrTabHref('registration'), ENT_QUOTES, 'UTF-8') ?>">Registration <small>(<?= (int) ($tabCounts['registration'] ?? 0) ?>)</small></a>
                         <a class="msr-tab <?= $saleScope === 'rishta' ? 'active' : '' ?>" href="<?= htmlspecialchars($msrTabHref('rishta'), ENT_QUOTES, 'UTF-8') ?>">Rishta <small>(<?= (int) ($tabCounts['rishta'] ?? 0) ?>)</small></a>
-                    </div>
+                    </div> -->
 
                     <?php if ($msrCardLayout): ?>
                         <div class="msr-pay-tabs">

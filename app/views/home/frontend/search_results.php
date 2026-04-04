@@ -21,7 +21,7 @@ $profiles = $profiles ?? [];
                     $name = trim(($profile->first_name ?? '') . ' ' . ($profile->second_name ?? $profile->last_name ?? ''));
                     $img = !empty($profile->avatar_path)
                         ? BASE_URL . '/' . ltrim((string)$profile->avatar_path, '/')
-                        : BASE_URL . '/assets/images/male.png';
+                        : BASE_URL . '/assets/images/male.svg';
                     $ageStr = isset($profile->age) && $profile->age !== null ? (int)$profile->age . ' yrs' : '-';
                     ?>
                     <div class="col-md-3 col-sm-6 mb-4">

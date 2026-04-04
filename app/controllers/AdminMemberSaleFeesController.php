@@ -31,11 +31,16 @@ class AdminMemberSaleFeesController
 
     public function registrationFee(): void
     {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
         $feeType = MemberSaleFeeModel::TYPE_REGISTRATION;
         $pageTitle = 'Manage Registration Fee — ALL';
         $pageHead = 'Manage Registration Fee — ALL';
         $feeColumnLabel = 'Registration Fee';
         $rows = $this->model->allByTypeForIncomeUi($feeType);
+        $planPackages = $this->model->allPackages();
+        $planStaff = $this->model->allAdminStaffForPlan();
         require __DIR__ . '/../views/admin/income_fee_members.php';
     }
 
@@ -46,6 +51,8 @@ class AdminMemberSaleFeesController
         $pageHead = 'Manage Rishta Fee — ALL';
         $feeColumnLabel = 'Rishta Fee';
         $rows = $this->model->allByTypeForIncomeUi($feeType);
+        $planPackages = [];
+        $planStaff = [];
         require __DIR__ . '/../views/admin/income_fee_members.php';
     }
 
@@ -92,8 +99,22 @@ class AdminMemberSaleFeesController
         }
 
         $offset = ($page - 1) * $limit;
-        $rows = $this->model->salesReportRows($search, $saleScope, $payFilter, $filterStaff, $limit, $offset);
+        $rows = $this->model->salesReportRowsForCards($search, $saleScope, $payFilter, $filterStaff, $limit, $offset);
         $staffFilterOptions = $this->model->salesReportDistinctStaffNames();
+
+        $feeIds = [];
+        foreach ($rows as $rr) {
+            $feeIds[] = (int) ($rr['id'] ?? 0);
+        }
+        $msrProofsByFee = $this->model->listPaymentProofsForFeeIds($feeIds);
+
+        $msrCardLayout = true;
+        $msrPayCounts = [
+            'reg_unpaid' => $this->model->salesReportTotal($search, MemberSaleFeeModel::TYPE_REGISTRATION, 'unpaid', $filterStaff),
+            'reg_paid' => $this->model->salesReportTotal($search, MemberSaleFeeModel::TYPE_REGISTRATION, 'paid', $filterStaff),
+            'rishta_unpaid' => $this->model->salesReportTotal($search, MemberSaleFeeModel::TYPE_RISHTA, 'unpaid', $filterStaff),
+            'rishta_paid' => $this->model->salesReportTotal($search, MemberSaleFeeModel::TYPE_RISHTA, 'paid', $filterStaff),
+        ];
 
         $pageHead = $fixedScope === MemberSaleFeeModel::TYPE_REGISTRATION
             ? 'Manage Member Sale — Registration'
@@ -131,5 +152,78 @@ class AdminMemberSaleFeesController
             : '/admin/accounts/income/registration-fee';
         header('Location: ' . BASE_URL . $dest);
         exit;
+    }
+
+    public function assignPlanSubmit(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/admin/accounts/income/registration-fee');
+            exit;
+        }
+        $token = (string) ($_POST['csrf_token'] ?? '');
+        if ($token === '' || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            $_SESSION['flash_error'] = 'Invalid request token.';
+            header('Location: ' . BASE_URL . '/admin/accounts/income/registration-fee');
+            exit;
+        }
+
+        $res = $this->model->assignRegistrationPlanAndApprove([
+            'fee_id' => (int) ($_POST['fee_id'] ?? 0),
+            'user_id' => (int) ($_POST['user_id'] ?? 0),
+            'package_id' => (int) ($_POST['plan_id'] ?? 0),
+            'staff_id' => (int) ($_POST['staff_id'] ?? 0),
+            'team_label' => (string) ($_POST['team_label'] ?? $_POST['team_id'] ?? ''),
+            'rishta_fee' => $_POST['rishta_fee'] ?? 0,
+            'bonus_days' => $_POST['bonus_days'] ?? 0,
+            'discount' => $_POST['discount'] ?? 0,
+            'payment_note' => $_POST['payment_note'] ?? '',
+        ]);
+
+        $_SESSION['flash_' . ($res['ok'] ? 'success' : 'error')] = $res['message'];
+        if ($res['ok']) {
+            $q = http_build_query([
+                'search_filed' => '',
+                'pay_filter' => 'unpaid',
+                'sale_scope' => 'registration',
+                'limit_per_page' => 10,
+                'page' => 1,
+            ]);
+            header('Location: ' . BASE_URL . '/admin/sales-report?' . $q);
+            exit;
+        }
+        header('Location: ' . BASE_URL . '/admin/accounts/income/registration-fee');
+        exit;
+    }
+
+    public function paymentProofSubmit(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/admin/sales-report');
+            exit;
+        }
+        $feeId = (int) ($_POST['payment_id'] ?? $_POST['fee_id'] ?? 0);
+        $res = $this->model->savePaymentProof($feeId, $_POST, $_FILES['receipt'] ?? null);
+        $_SESSION['flash_' . ($res['ok'] ? 'success' : 'error')] = $res['message'];
+        $back = (string) ($_POST['return_url'] ?? '');
+        if ($back !== '' && strpos($back, (string) BASE_URL) === 0) {
+            header('Location: ' . $back);
+            exit;
+        }
+        header('Location: ' . BASE_URL . '/admin/sales-report');
+        exit;
+    }
+
+    public function registrationInvoice(): void
+    {
+        $feeId = (int) ($_GET['id'] ?? 0);
+        $row = $feeId > 0 ? $this->model->findFeeWithUserContext($feeId) : null;
+        if (!$row || ($row['fee_type'] ?? '') !== MemberSaleFeeModel::TYPE_REGISTRATION) {
+            http_response_code(404);
+            echo 'Invoice not found.';
+            exit;
+        }
+        $adminRow = $this->admin->findById((int) ($_SESSION['admin_id'] ?? 0));
+        $adminName = $adminRow ? (string) $adminRow['name'] : 'Admin';
+        require __DIR__ . '/../views/admin/fee_registration_invoice.php';
     }
 }

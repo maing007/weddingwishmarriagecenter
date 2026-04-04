@@ -30,7 +30,20 @@ require_once __DIR__ . '/../../helpers/admin_member_display.php';
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <?php
-$adminUserListPhotoUrl = static function (array $u): string {
+$adminUserListDefaultAvatar = static function (array $u): string {
+    $base = rtrim((string) BASE_URL, '/');
+    $g = strtolower(trim((string) ($u['gender'] ?? '')));
+    if ($g === 'female' || strncmp($g, 'female', 6) === 0) {
+        return $base . '/assets/images/female.svg';
+    }
+    if ($g === 'male' || strncmp($g, 'male', 4) === 0) {
+        return $base . '/assets/images/male.svg';
+    }
+
+    return $base . '/assets/images/male.svg';
+};
+
+$adminUserListPhotoUrl = static function (array $u) use ($adminUserListDefaultAvatar): string {
     $base = rtrim((string) BASE_URL, '/');
     $p = trim((string) ($u['avatar'] ?? ''));
     $usable = $p !== '';
@@ -49,27 +62,27 @@ $adminUserListPhotoUrl = static function (array $u): string {
 
         return $base . '/' . ltrim($p, '/');
     }
-    $g = strtolower((string) ($u['gender'] ?? ''));
-    if (strpos($g, 'female') !== false) {
-        return $base . '/assets/images/female.png';
-    }
-    if (strpos($g, 'male') !== false) {
-        return $base . '/assets/images/male.png';
-    }
 
-    return $base . '/assets/images/male.png';
+    return $adminUserListDefaultAvatar($u);
 };
 
 $allCount = is_array($users ?? null) ? count($users) : 0;
 $approvedCount = 0;
 $unapprovedCount = 0;
 $suspendedCount = 0;
+$regQueueCount = 0;
 foreach (($users ?? []) as $tmpUser) {
     $st = strtolower((string)($tmpUser['status'] ?? 'approved'));
+    $queued = (int) ($tmpUser['registration_fee_queued'] ?? 0);
+    if ($queued === 1) {
+        $regQueueCount++;
+    }
     if ($st === 'approved') {
         $approvedCount++;
     } elseif ($st === 'unapproved') {
-        $unapprovedCount++;
+        if ($queued !== 1) {
+            $unapprovedCount++;
+        }
     } elseif ($st === 'suspended') {
         $suspendedCount++;
     }
@@ -155,7 +168,7 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
                 </div>
                 <div class="users-status-wrap text-end">
                     <div class="status-pill-row">
-                        <button type="button" class="status-pill sp-approved" onclick="submitBulkStatus('approved')">Approved</button>
+                        <button type="button" class="status-pill sp-approved" title="Queues member on Registration Fee page for plan assignment" onclick="submitBulkStatus('approved')">Approve → Reg. fee</button>
                         <button type="button" class="status-pill sp-unapproved" onclick="submitBulkStatus('unapproved')">Unapproved</button>
                         <button type="button" class="status-pill sp-suspended" onclick="submitBulkStatus('suspended')"><i class="fa fa-user-times"></i> Suspended</button>
                     </div>
@@ -199,6 +212,9 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
                     <a class="nav-link tab-filter" data-tab="unapproved">Unapproved List <small>(<?= (int)$unapprovedCount ?>)</small></a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link tab-filter" data-tab="reg_queue">Reg. fee queue <small>(<?= (int)$regQueueCount ?>)</small></a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link tab-filter" data-tab="suspended">Suspended List <small>(<?= (int)$suspendedCount ?>)</small></a>
                 </li>
             </ul>
@@ -209,6 +225,7 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
             <?php foreach ($users as $u): ?>
             <div class="user-card searchable-card"
                  data-status="<?= strtolower($u['status'] ?? 'approved') ?>"
+                 data-registration-queued="<?= (int)($u['registration_fee_queued'] ?? 0) ?>"
                  data-date="<?= strtotime($u['created_at']) ?>"
                  data-name="<?= strtolower($u['first_name'].' '.$u['last_name']) ?>"
                  data-department="<?= strtolower(trim((string)($u['religion'] ?? ''))) ?>"
@@ -244,7 +261,14 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
                 <!-- CONTENT -->
                 <div class="user-main-content">
                     <div class="profile-image-box">
-                        <img src="<?= htmlspecialchars($adminUserListPhotoUrl($u), ENT_QUOTES, 'UTF-8') ?>" alt="">
+                        <?php
+                        $listPhotoSrc = $adminUserListPhotoUrl($u);
+                        $listPhotoFallback = $adminUserListDefaultAvatar($u);
+                        ?>
+                        <img src="<?= htmlspecialchars($listPhotoSrc, ENT_QUOTES, 'UTF-8') ?>"
+                             alt=""
+                             data-fallback="<?= htmlspecialchars($listPhotoFallback, ENT_QUOTES, 'UTF-8') ?>"
+                             onerror="if(this.dataset.fallback && this.src !== this.dataset.fallback){this.src=this.dataset.fallback;}">
                     </div>
 
                     <div class="details-column details-grid">
@@ -482,7 +506,11 @@ function updateList(){
         let text = card.innerText.toLowerCase();
         let status = card.dataset.status;
         if(!text.includes(search)) return false;
-        if(activeTab!="all" && status!=activeTab) return false;
+        if (activeTab === "reg_queue") {
+            if (parseInt(card.dataset.registrationQueued || "0", 10) !== 1) return false;
+        } else if (activeTab === "unapproved") {
+            if (status !== "unapproved" || parseInt(card.dataset.registrationQueued || "0", 10) === 1) return false;
+        } else if (activeTab !== "all" && status !== activeTab) return false;
         if (advancedFilters.department && card.dataset.department !== advancedFilters.department) return false;
         if (advancedFilters.teamLeader && card.dataset.teamLeader !== advancedFilters.teamLeader) return false;
         if (advancedFilters.customerSupport && card.dataset.customerSupport !== advancedFilters.customerSupport) return false;

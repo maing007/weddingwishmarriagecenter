@@ -88,15 +88,29 @@ class AdminDashboardController extends Controller
         }
 
         $offset = ($page - 1) * $limit;
-        $rows = $model->salesReportRows($search, $saleScope, $payFilter, $filterStaff, $limit, $offset);
+        $rows = $model->salesReportRowsForCards($search, $saleScope, $payFilter, $filterStaff, $limit, $offset);
         $staffFilterOptions = $model->salesReportDistinctStaffNames();
 
+        $feeIds = [];
+        foreach ($rows as $rr) {
+            $feeIds[] = (int) ($rr['id'] ?? 0);
+        }
+        $msrProofsByFee = $model->listPaymentProofsForFeeIds($feeIds);
+
+        $msrCardLayout = true;
+        $msrPayCounts = [
+            'reg_unpaid' => $model->salesReportTotal($search, MemberSaleFeeModel::TYPE_REGISTRATION, 'unpaid', $filterStaff),
+            'reg_paid' => $model->salesReportTotal($search, MemberSaleFeeModel::TYPE_REGISTRATION, 'paid', $filterStaff),
+            'rishta_unpaid' => $model->salesReportTotal($search, MemberSaleFeeModel::TYPE_RISHTA, 'unpaid', $filterStaff),
+            'rishta_paid' => $model->salesReportTotal($search, MemberSaleFeeModel::TYPE_RISHTA, 'paid', $filterStaff),
+        ];
+
         if ($saleScope === MemberSaleFeeModel::TYPE_REGISTRATION) {
-            $pageHead = 'Manage Member Sale — Registration';
+            $pageHead = 'ManageSales Report — Registration';
         } elseif ($saleScope === MemberSaleFeeModel::TYPE_RISHTA) {
-            $pageHead = 'Manage Member Sale — Rishta';
+            $pageHead = 'ManageSales Report — Rishta';
         } else {
-            $pageHead = 'Manage Member Sale — ALL';
+            $pageHead = 'ManageSales Report — ALL';
         }
 
         $msrSelfUrl = BASE_URL . '/admin/sales-report';
