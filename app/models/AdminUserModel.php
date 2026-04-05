@@ -99,6 +99,8 @@ class AdminUserModel
 
     public function allUsers(?string $dashboardFilter = null)
     {
+        $pfx = MATRI_ID_PREFIX;
+        $leg = MATRI_ID_PREFIX_LEGACY;
         $sql = "
             SELECT
                 ud.id,
@@ -183,7 +185,31 @@ class AdminUserModel
                     WHERE ma.assigned_to = ud.id AND LOWER(COALESCE(ma.status, '')) = 'accepted'
                 ) AS accepted_count,
                 ud.created_at,
-                COALESCE(ud.registration_fee_queued, 0) AS registration_fee_queued
+                COALESCE(ud.registration_fee_queued, 0) AS registration_fee_queued,
+                (
+                    SELECT MAX(
+                        CASE
+                            WHEN LOWER(TRIM(COALESCE(msf.staff_payment_status, ''))) = 'paid' THEN 1
+                            WHEN EXISTS (
+                                SELECT 1 FROM member_fee_payment_proofs p WHERE p.fee_id = msf.id
+                            ) THEN 1
+                            ELSE 0
+                        END
+                    )
+                    FROM member_sale_fees msf
+                    WHERE msf.fee_type = 'registration'
+                      AND (
+                          (msf.linked_user_id IS NOT NULL AND msf.linked_user_id > 0 AND msf.linked_user_id = ud.id)
+                          OR (
+                              (msf.linked_user_id IS NULL OR msf.linked_user_id = 0)
+                              AND (
+                                  (NULLIF(TRIM(ud.matri_id), '') IS NOT NULL AND TRIM(msf.matri_id) = TRIM(ud.matri_id))
+                                  OR TRIM(msf.matri_id) = CONCAT('{$pfx}', ud.id)
+                                  OR TRIM(msf.matri_id) = CONCAT('{$leg}', ud.id)
+                              )
+                          )
+                      )
+                ) AS registration_fee_paid
             FROM user_details ud
             LEFT JOIN admin_users au
                 ON ud.lead REGEXP '^[0-9]+$' AND au.id = CAST(ud.lead AS UNSIGNED)

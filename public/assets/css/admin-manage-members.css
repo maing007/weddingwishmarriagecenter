@@ -418,6 +418,12 @@
   background: #f4fbf7;
 }
 
+.approved-badge.status-paid {
+  color: #1d6b91;
+  border-color: #9cc9de;
+  background: #f0f8fc;
+}
+
 .approved-badge.status-unapproved {
   color: #c87f00;
   border-color: #e8c97a;

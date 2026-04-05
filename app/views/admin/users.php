@@ -186,9 +186,13 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
 
         <!-- USER LIST -->
         <div id="userList" class="mt-4">
-            <?php foreach ($users as $u): ?>
+            <?php foreach ($users as $u):
+                $userStatusRaw = strtolower(trim((string) ($u['status'] ?? 'approved')));
+                $regFeePaid = isset($u['registration_fee_paid']) && (int) $u['registration_fee_paid'] === 1;
+                $badgeVariant = ($userStatusRaw === 'approved' && $regFeePaid) ? 'paid' : $userStatusRaw;
+                ?>
             <div class="user-card searchable-card"
-                 data-status="<?= strtolower($u['status'] ?? 'approved') ?>"
+                 data-status="<?= htmlspecialchars($userStatusRaw, ENT_QUOTES, 'UTF-8') ?>"
                  data-registration-queued="<?= (int)($u['registration_fee_queued'] ?? 0) ?>"
                  data-date="<?= strtotime($u['created_at']) ?>"
                  data-name="<?= strtolower($u['first_name'].' '.$u['last_name']) ?>"
@@ -203,13 +207,15 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
                         <input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>">
                         <h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id'])) ?>)</h5>
                     </div>
-                    <div class="approved-badge status-<?= strtolower($u['status'] ?? 'approved') ?>">
-                        <?php if (strtolower((string)($u['status'] ?? '')) === 'approved'): ?>
+                    <div class="approved-badge status-<?= htmlspecialchars($badgeVariant, ENT_QUOTES, 'UTF-8') ?>">
+                        <?php if ($badgeVariant === 'paid'): ?>
+                            <i class="fa fa-check-circle" aria-hidden="true"></i>
+                        <?php elseif ($userStatusRaw === 'approved'): ?>
                             <i class="fa fa-thumbs-up" aria-hidden="true"></i>
-                        <?php elseif (strtolower((string)($u['status'] ?? '')) === 'suspended'): ?>
+                        <?php elseif ($userStatusRaw === 'suspended'): ?>
                             <i class="fa fa-user-times" aria-hidden="true"></i>
                         <?php endif; ?>
-                        <?= strtoupper(htmlspecialchars((string)($u['status'] ?? 'approved'))) ?>
+                        <?= strtoupper(htmlspecialchars($badgeVariant === 'paid' ? 'paid' : (string) ($u['status'] ?? 'approved'), ENT_QUOTES, 'UTF-8')) ?>
                     </div>
                 </div>
 
