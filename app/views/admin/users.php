@@ -224,16 +224,8 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
 
                 <!-- CONTENT -->
                 <div class="user-main-content">
-                    <div class="profile-image-box">
-                        <?php
-                        $listPhotoSrc = admin_user_card_photo_url($u);
-                        $listPhotoFallback = admin_user_default_avatar_url($u);
-                        ?>
-                        <img src="<?= htmlspecialchars($listPhotoSrc, ENT_QUOTES, 'UTF-8') ?>"
-                             alt=""
-                             data-fallback="<?= htmlspecialchars($listPhotoFallback, ENT_QUOTES, 'UTF-8') ?>"
-                             onerror="if(this.dataset.fallback && this.src !== this.dataset.fallback){this.src=this.dataset.fallback;}">
-                    </div>
+                    <?php $cardUser = $u;
+                    require __DIR__ . '/partials/member_card_photo_block.php'; ?>
 
                     <div class="details-column details-grid">
                         <p><strong>Gender</strong><span>:</span> <?= htmlspecialchars(admin_member_na($u['gender'] ?? '')) ?></p>

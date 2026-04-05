@@ -500,6 +500,45 @@
   display: block;
 }
 
+.profile-image-stack {
+  flex-shrink: 0;
+  width: 392px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-image-stack .profile-image-box {
+  width: 100%;
+}
+
+.member-photo-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #c5c5c5;
+  color: #2b7a78;
+  text-decoration: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.member-photo-download:hover {
+  color: #1f5c5a;
+  border-color: #999;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.member-photo-download .fa {
+  font-size: 15px;
+  line-height: 1;
+}
+
 .details-column {
   flex: 1;
   min-width: 200px;
@@ -1632,10 +1671,20 @@
   .user-main-content {
     flex-direction: column;
   }
+  .profile-image-stack {
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+  }
   .profile-image-box {
     width: 100%;
     max-width: 280px;
     height: 280px;
+    margin: 0 auto;
+  }
+  .manage-users-page .profile-image-stack {
+    width: 100%;
+    max-width: 280px;
     margin: 0 auto;
   }
   .manage-users-page .profile-image-box {
@@ -2068,8 +2117,12 @@
   gap: 22px;
 }
 
-.manage-users-page .profile-image-box {
+.manage-users-page .profile-image-stack {
   width: 192px;
+}
+
+.manage-users-page .profile-image-box {
+  width: 100%;
   height: 192px;
   background: #eef2f3;
   border-color: #dde3e5;

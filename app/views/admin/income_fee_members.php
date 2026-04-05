@@ -377,22 +377,6 @@ require __DIR__ . '/partials/sidebar.php';
                 $badgeIcon = ($paySt === 'paid') ? 'fa-thumbs-up' : 'fa-clock-o';
                 $badgeText = $isPendingPlan ? 'PENDING PLAN' : strtoupper((string) ($r['staff_payment_status'] ?? 'UNPAID'));
 
-                $photo = '';
-                if ($uid > 0) {
-                    $photo = trim((string) ($r['photo2_url'] ?? ''));
-                    if ($photo === '') {
-                        $photo = trim((string) ($r['photo1_status'] ?? ''));
-                    }
-                }
-                if ($photo !== '') {
-                    $imgSrc = public_url_for_path($photo);
-                } else {
-                    $gImg = strtolower(trim((string) ($r['gender'] ?? '')));
-                    $imgSrc = ($gImg === 'female' || strncmp($gImg, 'female', 6) === 0)
-                        ? public_url_for_path('assets/images/female.png')
-                        : public_url_for_path('assets/images/male.png');
-                }
-
                 $planName = trim((string) ($r['active_plan_name'] ?? ''));
                 if ($planName === '') {
                     $planName = trim((string) ($r['package'] ?? ''));
@@ -446,9 +430,10 @@ require __DIR__ . '/partials/sidebar.php';
                 </div>
 
                 <div class="user-main-content">
-                    <div class="profile-image-box">
-                        <img src="<?= htmlspecialchars($imgSrc, ENT_QUOTES, 'UTF-8') ?>" alt="">
-                    </div>
+                    <?php
+                    $cardUser = array_merge($r, ['id' => $uid]);
+                    require __DIR__ . '/partials/member_card_photo_block.php';
+                    ?>
                     <div class="details-column details-grid">
                         <p><strong>Gender</strong><span>:</span> <?= htmlspecialchars((string) ($r['gender'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></p>
                         <p><strong>Mobile</strong><span>:</span> <?= htmlspecialchars(trim((string) ($r['mobile_number'] ?? '')) !== '' ? (string) $r['mobile_number'] : (string) ($r['phone'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></p>

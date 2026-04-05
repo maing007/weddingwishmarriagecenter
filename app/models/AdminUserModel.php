@@ -80,6 +80,23 @@ class AdminUserModel
         ");
     }
 
+    /**
+     * Same COALESCE as allUsers() card thumbnail (photo1 … photo6).
+     *
+     * @param string $q Table name or alias (e.g. "user_details", "ud")
+     */
+    private static function sqlSelectAvatarFromUserDetails(string $q): string
+    {
+        return "COALESCE(
+                NULLIF(TRIM(COALESCE({$q}.photo1_status, '')), ''),
+                NULLIF(TRIM(COALESCE({$q}.photo2_url, '')), ''),
+                NULLIF(TRIM(COALESCE({$q}.photo3_url, '')), ''),
+                NULLIF(TRIM(COALESCE({$q}.photo4_url, '')), ''),
+                NULLIF(TRIM(COALESCE({$q}.photo5_url, '')), ''),
+                NULLIF(TRIM(COALESCE({$q}.photo6_url, '')), '')
+            ) AS avatar";
+    }
+
     public function allUsers(?string $dashboardFilter = null)
     {
         $sql = "
@@ -217,10 +234,11 @@ class AdminUserModel
 
     public function spotlightUsers(?string $featuredFilter = null): array
     {
+        $avatarSel = self::sqlSelectAvatarFromUserDetails('user_details');
         $sql = "
             SELECT
                 id,
-                NULL AS avatar,
+                {$avatarSel},
                 phone,
                 dob,
                 religion,
@@ -289,10 +307,11 @@ class AdminUserModel
 
     public function expiredMembershipUsers(?string $statusFilter = null): array
     {
+        $avatarSel = self::sqlSelectAvatarFromUserDetails('user_details');
         $sql = "
             SELECT
                 id,
-                NULL AS avatar,
+                {$avatarSel},
                 phone,
                 dob,
                 religion,
@@ -362,9 +381,11 @@ class AdminUserModel
 
     public function followupReportUsers(string $followupFilter = 'all'): array
     {
+        $avatarSel = self::sqlSelectAvatarFromUserDetails('ud');
         $sql = "
             SELECT
                 ud.id,
+                {$avatarSel},
                 ud.first_name,
                 ud.second_name AS last_name,
                 ud.email,
@@ -768,11 +789,55 @@ class AdminUserModel
         }));
     }
 
+    private function dbColumnExists(string $table, string $column): bool
+    {
+        static $cache = [];
+        $k = $table . "\0" . $column;
+        if (isset($cache[$k])) {
+            return $cache[$k];
+        }
+        $stmt = $this->db->prepare(
+            'SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t AND COLUMN_NAME = :c'
+        );
+        $stmt->execute([':t' => $table, ':c' => $column]);
+        $cache[$k] = (int) $stmt->fetchColumn() > 0;
+
+        return $cache[$k];
+    }
+
+    private function distinctPlanExpiryDates(): array
+    {
+        try {
+            $stmt = $this->db->query("
+                SELECT DISTINCT DATE(up.expires_at) AS d
+                FROM user_packages up
+                INNER JOIN user_details ud ON ud.id = up.user_id
+                WHERE up.expires_at IS NOT NULL
+                  AND up.expires_at > '1970-01-01'
+                ORDER BY d DESC
+                LIMIT 500
+            ");
+            $out = [];
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+                $d = (string) ($r['d'] ?? '');
+                if ($d !== '' && strpos($d, '0000-00-00') === false) {
+                    $out[] = $d;
+                }
+            }
+
+            return array_values(array_unique($out));
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
     public function advancedSearchOptions(): array
     {
         return [
             'department' => $this->distinctValues('admin_users', 'department'),
             'team_leader' => $this->distinctValues('admin_users', 'team_leader'),
+            'team_role' => $this->distinctValues('admin_users', 'role'),
             'added_by' => $this->allAdminUsers(),
             'mother_tongue' => $this->distinctValues('user_details', 'mother_tongue'),
             'marital_status' => $this->distinctValues('user_details', 'marital_status'),
@@ -785,6 +850,7 @@ class AdminUserModel
             'house_type' => $this->distinctValues('user_details', 'house_type'),
             'education' => $this->distinctValues('user_details', 'education'),
             'employed_in' => $this->distinctValues('user_details', 'employed_in'),
+            'annual_income' => $this->distinctValues('user_details', 'annual_income'),
             'occupation' => $this->distinctValues('user_details', 'occupation'),
             'designation' => $this->distinctValues('user_details', 'designation'),
             'residence' => $this->distinctValues('user_details', 'residence'),
@@ -798,7 +864,12 @@ class AdminUserModel
             'reference' => $this->distinctValues('user_details', 'reference'),
             'family_type' => $this->distinctValues('user_details', 'family_type'),
             'family_status' => $this->distinctValues('user_details', 'family_status'),
+            'no_of_brothers' => $this->distinctValues('user_details', 'no_of_brothers'),
+            'no_of_married_brother' => $this->distinctValues('user_details', 'no_of_married_brother'),
+            'no_of_sisters' => $this->distinctValues('user_details', 'no_of_sisters'),
+            'no_of_married_sister' => $this->distinctValues('user_details', 'no_of_married_sister'),
             'plan_name' => $this->distinctValues('packages', 'name'),
+            'plan_expire_dates' => $this->distinctPlanExpiryDates(),
         ];
     }
 
@@ -819,10 +890,22 @@ class AdminUserModel
                 COALESCE(ud.featured_status, 'non_featured') AS featured_status,
                 au.name AS added_by_name
             FROM user_details ud
-            LEFT JOIN admin_users au ON au.id = ud.lead
+            LEFT JOIN admin_users au ON (
+                (ud.lead REGEXP '^[0-9]+$' AND au.id = CAST(ud.lead AS UNSIGNED))
+                OR (ud.lead NOT REGEXP '^[0-9]+$' AND au.name = ud.lead)
+            )
             WHERE 1=1
         ";
         $params = [];
+
+        if (!empty($filters['_own_lead_only'])) {
+            $sql .= ' AND (
+                (ud.lead REGEXP \'^[0-9]+$\' AND CAST(ud.lead AS UNSIGNED) = :own_aid)
+                OR ud.lead = :own_aname
+            )';
+            $params[':own_aid'] = (int) $filters['_own_lead_only'];
+            $params[':own_aname'] = (string) ($filters['_own_lead_name'] ?? '');
+        }
 
         if (!empty($filters['gender']) && strtolower($filters['gender']) !== 'all') {
             $sql .= " AND LOWER(COALESCE(ud.gender, '')) = :gender";
@@ -849,8 +932,14 @@ class AdminUserModel
             $params[':team_leader_filter'] = $filters['team_leader_filter'];
         }
         if (!empty($filters['added_by_filter'])) {
-            $sql .= " AND ud.lead = :added_by_filter";
-            $params[':added_by_filter'] = (int)$filters['added_by_filter'];
+            $abf = (int) $filters['added_by_filter'];
+            $sql .= ' AND (CAST(ud.lead AS UNSIGNED) = :added_by_filter OR ud.lead = :added_by_filter_str)';
+            $params[':added_by_filter'] = $abf;
+            $params[':added_by_filter_str'] = (string) $abf;
+        }
+        if (!empty($filters['team_filter'])) {
+            $sql .= ' AND au.role = :team_filter';
+            $params[':team_filter'] = (string) $filters['team_filter'];
         }
         if (!empty($filters['keyword'])) {
             $sql .= " AND (
@@ -882,18 +971,71 @@ class AdminUserModel
             $params[':to_age'] = (int)$filters['to_age'];
         }
 
+        $maslakVal = trim((string) ($filters['maslak'] ?? ''));
+        $sectVal = trim((string) ($filters['sect'] ?? ''));
+        if ($maslakVal !== '') {
+            $sql .= ' AND ud.maslak = :adv_maslak';
+            $params[':adv_maslak'] = $maslakVal;
+        } elseif ($sectVal !== '') {
+            $sql .= ' AND ud.maslak = :adv_sect';
+            $params[':adv_sect'] = $sectVal;
+        }
+
+        if (!empty($filters['height_in']) && is_array($filters['height_in'])) {
+            $hin = array_values(array_filter($filters['height_in'], static function ($v) {
+                return $v !== null && $v !== '';
+            }));
+            if ($hin !== []) {
+                $ph = [];
+                foreach ($hin as $ix => $h) {
+                    $k = ':hi' . $ix;
+                    $ph[] = $k;
+                    $params[$k] = (string) $h;
+                }
+                $sql .= ' AND ud.height IN (' . implode(',', $ph) . ')';
+            }
+        }
+        if (!empty($filters['weight_in']) && is_array($filters['weight_in'])) {
+            $win = array_values(array_filter($filters['weight_in'], static function ($v) {
+                return $v !== null && $v !== '';
+            }));
+            if ($win !== []) {
+                $ph = [];
+                foreach ($win as $ix => $w) {
+                    $k = ':wi' . $ix;
+                    $ph[] = $k;
+                    $params[$k] = (string) $w;
+                }
+                $sql .= ' AND ud.weight IN (' . implode(',', $ph) . ')';
+            }
+        }
+
+        $hsmFrom = isset($filters['house_marla_from']) && $filters['house_marla_from'] !== ''
+            ? (float) str_replace(',', '.', preg_replace('/[^0-9.,-]/', '', (string) $filters['house_marla_from'])) : null;
+        $hsmTo = isset($filters['house_marla_to']) && $filters['house_marla_to'] !== ''
+            ? (float) str_replace(',', '.', preg_replace('/[^0-9.,-]/', '', (string) $filters['house_marla_to'])) : null;
+        if ($hsmFrom !== null && $hsmFrom > 0) {
+            $sql .= ' AND CAST(NULLIF(TRIM(ud.house_size_marla), \'\') AS DECIMAL(12,2)) >= :hsm_from';
+            $params[':hsm_from'] = $hsmFrom;
+        }
+        if ($hsmTo !== null && $hsmTo > 0) {
+            $sql .= ' AND CAST(NULLIF(TRIM(ud.house_size_marla), \'\') AS DECIMAL(12,2)) <= :hsm_to';
+            $params[':hsm_to'] = $hsmTo;
+        }
+
         $singleMap = [
             'mother_tongue' => 'ud.mother_tongue',
             'marital_status' => 'ud.marital_status',
             'religion' => 'ud.religion',
-            'maslak' => 'ud.maslak',
             'caste' => 'ud.caste',
             'country' => 'ud.country',
             'state' => 'ud.state',
             'city' => 'ud.city',
+            'area' => 'ud.area',
             'house_type' => 'ud.house_type',
             'education' => 'ud.education',
             'employed_in' => 'ud.employed_in',
+            'annual_income' => 'ud.annual_income',
             'occupation' => 'ud.occupation',
             'designation' => 'ud.designation',
             'residence' => 'ud.residence',
@@ -907,12 +1049,96 @@ class AdminUserModel
             'reference' => 'ud.reference',
             'family_type' => 'ud.family_type',
             'family_status' => 'ud.family_status',
+            'no_of_brothers' => 'ud.no_of_brothers',
+            'no_of_married_brother' => 'ud.no_of_married_brother',
+            'no_of_sisters' => 'ud.no_of_sisters',
+            'no_of_married_sister' => 'ud.no_of_married_sister',
             'user_status' => 'ud.user_status',
         ];
         foreach ($singleMap as $key => $column) {
-            if (!empty($filters[$key])) {
-                $sql .= " AND $column = :$key";
-                $params[":$key"] = $filters[$key];
+            if (!array_key_exists($key, $filters)) {
+                continue;
+            }
+            $fv = $filters[$key];
+            if ($fv === '' || $fv === null) {
+                continue;
+            }
+            $sql .= " AND $column = :$key";
+            $params[":$key"] = $fv;
+        }
+
+        $ped = trim((string) ($filters['plan_expires_on'] ?? ''));
+        if ($ped !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $ped)) {
+            $sql .= ' AND EXISTS (
+                SELECT 1 FROM user_packages up_pe
+                WHERE up_pe.user_id = ud.id AND DATE(up_pe.expires_at) = :plan_expires_on
+            )';
+            $params[':plan_expires_on'] = $ped;
+        }
+
+        $ps = strtolower(trim((string) ($filters['photo_setting'] ?? 'all')));
+        if ($ps === 'withphoto') {
+            $sql .= " AND (
+                NULLIF(TRIM(COALESCE(ud.photo2_url,'')), '') IS NOT NULL
+                OR NULLIF(TRIM(COALESCE(ud.photo3_url,'')), '') IS NOT NULL
+                OR NULLIF(TRIM(COALESCE(ud.photo4_url,'')), '') IS NOT NULL
+                OR NULLIF(TRIM(COALESCE(ud.photo5_url,'')), '') IS NOT NULL
+                OR NULLIF(TRIM(COALESCE(ud.photo6_url,'')), '') IS NOT NULL
+                OR NULLIF(TRIM(COALESCE(ud.photo1_status,'')), '') IS NOT NULL
+            )";
+        } elseif ($ps === 'withoutphoto') {
+            $sql .= " AND NULLIF(TRIM(COALESCE(ud.photo2_url,'')), '') IS NULL
+                AND NULLIF(TRIM(COALESCE(ud.photo3_url,'')), '') IS NULL
+                AND NULLIF(TRIM(COALESCE(ud.photo4_url,'')), '') IS NULL
+                AND NULLIF(TRIM(COALESCE(ud.photo5_url,'')), '') IS NULL
+                AND NULLIF(TRIM(COALESCE(ud.photo6_url,'')), '') IS NULL
+                AND NULLIF(TRIM(COALESCE(ud.photo1_status,'')), '') IS NULL";
+        }
+
+        $mv = strtolower(trim((string) ($filters['mobile_verify_status'] ?? 'all')));
+        if ($mv === 'verified' || $mv === 'notverified') {
+            if ($this->dbColumnExists('user_details', 'mobile_verified')) {
+                if ($mv === 'verified') {
+                    $sql .= ' AND ud.mobile_verified = 1';
+                } else {
+                    $sql .= ' AND (ud.mobile_verified = 0 OR ud.mobile_verified IS NULL)';
+                }
+            } elseif ($mv === 'verified') {
+                $sql .= " AND (
+                    NULLIF(TRIM(COALESCE(ud.mobile_number,'')), '') IS NOT NULL
+                    OR NULLIF(TRIM(COALESCE(ud.phone,'')), '') IS NOT NULL
+                )";
+            } else {
+                $sql .= " AND NULLIF(TRIM(COALESCE(ud.mobile_number,'')), '') IS NULL
+                    AND NULLIF(TRIM(COALESCE(ud.phone,'')), '') IS NULL";
+            }
+        }
+
+        $ev = strtolower(trim((string) ($filters['email_verify_status'] ?? 'all')));
+        if ($ev === 'verified' || $ev === 'notverified') {
+            if ($this->dbColumnExists('user_details', 'email_verified')) {
+                if ($ev === 'verified') {
+                    $sql .= ' AND ud.email_verified = 1';
+                } else {
+                    $sql .= ' AND (ud.email_verified = 0 OR ud.email_verified IS NULL)';
+                }
+            } elseif ($ev === 'verified') {
+                $sql .= " AND NULLIF(TRIM(COALESCE(ud.email,'')), '') IS NOT NULL
+                    AND ud.email LIKE '%@%'";
+            } else {
+                $sql .= " AND (
+                    NULLIF(TRIM(COALESCE(ud.email,'')), '') IS NULL
+                    OR ud.email NOT LIKE '%@%'
+                )";
+            }
+        }
+
+        $rs = strtolower(trim((string) ($filters['registration_source'] ?? '')));
+        if ($rs !== '' && $this->dbColumnExists('user_details', 'registration_source')) {
+            if ($rs === 'website') {
+                $sql .= " AND LOWER(TRIM(ud.registration_source)) IN ('website','web','site')";
+            } elseif ($rs === 'mobile_app') {
+                $sql .= " AND LOWER(TRIM(ud.registration_source)) IN ('mobile_app','mobile','app','android','ios')";
             }
         }
 

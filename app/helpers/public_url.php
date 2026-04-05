@@ -90,3 +90,92 @@ if (!function_exists('admin_user_card_photo_url')) {
         return admin_user_default_avatar_url($u);
     }
 }
+
+/** @internal */
+if (!function_exists('admin_member_is_placeholder_photo_path')) {
+    function admin_member_is_placeholder_photo_path(string $path): bool
+    {
+        if ($path === '') {
+            return true;
+        }
+        $norm = strtolower(str_replace('\\', '/', $path));
+
+        return strpos($norm, 'uploads/avatars/default') !== false
+            || strpos($norm, 'default-avatar') !== false
+            || strpos($norm, 'avatar-placeholder') !== false
+            || strpos($norm, 'assets/images/male') !== false
+            || strpos($norm, 'assets/images/female') !== false;
+    }
+}
+
+/**
+ * Plain-text status values sometimes stored in photo1_status (not a file path).
+ */
+if (!function_exists('admin_member_is_photo_status_token')) {
+    function admin_member_is_photo_status_token(string $path): bool
+    {
+        $t = strtolower(trim($path));
+
+        return in_array($t, ['approved', 'pending', 'rejected', 'declined', 'none', 'no', 'yes'], true);
+    }
+}
+
+/**
+ * First member-upload path for downloads, same field order as list cards (photo1 … photo6), then avatar.
+ */
+if (!function_exists('admin_member_first_upload_relative_path')) {
+    function admin_member_first_upload_relative_path(array $u): string
+    {
+        foreach (['photo1_status', 'photo2_url', 'photo3_url', 'photo4_url', 'photo5_url', 'photo6_url'] as $k) {
+            if (!array_key_exists($k, $u)) {
+                continue;
+            }
+            $p = trim((string) ($u[$k] ?? ''));
+            if ($p === '' || preg_match('#^https?://#i', $p) || admin_member_is_placeholder_photo_path($p)) {
+                continue;
+            }
+            if (admin_member_is_photo_status_token($p)) {
+                continue;
+            }
+            return $p;
+        }
+
+        $av = trim((string) ($u['avatar'] ?? ''));
+        if ($av !== '' && !preg_match('#^https?://#i', $av) && !admin_member_is_placeholder_photo_path($av)) {
+            return $av;
+        }
+
+        return '';
+    }
+}
+
+/**
+ * Resolve a DB-stored path to a file under /public (blocks traversal and remote URLs).
+ */
+if (!function_exists('admin_member_photo_public_absolute_path')) {
+    function admin_member_photo_public_absolute_path(string $relative): ?string
+    {
+        if (!defined('APP_ROOT')) {
+            return null;
+        }
+        $norm = str_replace('\\', '/', trim($relative));
+        if ($norm === '' || preg_match('#^https?://#i', $norm)) {
+            return null;
+        }
+        if (strpos($norm, '..') !== false) {
+            return null;
+        }
+        if (stripos($norm, 'public/') === 0) {
+            $norm = substr($norm, 7);
+        }
+        $norm = ltrim($norm, '/');
+        $publicRoot = rtrim((string) APP_ROOT, '/') . '/public';
+        $full = realpath($publicRoot . '/' . $norm);
+        $base = realpath($publicRoot);
+        if ($full === false || $base === false || strpos($full, $base) !== 0) {
+            return null;
+        }
+
+        return is_file($full) ? $full : null;
+    }
+}

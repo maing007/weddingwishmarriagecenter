@@ -65,6 +65,178 @@ $renderOptions = static function (array $items, string $selectedValue, string $p
                     </div>
                 </div>
                 <div class="form-row">
+                    <label>Filter (lead)</label>
+                    <div class="field radio-group">
+                        <label><input type="radio" name="lead_scope" value="All" <?= $isChecked($filters, 'lead_scope', 'All', 'All') ?>> All</label>
+                        <label><input type="radio" name="lead_scope" value="Own" <?= $isChecked($filters, 'lead_scope', 'Own', 'All') ?>> Own (my members)</label>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Team filter (staff role)</label>
+                    <div class="field"><select name="team_filter" class="form-select form-control"><?php $renderOptions($options['team_role'] ?? [], (string)($filters['team_filter'] ?? ''), 'Select team / role'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Height range</label>
+                    <div class="field two-col">
+                        <select name="height_from" class="form-select form-control"><?php $renderOptions($options['heights'] ?? [], (string)($filters['height_from'] ?? ''), 'From'); ?></select>
+                        <select name="height_to" class="form-select form-control"><?php $renderOptions($options['heights'] ?? [], (string)($filters['height_to'] ?? ''), 'To'); ?></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Sect (maslak)</label>
+                    <div class="field"><select name="sect" class="form-select form-control"><?php $renderOptions($options['sect'] ?? ($options['maslak'] ?? []), (string)($filters['sect'] ?? ''), 'Select sect'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Maslak</label>
+                    <div class="field"><select name="maslak" class="form-select form-control"><?php $renderOptions($options['maslak'] ?? [], (string)($filters['maslak'] ?? ''), 'Select maslak'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>House area</label>
+                    <div class="field"><select name="area" class="form-select form-control"><?php $renderOptions($options['areas'] ?? [], (string)($filters['area'] ?? ''), 'Select house area'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>House type</label>
+                    <div class="field"><select name="house_type" class="form-select form-control"><?php $renderOptions($options['house_type'] ?? [], (string)($filters['house_type'] ?? ''), 'Select house type'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>House size (Marla) range</label>
+                    <div class="field two-col">
+                        <input type="number" class="form-control" name="house_marla_from" step="0.01" min="0" value="<?= $v($filters, 'house_marla_from') ?>" placeholder="From">
+                        <input type="number" class="form-control" name="house_marla_to" step="0.01" min="0" value="<?= $v($filters, 'house_marla_to') ?>" placeholder="To">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Employed in</label>
+                    <div class="field"><select name="employed_in" class="form-select form-control"><?php $renderOptions($options['employed_in'] ?? [], (string)($filters['employed_in'] ?? ''), 'Select employed in'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Annual income</label>
+                    <div class="field"><select name="annual_income" class="form-select form-control"><?php $renderOptions($options['annual_income'] ?? [], (string)($filters['annual_income'] ?? ''), 'Select annual income'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Designation</label>
+                    <div class="field"><select name="designation" class="form-select form-control"><?php $renderOptions($options['designation'] ?? [], (string)($filters['designation'] ?? ''), 'Select designation'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Weight range</label>
+                    <div class="field two-col">
+                        <select name="weight_from" class="form-select form-control"><?php $renderOptions($options['weights'] ?? [], (string)($filters['weight_from'] ?? ''), 'From'); ?></select>
+                        <select name="weight_to" class="form-select form-control"><?php $renderOptions($options['weights'] ?? [], (string)($filters['weight_to'] ?? ''), 'To'); ?></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Diet (eating habits)</label>
+                    <div class="field"><select name="eating_habits" class="form-select form-control"><?php $renderOptions($options['eating_habits'] ?? [], (string)($filters['eating_habits'] ?? ''), 'Select diet'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Smoke</label>
+                    <div class="field">
+                        <div class="radio-group" style="margin-bottom:8px">
+                            <label><input type="radio" name="smoking_mode" value="all" <?= $isChecked($filters, 'smoking_mode', 'all', 'all') ?>> All</label>
+                            <label><input type="radio" name="smoking_mode" value="match" <?= $isChecked($filters, 'smoking_mode', 'match', 'all') ?>> Match value</label>
+                        </div>
+                        <select name="smoking" class="form-select form-control"><?php $renderOptions($options['smoking'] ?? [], (string)($filters['smoking'] ?? ''), 'Select smoking'); ?></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Drink</label>
+                    <div class="field">
+                        <div class="radio-group" style="margin-bottom:8px">
+                            <label><input type="radio" name="drinking_mode" value="all" <?= $isChecked($filters, 'drinking_mode', 'all', 'all') ?>> All</label>
+                            <label><input type="radio" name="drinking_mode" value="match" <?= $isChecked($filters, 'drinking_mode', 'match', 'all') ?>> Match value</label>
+                        </div>
+                        <select name="drinking" class="form-select form-control"><?php $renderOptions($options['drinking'] ?? [], (string)($filters['drinking'] ?? ''), 'Select drinking'); ?></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Body type</label>
+                    <div class="field"><select name="body_type" class="form-select form-control"><?php $renderOptions($options['body_type'] ?? [], (string)($filters['body_type'] ?? ''), 'Select body type'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Skin tone</label>
+                    <div class="field"><select name="skin_tone" class="form-select form-control"><?php $renderOptions($options['skin_tone'] ?? [], (string)($filters['skin_tone'] ?? ''), 'Select skin tone'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Blood group</label>
+                    <div class="field"><select name="blood_group" class="form-select form-control"><?php $renderOptions($options['blood_group'] ?? [], (string)($filters['blood_group'] ?? ''), 'Select blood group'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Profile by</label>
+                    <div class="field"><select name="profile_by" class="form-select form-control"><?php $renderOptions($options['profile_by'] ?? [], (string)($filters['profile_by'] ?? ''), 'Select profile by'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Reference</label>
+                    <div class="field"><select name="reference" class="form-select form-control"><?php $renderOptions($options['reference'] ?? [], (string)($filters['reference'] ?? ''), 'Select reference'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Family type</label>
+                    <div class="field">
+                        <div class="radio-group" style="margin-bottom:8px">
+                            <label><input type="radio" name="family_type_mode" value="all" <?= $isChecked($filters, 'family_type_mode', 'all', 'all') ?>> All</label>
+                            <label><input type="radio" name="family_type_mode" value="match" <?= $isChecked($filters, 'family_type_mode', 'match', 'all') ?>> Match value</label>
+                        </div>
+                        <select name="family_type" class="form-select form-control"><?php $renderOptions($options['family_type'] ?? [], (string)($filters['family_type'] ?? ''), 'Select family type'); ?></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Family status</label>
+                    <div class="field"><select name="family_status" class="form-select form-control"><?php $renderOptions($options['family_status'] ?? [], (string)($filters['family_status'] ?? ''), 'Select family status'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>No. of brothers</label>
+                    <div class="field"><select name="no_of_brothers" class="form-select form-control"><?php $renderOptions($options['no_of_brothers'] ?? [], (string)($filters['no_of_brothers'] ?? ''), 'Select no. of brothers'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>No. of married brothers</label>
+                    <div class="field"><select name="no_of_married_brother" class="form-select form-control"><?php $renderOptions($options['no_of_married_brother'] ?? [], (string)($filters['no_of_married_brother'] ?? ''), 'Select no. of married brothers'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>No. of sisters</label>
+                    <div class="field"><select name="no_of_sisters" class="form-select form-control"><?php $renderOptions($options['no_of_sisters'] ?? [], (string)($filters['no_of_sisters'] ?? ''), 'Select no. of sisters'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>No. of married sisters</label>
+                    <div class="field"><select name="no_of_married_sister" class="form-select form-control"><?php $renderOptions($options['no_of_married_sister'] ?? [], (string)($filters['no_of_married_sister'] ?? ''), 'Select no. of married sisters'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Mobile verify status</label>
+                    <div class="field radio-group">
+                        <label><input type="radio" name="mobile_verify_status" value="All" <?= $isChecked($filters, 'mobile_verify_status', 'All', 'All') ?>> All</label>
+                        <label><input type="radio" name="mobile_verify_status" value="Verified" <?= $isChecked($filters, 'mobile_verify_status', 'Verified', 'All') ?>> Verified</label>
+                        <label><input type="radio" name="mobile_verify_status" value="NotVerified" <?= $isChecked($filters, 'mobile_verify_status', 'NotVerified', 'All') ?>> Not verified</label>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Email verify status</label>
+                    <div class="field radio-group">
+                        <label><input type="radio" name="email_verify_status" value="All" <?= $isChecked($filters, 'email_verify_status', 'All', 'All') ?>> All</label>
+                        <label><input type="radio" name="email_verify_status" value="Verified" <?= $isChecked($filters, 'email_verify_status', 'Verified', 'All') ?>> Verified</label>
+                        <label><input type="radio" name="email_verify_status" value="NotVerified" <?= $isChecked($filters, 'email_verify_status', 'NotVerified', 'All') ?>> Not verified</label>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Registered from</label>
+                    <div class="field">
+                        <select name="registration_source" class="form-select form-control">
+                            <option value=""<?= trim((string)($filters['registration_source'] ?? '')) === '' ? ' selected' : '' ?>>All</option>
+                            <option value="website"<?= strtolower(trim((string)($filters['registration_source'] ?? ''))) === 'website' ? ' selected' : '' ?>>Website</option>
+                            <option value="mobile_app"<?= strtolower(trim((string)($filters['registration_source'] ?? ''))) === 'mobile_app' ? ' selected' : '' ?>>Mobile app</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Plan expired on (date)</label>
+                    <div class="field"><select name="plan_expires_on" class="form-select form-control"><?php $renderOptions($options['plan_expire_dates'] ?? [], (string)($filters['plan_expires_on'] ?? ''), 'Select plan expiry date'); ?></select></div>
+                </div>
+                <div class="form-row">
+                    <label>Photo setting <span class="req">*</span></label>
+                    <div class="field radio-group">
+                        <label><input type="radio" name="photo_setting" value="All" <?= $isChecked($filters, 'photo_setting', 'All', 'All') ?>> All</label>
+                        <label><input type="radio" name="photo_setting" value="WithPhoto" <?= $isChecked($filters, 'photo_setting', 'WithPhoto', 'All') ?>> With photo</label>
+                        <label><input type="radio" name="photo_setting" value="WithoutPhoto" <?= $isChecked($filters, 'photo_setting', 'WithoutPhoto', 'All') ?>> Without photo</label>
+                    </div>
+                </div>
+                <div class="form-row">
                     <label>Department Filter</label>
                     <div class="field"><select name="department_filter" class="form-select form-control"><?php $renderOptions($options['department'] ?? [], (string)($filters['department_filter'] ?? ''), 'Select Department Filter'); ?></select></div>
                 </div>

@@ -193,6 +193,7 @@ $router->get('/admin/users/comments-json', 'AdminUsersController@commentsJson');
 $router->get('/admin/users/member-dynamic-team-json', 'AdminUsersController@memberDynamicTeamJson');
 $router->get('/admin/users/profile-view', 'AdminUsersController@adminProfileView');
 $router->get('/admin/users/profile-pdf-template', 'AdminUsersController@profilePdfTemplate');
+$router->get('/admin/users/download-member-photo', 'AdminUsersController@downloadMemberPhoto');
 $router->post('/admin/users/send-email-confirmation', 'AdminUsersController@sendEmailConfirmation');
 $router->get('/admin/users/edit-steps', 'AdminUsersController@editProfileSteps');
 $router->post('/admin/users/edit-steps', 'AdminUsersController@updateProfileSteps');

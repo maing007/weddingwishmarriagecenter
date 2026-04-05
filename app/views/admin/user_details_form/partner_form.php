@@ -144,12 +144,22 @@ require __DIR__ . '/_step_header.php';
                 <!-- Height -->
                 <div class="form-group">
                     <label>Partner From Height *</label>
-                    <input type="text" name="partner_from_height" class="form-control" required>
+                    <select name="partner_from_height" class="form-control" required>
+                    <option value="">Select Height</option>
+                        <?php foreach ($heights as $height) : ?>
+                            <option value="<?= $height ?>"><?= $height ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
                 <div class="form-group">
                     <label>Partner To Height *</label>
-                    <input type="text" name="partner_to_height" class="form-control" required>
+                    <select name="partner_to_height" class="form-control" required>
+                    <option value="">Select Height</option>
+                        <?php foreach ($heights as $height) : ?>
+                            <option value="<?= $height ?>"><?= $height ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
                 <!-- Body Type -->
@@ -198,7 +208,12 @@ require __DIR__ . '/_step_header.php';
                 <!-- Language -->
                 <div class="form-group">
                     <label>Partner Mother Tongue</label>
-                    <input type="text" name="partner_mother_tongue" class="form-control">
+                    <select name="partner_mother_tongue" class="form-control">
+                        <option value="">Select Mother Tongue</option>
+                        <?php foreach ($languages as $language): ?>
+                            <option value="<?= $language ?>"><?= $language ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
                 <!-- Expectations -->
@@ -211,7 +226,15 @@ require __DIR__ . '/_step_header.php';
 
                 <div class="form-group">
                     <label>Partner Religion *</label>
-                    <input type="text" name="partner_religion" class="form-control" required>
+                    <select name="partner_religion" class="form-control" required>
+                        <option value="">Select Religion</option>
+                        <option value="">Select religion</option>
+                                <option value="islam">Islam</option>
+                                <option value="christianity">Christianity</option>
+                                <option value="hinduism">Hinduism</option>
+                                <option value="buddhism">Buddhism</option>
+                                <option value="other">Other</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -248,7 +271,13 @@ require __DIR__ . '/_step_header.php';
 
                 <div class="form-group">
                     <label>Partner Sect</label>
-                    <input type="text" name="partner_sect" class="form-control">
+                    <select name="partner_sect" class="form-control">
+                        <option value="">Select Sect</option>
+                        <option value="sunni">Sunni</option>
+                        <option value="shia">Shia</option>
+                        <option value="ahmadiyya">Ahmadiyya</option>
+                        <option value="other">Other</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -284,7 +313,7 @@ require __DIR__ . '/_step_header.php';
                         <option>Business</option>
                         <option>Defence</option>
                         <option>Others</option>
-                    </select>
+                    </select> 
                 </div>
 
                 <!-- Occupation -->

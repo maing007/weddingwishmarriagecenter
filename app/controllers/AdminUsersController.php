@@ -248,7 +248,72 @@ class AdminUsersController
     public function advancedSearch()
     {
         $filters = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : $_GET;
+        if (!is_array($filters)) {
+            $filters = [];
+        }
+
+        require_once __DIR__ . '/../views/admin/user_details_form/data_array.php';
+
+        if (strtolower((string) ($filters['lead_scope'] ?? 'all')) === 'own') {
+            $aid = (int) ($_SESSION['admin_id'] ?? 0);
+            if ($aid > 0) {
+                $filters['_own_lead_only'] = $aid;
+                $adm = $this->admin->findById($aid);
+                $filters['_own_lead_name'] = trim((string) ($adm['name'] ?? ''));
+            }
+        }
+
+        foreach (['smoking', 'drinking', 'family_type'] as $habitKey) {
+            $modeKey = $habitKey . '_mode';
+            if (strtolower((string) ($filters[$modeKey] ?? 'all')) !== 'match') {
+                unset($filters[$habitKey]);
+            }
+            unset($filters[$modeKey]);
+        }
+
+        $sliceRange = static function (array $order, ?string $from, ?string $to): array {
+            $from = $from !== null ? trim($from) : '';
+            $to = $to !== null ? trim($to) : '';
+            if ($from === '' && $to === '') {
+                return [];
+            }
+            $i1 = $from !== '' ? array_search($from, $order, true) : false;
+            $i2 = $to !== '' ? array_search($to, $order, true) : false;
+            if ($i1 === false && $i2 === false) {
+                return [];
+            }
+            if ($i1 === false) {
+                $i1 = $i2;
+            }
+            if ($i2 === false) {
+                $i2 = $i1;
+            }
+            if ($i1 > $i2) {
+                $t = $i1;
+                $i1 = $i2;
+                $i2 = $t;
+            }
+
+            return array_slice($order, $i1, $i2 - $i1 + 1);
+        };
+
+        $filters['height_in'] = $sliceRange(
+            $heights ?? [],
+            isset($filters['height_from']) ? (string) $filters['height_from'] : '',
+            isset($filters['height_to']) ? (string) $filters['height_to'] : ''
+        );
+        $filters['weight_in'] = $sliceRange(
+            $weights ?? [],
+            isset($filters['weight_from']) ? (string) $filters['weight_from'] : '',
+            isset($filters['weight_to']) ? (string) $filters['weight_to'] : ''
+        );
+
         $options = $this->model->advancedSearchOptions();
+        $options['heights'] = $heights ?? [];
+        $options['weights'] = $weights ?? [];
+        $options['areas'] = $areas ?? [];
+        $options['sect'] = $options['maslak'] ?? [];
+
         $rows = $this->model->advancedSearchUsers($filters);
         require __DIR__ . '/../views/admin/advanced_search.php';
     }
@@ -704,6 +769,58 @@ class AdminUsersController
             exit;
         }
         require __DIR__ . '/../views/admin/profile_pdf_template.php';
+    }
+
+    public function downloadMemberPhoto()
+    {
+        $id = (int) ($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            http_response_code(400);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'Invalid member.';
+            exit;
+        }
+        $user = $this->model->getUserDetailsById($id);
+        if (!$user) {
+            http_response_code(404);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'Member not found.';
+            exit;
+        }
+        $user['id'] = $id;
+        $rel = admin_member_first_upload_relative_path($user);
+        if ($rel === '') {
+            http_response_code(404);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'No uploaded photo on file.';
+            exit;
+        }
+        $abs = admin_member_photo_public_absolute_path($rel);
+        if ($abs === null) {
+            http_response_code(404);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'Photo file not found.';
+            exit;
+        }
+        $mime = 'application/octet-stream';
+        if (function_exists('finfo_open')) {
+            $fi = finfo_open(FILEINFO_MIME_TYPE);
+            if ($fi !== false) {
+                $det = finfo_file($fi, $abs);
+                finfo_close($fi);
+                if (is_string($det) && $det !== '') {
+                    $mime = $det;
+                }
+            }
+        }
+        $fn = basename($abs);
+        $fn = preg_replace('/[^A-Za-z0-9._-]+/', '_', $fn) ?: 'photo';
+        header('Content-Type: ' . $mime);
+        header('Content-Disposition: attachment; filename="' . $fn . '"');
+        header('Content-Length: ' . (string) filesize($abs));
+        header('X-Content-Type-Options: nosniff');
+        readfile($abs);
+        exit;
     }
 
     public function sendEmailConfirmation()

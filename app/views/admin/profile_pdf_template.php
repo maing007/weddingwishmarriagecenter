@@ -206,7 +206,7 @@ require __DIR__ . '/partials/sidebar.php';
         .column-2 { flex: 2; min-width: 0; display: flex; flex-direction: column; }
         .title-column {
             width: 50%;
-            text-align: end;
+            /* text-align: end; */
             padding-right: 5px;
             font-weight: bold;
             color: #fff;
@@ -217,7 +217,7 @@ require __DIR__ . '/partials/sidebar.php';
         .text-column {
             width: 50%;
             text-align: start;
-            padding-left: 5px;
+            /* padding-left: 5px; */
             color: #fff;
             font-size: 13px;
             line-height: 1.5;
@@ -410,11 +410,11 @@ require __DIR__ . '/partials/sidebar.php';
                             <td class="text-column"><?= $e($empty($user['caste'] ?? '') ?: '—') ?></td>
                         </tr>
                         <tr>
-                            <td class="title-column">Marital Status:</td>
+                            <td class="title-column" style="width: 100%;">Marital Status:</td>
                             <td class="text-column"><?= $e($empty($user['marital_status'] ?? '') ?: '—') ?></td>
                         </tr>
                         <tr>
-                            <td class="title-column">Mother Tongue:</td>
+                            <td class="title-column" style="width: 100%;">Mother Tongue:</td>
                             <td class="text-column"><?= $e($empty($user['mother_tongue'] ?? '') ?: '—') ?></td>
                         </tr>
                         </tbody>
