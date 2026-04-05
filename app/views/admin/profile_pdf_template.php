@@ -206,7 +206,7 @@ require __DIR__ . '/partials/sidebar.php';
         .column-2 { flex: 2; min-width: 0; display: flex; flex-direction: column; }
         .title-column {
             width: 50%;
-            /* text-align: end; */
+            /*text-align: end;*/
             padding-right: 5px;
             font-weight: bold;
             color: #fff;
@@ -217,7 +217,7 @@ require __DIR__ . '/partials/sidebar.php';
         .text-column {
             width: 50%;
             text-align: start;
-            /* padding-left: 5px; */
+            padding-left: 0px;
             color: #fff;
             font-size: 13px;
             line-height: 1.5;
@@ -390,31 +390,33 @@ require __DIR__ . '/partials/sidebar.php';
                     <table class="mem-info-1">
                         <tbody>
                         <tr>
-                            <td class="title-column">Age:</td>
+                            <td class="title-column">Age : &nbsp; </td>
                             <td class="text-column"><?= $e($ageStr) ?></td>
                         </tr>
                         <tr>
-                            <td class="title-column">Height:</td>
+                            <td class="title-column">Height : &nbsp; </td>
                             <td class="text-column"><?= $e($heightStr) ?></td>
                         </tr>
                         <tr>
-                            <td class="title-column">Religion:</td>
+                            <td class="title-column">Religion : &nbsp; </td>
                             <td class="text-column"><?= $e($empty($user['religion'] ?? '') ?: '—') ?></td>
                         </tr>
                         <tr>
-                            <td class="title-column">Sect:</td>
+                            <td class="title-column">Sect :  &nbsp;</td>
                             <td class="text-column"><?= $e($empty($user['maslak'] ?? '') ?: '—') ?></td>
                         </tr>
                         <tr>
-                            <td class="title-column">Caste:</td>
+                            <td class="title-column">Caste : &nbsp; </td>
                             <td class="text-column"><?= $e($empty($user['caste'] ?? '') ?: '—') ?></td>
                         </tr>
                         <tr>
-                            <td class="title-column" style="width: 100%;">Marital Status:</td>
+                            <td class="title-column" style="width:100%!important;">Marital Status:&nbsp;</td>
+                           
                             <td class="text-column"><?= $e($empty($user['marital_status'] ?? '') ?: '—') ?></td>
                         </tr>
                         <tr>
-                            <td class="title-column" style="width: 100%;">Mother Tongue:</td>
+                            <td class="title-column"style="width:100%!important;">Mother Tongue:&nbsp;</td>
+                        
                             <td class="text-column"><?= $e($empty($user['mother_tongue'] ?? '') ?: '—') ?></td>
                         </tr>
                         </tbody>
@@ -430,11 +432,11 @@ require __DIR__ . '/partials/sidebar.php';
                     <table class="mem-info-2">
                         <tbody>
                         <tr>
-                            <td class="tit-column">Education:</td>
+                            <td class="tit-column">Education : &nbsp;</td>
                             <td class="txt-column"><?= $e($empty($user['education'] ?? '')) ?></td>
                         </tr>
                         <tr>
-                            <td class="tit-column">Work Detail:</td>
+                            <td class="tit-column">Work Detail :&nbsp;</td>
                             <td class="txt-column"><?= $e($empty($user['work_detail'] ?? '')) ?></td>
                         </tr>
                         </tbody>
@@ -446,19 +448,19 @@ require __DIR__ . '/partials/sidebar.php';
                     <table class="mem-info-2">
                         <tbody>
                         <tr>
-                            <td class="tit-column">Father Name:</td>
+                            <td class="tit-column">Father Name: &nbsp;</td>
                             <td class="txt-column"><?= $e($empty($user['father_name'] ?? '')) ?></td>
                         </tr>
                         <tr>
-                            <td class="tit-column">Mother Name:</td>
+                            <td class="tit-column">Mother Name: &nbsp;</td>
                             <td class="txt-column"><?= $e($empty($user['mother_name'] ?? '')) ?></td>
                         </tr>
                         <tr>
-                            <td class="tit-column">Father Occupation:</td>
+                            <td class="tit-column">Father Occupation:&nbsp;</td>
                             <td class="txt-column"><?= $e($empty($user['father_occupation'] ?? '')) ?></td>
                         </tr>
                         <tr>
-                            <td class="tit-column">Mother Occupation:</td>
+                            <td class="tit-column">Mother Occupation:&nbsp;</td>
                             <td class="txt-column"><?= $e($empty($user['mother_occupation'] ?? '')) ?></td>
                         </tr>
                         </tbody>
@@ -470,11 +472,11 @@ require __DIR__ . '/partials/sidebar.php';
                     <table class="mem-info-2">
                         <tbody>
                         <tr>
-                            <td class="tit-column">Siblings:</td>
+                            <td class="tit-column">Siblings&nbsp;:&nbsp;</td>
                             <td class="txt-column"><?= $e($siblingsLine) ?></td>
                         </tr>
                         <tr>
-                            <td class="tit-column">Married Siblings:</td>
+                            <td class="tit-column">Married Siblings&nbsp;:&nbsp;</td>
                             <td class="txt-column"><?= $e($marriedSiblingsLine) ?></td>
                         </tr>
                         </tbody>
@@ -486,15 +488,15 @@ require __DIR__ . '/partials/sidebar.php';
                     <table class="mem-info-2">
                         <tbody>
                         <tr>
-                            <td class="tit-column">House Location:</td>
+                            <td class="tit-column">House Location:&nbsp;</td>
                             <td class="txt-column"><?= $e($houseLocation) ?></td>
                         </tr>
                         <tr>
-                            <td class="tit-column">House Size:</td>
+                            <td class="tit-column">House Size:&nbsp;</td>
                             <td class="txt-column"><?= $e($houseSizeStr) ?></td>
                         </tr>
                         <tr>
-                            <td class="tit-column">House Ownership:</td>
+                            <td class="tit-column">House Ownership:&nbsp;</td>
                             <td class="txt-column"><?= $e($ownership) ?></td>
                         </tr>
                         </tbody>

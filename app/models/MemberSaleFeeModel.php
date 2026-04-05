@@ -898,14 +898,20 @@ class MemberSaleFeeModel
             ]);
 
             $this->db->prepare('
-                UPDATE member_sale_fees SET payment_mode = :pm, staff_payment_mode = :pm2 WHERE id = :id
+                UPDATE member_sale_fees SET
+                    payment_mode = :pm,
+                    staff_payment_mode = :pm2,
+                    staff_payment_status = \'Paid\',
+                    staff_paid_on = :spo
+                WHERE id = :id
             ')->execute([
                 ':pm' => 'Bank transfer',
                 ':pm2' => $bank,
+                ':spo' => $dt,
                 ':id' => $feeId,
             ]);
 
-            return ['ok' => true, 'message' => 'Payment proof saved.'];
+            return ['ok' => true, 'message' => 'Payment proof saved. Fee marked as Paid.'];
         } catch (Throwable $e) {
             error_log('savePaymentProof: ' . $e->getMessage());
 
