@@ -15,6 +15,13 @@ if ($appBase !== false && $appBase !== '') {
     define('BASE_URL', rtrim($appBase, '/'));
 } elseif (php_sapi_name() !== 'cli' && !empty($_SERVER['HTTP_HOST'])) {
     $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])
+        && strtolower((string) $_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') {
+        $https = true;
+    }
+    if (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && (string) $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on') {
+        $https = true;
+    }
     $scheme = $https ? 'https' : 'http';
     $scriptName = $_SERVER['SCRIPT_NAME'] ?? '/index.php';
     $dir = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
@@ -36,3 +43,7 @@ if (!defined('RUN_DB_MIGRATIONS')) {
 
 // Matri helpers (also loaded from index-bootstrap.php after this file for older production configs).
 require_once dirname(__DIR__) . '/app/helpers/matri.php';
+// Upload / asset URL builder (uses BASE_URL).
+require_once dirname(__DIR__) . '/app/helpers/public_url.php';
+// All form uploads → public/uploads/ (see app/helpers/upload_storage.php).
+require_once dirname(__DIR__) . '/app/helpers/upload_storage.php';

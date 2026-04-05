@@ -26,15 +26,7 @@ if (!empty($user['dob'])) {
 }
 
 $resolveMediaUrl = static function (string $path): string {
-    $path = trim($path);
-    if ($path === '') {
-        return '';
-    }
-    if (preg_match('#^https?://#i', $path)) {
-        return $path;
-    }
-
-    return rtrim(BASE_URL, '/') . '/' . ltrim($path, '/');
+    return public_url_for_path($path);
 };
 
 $photoRaw = trim((string) ($user['photo2_url'] ?? ''));
@@ -50,7 +42,6 @@ foreach (['photo3_url', 'photo4_url', 'photo5_url', 'photo6_url'] as $pk) {
     }
 }
 
-$baseUrl = rtrim((string) BASE_URL, '/');
 $photoUsable = $photoRaw !== '';
 if ($photoUsable) {
     $norm = strtolower(str_replace('\\', '/', $photoRaw));
@@ -67,11 +58,11 @@ if ($photoUsable) {
 if ($profileImageUrl === '') {
     $g = strtolower(trim((string) ($user['gender'] ?? '')));
     if ($g === 'female' || strncmp($g, 'female', 6) === 0) {
-        $profileImageUrl = $baseUrl . '/assets/images/female.svg';
+        $profileImageUrl = public_url_for_path('assets/images/female.png');
     } elseif ($g === 'male' || strncmp($g, 'male', 4) === 0) {
-        $profileImageUrl = $baseUrl . '/assets/images/male.svg';
+        $profileImageUrl = public_url_for_path('assets/images/male.png');
     } else {
-        $profileImageUrl = $baseUrl . '/assets/images/male.svg';
+        $profileImageUrl = public_url_for_path('assets/images/male.png');
     }
 }
 
@@ -378,11 +369,11 @@ require __DIR__ . '/partials/sidebar.php';
 <div class="page" id="content">
     <div class="top-level">
         <div class="logo">
-            <img src="<?= $e(rtrim(BASE_URL, '/') . '/assets/images/logo.png') ?>"
+            <img src="<?= $e(public_url_for_path('assets/images/logo.png')) ?>"
                  alt="Logo"
                  class="top-lev-img"
                  height="60"
-                 onerror="this.onerror=null;this.src='<?= $e(rtrim(BASE_URL, '/') . '/assets/images/logo.png') ?>';">
+                 onerror="this.onerror=null;this.src='<?= $e(public_url_for_path('assets/images/logo.png')) ?>';">
                      </div>  <span class="logo-text">Wedding Wish Marriage Center</span>
   
     </div>

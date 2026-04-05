@@ -103,7 +103,7 @@ require __DIR__.'/partials/sidebar.php';
 
                 <div class="user-main-content">
                     <div class="profile-image-box">
-                        <img src="<?= BASE_URL . (!empty($u['avatar']) ? $u['avatar'] : '/assets/images/default-avatar.png') ?>" alt="">
+                        <img src="<?= htmlspecialchars(admin_user_card_photo_url($u), ENT_QUOTES, 'UTF-8') ?>" alt="">
                     </div>
                     <div class="details-column details-grid">
                         <p><strong>Gender</strong><span>:</span> <?= htmlspecialchars($u['gender'] ?? '-') ?></p>
@@ -144,7 +144,7 @@ require __DIR__.'/partials/sidebar.php';
                                 email: '<?= htmlspecialchars((string)($u['email'] ?? ''), ENT_QUOTES) ?>',
                                 phone: '<?= htmlspecialchars((string)($u['phone'] ?? ''), ENT_QUOTES) ?>',
                                 fee: '<?= htmlspecialchars((string)($u['final_fee'] ?? '50000'), ENT_QUOTES) ?>',
-                                image: '<?= htmlspecialchars(BASE_URL . (!empty($u['avatar']) ? $u['avatar'] : '/assets/images/default-avatar.png'), ENT_QUOTES) ?>'
+                                image: '<?= htmlspecialchars(admin_user_card_photo_url($u), ENT_QUOTES) ?>'
                             })">Edit Plan</button>
                     <a class="btn-action btn-action-green" target="_blank" href="<?= BASE_URL ?>/admin/users/profile-pdf-template?id=<?= (int)$u['id'] ?>">Profile (PDF)</a>
                     <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Team List (7)</a>
@@ -168,7 +168,7 @@ require __DIR__.'/partials/sidebar.php';
             <input type="hidden" name="package_id" id="plan_package_id">
 
             <div class="plan-user-strip">
-                <img id="plan_user_img" src="<?= BASE_URL ?>/assets/images/default-avatar.png" alt="">
+                <img id="plan_user_img" src="<?= htmlspecialchars(public_url_for_path('assets/images/male.png'), ENT_QUOTES, 'UTF-8') ?>" alt="">
                 <div class="plan-user-meta">
                     <div id="plan_user_name" class="plan-user-name">Member Name</div>
                     <div id="plan_user_email"><i class="fa fa-envelope"></i> -</div>
@@ -316,7 +316,7 @@ function openPlanModal(data){
     document.getElementById('plan_user_phone').innerHTML = `<i class="fa fa-phone"></i> ${data.phone || '-'}`;
     document.getElementById('plan_user_id_label').innerHTML = `<i class="fa fa-tag"></i> ${data.userId || '-'}`;
     document.getElementById('plan_final_fee').value = data.fee || 0;
-    document.getElementById('plan_user_img').src = data.image || '<?= BASE_URL ?>/assets/images/default-avatar.png';
+    document.getElementById('plan_user_img').src = data.image || <?= json_encode(public_url_for_path('assets/images/male.png')) ?>;
     document.getElementById('planModalOverlay').style.display = 'flex';
 }
 function closePlanModal(){

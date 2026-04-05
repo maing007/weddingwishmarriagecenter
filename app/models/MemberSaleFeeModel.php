@@ -863,20 +863,15 @@ class MemberSaleFeeModel
 
         $receiptPath = '';
         if (!empty($file['tmp_name']) && is_uploaded_file($file['tmp_name'])) {
-            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $ext = strtolower(pathinfo((string) $file['name'], PATHINFO_EXTENSION));
             if (!in_array($ext, ['jpg', 'jpeg', 'png', 'pdf', 'webp'], true)) {
                 return ['ok' => false, 'message' => 'Invalid file type.'];
             }
-            $dir = dirname(__DIR__, 2) . '/uploads/payment_proofs';
-            if (!is_dir($dir)) {
-                @mkdir($dir, 0755, true);
-            }
-            $name = 'proof_' . $feeId . '_' . time() . '.' . $ext;
-            $dest = $dir . '/' . $name;
-            if (!move_uploaded_file($file['tmp_name'], $dest)) {
+            $saved = app_save_upload($file, 'payment_proofs');
+            if ($saved === null) {
                 return ['ok' => false, 'message' => 'Could not upload file.'];
             }
-            $receiptPath = 'uploads/payment_proofs/' . $name;
+            $receiptPath = $saved;
         }
 
         try {

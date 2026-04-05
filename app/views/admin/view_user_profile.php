@@ -1,9 +1,24 @@
 <?php
 $title = "Profile Users";
 require __DIR__.'/partials/header.php';
-$profileImgUrl = !empty($user['avatar'])
-    ? BASE_URL . $user['avatar']
-    : BASE_URL . '/assets/images/default-avatar.png';
+$profileImgUrl = '';
+if (!empty($user['avatar'])) {
+    $profileImgUrl = public_url_for_path((string) $user['avatar']);
+}
+if ($profileImgUrl === '') {
+    foreach (['photo1_status', 'photo2_url', 'photo3_url'] as $pk) {
+        if (!empty($user[$pk])) {
+            $profileImgUrl = public_url_for_path((string) $user[$pk]);
+            break;
+        }
+    }
+}
+if ($profileImgUrl === '') {
+    $g = strtolower(trim((string) ($user['gender'] ?? '')));
+    $profileImgUrl = ($g === 'female' || strncmp($g, 'female', 6) === 0)
+        ? public_url_for_path('assets/images/female.png')
+        : public_url_for_path('assets/images/male.png');
+}
 require __DIR__.'/partials/sidebar.php';
 ?>
 <?php
@@ -54,7 +69,7 @@ $dob      = $user['dob']      ?? '';
     <!-- ===== HIDDEN PDF HEADER ===== -->
     <div id="pdf-header">
         <div style="text-align:center; margin-bottom:20px;">
-            <img src="<?= BASE_URL ?>/assets/images/logo.png" style="width:120px;">
+            <img src="<?= htmlspecialchars(public_url_for_path('assets/images/logo.png'), ENT_QUOTES, 'UTF-8') ?>" style="width:120px;">
             <h2>Wedding Matrimony</h2>
             <p>www.weddingwishcenter.com</p>
             <hr>

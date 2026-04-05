@@ -16,9 +16,14 @@ $birthMonth = $dobTs ? (int)date('n', $dobTs) : 1;
 $birthYear = $dobTs ? (int)date('Y', $dobTs) : ((int)date('Y') - 25);
 
 $imgPath = $user['photo2_url'] ?? $user['avatar'] ?? ($user['photo1_status'] ?? '');
-$profileImgUrl = !empty($imgPath)
-    ? BASE_URL . '/' . ltrim((string)$imgPath, '/')
-    : BASE_URL . '/assets/images/default-avatar.png';
+if (!empty($imgPath)) {
+    $profileImgUrl = public_url_for_path((string) $imgPath);
+} else {
+    $gEd = strtolower(trim((string) ($user['gender'] ?? '')));
+    $profileImgUrl = ($gEd === 'female' || strncmp($gEd, 'female', 6) === 0)
+        ? public_url_for_path('assets/images/female.png')
+        : public_url_for_path('assets/images/male.png');
+}
 
 $bioVal = $user['about_us'] ?? $user['bio'] ?? '';
 ?>

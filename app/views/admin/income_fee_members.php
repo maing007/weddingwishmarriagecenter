@@ -384,9 +384,14 @@ require __DIR__ . '/partials/sidebar.php';
                         $photo = trim((string) ($r['photo1_status'] ?? ''));
                     }
                 }
-                $imgSrc = $photo !== '' && preg_match('#^https?://#i', $photo)
-                    ? $photo
-                    : ($photo !== '' ? BASE_URL . '/' . ltrim($photo, '/') : BASE_URL . '/assets/images/default-avatar.png');
+                if ($photo !== '') {
+                    $imgSrc = public_url_for_path($photo);
+                } else {
+                    $gImg = strtolower(trim((string) ($r['gender'] ?? '')));
+                    $imgSrc = ($gImg === 'female' || strncmp($gImg, 'female', 6) === 0)
+                        ? public_url_for_path('assets/images/female.png')
+                        : public_url_for_path('assets/images/male.png');
+                }
 
                 $planName = trim((string) ($r['active_plan_name'] ?? ''));
                 if ($planName === '') {
@@ -1027,9 +1032,9 @@ function openPlanAssignModal(d) {
     document.getElementById('pa_email').textContent = d.email || '—';
     document.getElementById('pa_phone').textContent = d.phone || '—';
     document.getElementById('pa_loc').textContent = d.location || 'N/A';
-    let av = PA_BASE + '/assets/images/male.svg';
+    let av = PA_BASE + '/assets/images/male.png';
     if ((d.gender || '').indexOf('female') >= 0) {
-        av = PA_BASE + '/assets/images/female.svg';
+        av = PA_BASE + '/assets/images/female.png';
     }
     document.getElementById('pa_avatar').src = av;
     document.getElementById('pa_rishta_fee').value = d.rishta != null ? d.rishta : 0;

@@ -25,9 +25,14 @@ $csrf = htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8');
                 <?php foreach ($assignments as $assignment): ?>
 
                     <?php
-                    $avatar = !empty($assignment->avatar)
-                        ? BASE_URL . '/' . ltrim((string)$assignment->avatar, '/')
-                        : BASE_URL . '/assets/images/default-avatar.png';
+                    if (!empty($assignment->avatar)) {
+                        $avatar = public_url_for_path((string) $assignment->avatar);
+                    } else {
+                        $gAs = strtolower(trim((string) ($assignment->gender ?? '')));
+                        $avatar = ($gAs === 'female' || strncmp($gAs, 'female', 6) === 0)
+                            ? public_url_for_path('assets/images/female.png')
+                            : public_url_for_path('assets/images/male.png');
+                    }
 
                     $age = '-';
                     if (!empty($assignment->dob) && $assignment->dob !== '0000-00-00') {

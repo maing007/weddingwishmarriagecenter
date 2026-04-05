@@ -118,7 +118,7 @@ require __DIR__.'/partials/sidebar.php';
 
                 <div class="user-main-content">
                     <div class="profile-image-box">
-                        <img src="<?= BASE_URL . (!empty($u['avatar']) ? $u['avatar'] : '/assets/images/default-avatar.png') ?>" alt="">
+                        <img src="<?= htmlspecialchars(admin_user_card_photo_url($u), ENT_QUOTES, 'UTF-8') ?>" alt="">
                     </div>
                     <div class="details-column details-grid">
                         <p><strong>Gender</strong><span>:</span> <?= htmlspecialchars($u['gender'] ?? '-') ?></p>

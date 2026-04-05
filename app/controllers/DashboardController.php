@@ -115,21 +115,14 @@ class DashboardController extends Controller
 
         $avatarPath = $user['photo2_url'] ?? $user['avatar'] ?? '';
 
-        /* IMAGE UPLOAD */
+        /* IMAGE UPLOAD → public/uploads/avatars */
         if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
-
-            $uploadDir = __DIR__ . '/../../public/uploads/avatars/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0775, true);
-            }
-
-            if (is_writable($uploadDir)) {
-                $ext      = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
-                $safeName = 'user_' . $_SESSION['user_id'] . '_' . time() . '.' . $ext;
-                $dest     = $uploadDir . $safeName;
-
-                if (move_uploaded_file($_FILES['avatar']['tmp_name'], $dest)) {
-                    $avatarPath = '/uploads/avatars/' . $safeName;
+            $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+            $ext = strtolower(pathinfo((string) $_FILES['avatar']['name'], PATHINFO_EXTENSION));
+            if (in_array($ext, $allowed, true) && ($_FILES['avatar']['size'] ?? 0) <= 2 * 1024 * 1024) {
+                $rel = app_save_upload($_FILES['avatar'], 'avatars');
+                if ($rel !== null) {
+                    $avatarPath = '/' . $rel;
                 }
             }
         }
@@ -209,9 +202,14 @@ class DashboardController extends Controller
         }
 
         $img = $user['photo2_url'] ?? $user['avatar'] ?? ($user['photo1_status'] ?? '');
-        $profileImgUrl = !empty($img)
-            ? BASE_URL . '/' . ltrim((string)$img, '/')
-            : BASE_URL . '/assets/images/default-avatar.png';
+        if (!empty($img)) {
+            $profileImgUrl = public_url_for_path((string) $img);
+        } else {
+            $gDash = strtolower(trim((string) ($user['gender'] ?? '')));
+            $profileImgUrl = ($gDash === 'female' || strncmp($gDash, 'female', 6) === 0)
+                ? public_url_for_path('assets/images/female.png')
+                : public_url_for_path('assets/images/male.png');
+        }
 
         $title   = 'My Profile';
         $error   = $_SESSION['flash_error'] ?? '';
@@ -283,9 +281,14 @@ public function viewUserProfile($id)
     }
 
     $img = $member['photo2_url'] ?? $member['avatar'] ?? ($member['photo1_status'] ?? '');
-    $profileImgUrl = !empty($img)
-        ? BASE_URL . '/' . ltrim((string)$img, '/')
-        : BASE_URL . '/assets/images/default-avatar.png';
+    if (!empty($img)) {
+        $profileImgUrl = public_url_for_path((string) $img);
+    } else {
+        $gDash = strtolower(trim((string) ($member['gender'] ?? '')));
+        $profileImgUrl = ($gDash === 'female' || strncmp($gDash, 'female', 6) === 0)
+            ? public_url_for_path('assets/images/female.png')
+            : public_url_for_path('assets/images/male.png');
+    }
 
     $title = trim(($member['first_name'] ?? '') . ' ' . ($member['second_name'] ?? $member['last_name'] ?? ''));
     $error = $_SESSION['flash_error'] ?? '';
@@ -340,9 +343,14 @@ public function openAssignment()
     }
 
     $img = $member['photo2_url'] ?? $member['avatar'] ?? ($member['photo1_status'] ?? '');
-    $profileImgUrl = !empty($img)
-        ? BASE_URL . '/' . ltrim((string)$img, '/')
-        : BASE_URL . '/assets/images/default-avatar.png';
+    if (!empty($img)) {
+        $profileImgUrl = public_url_for_path((string) $img);
+    } else {
+        $gDash = strtolower(trim((string) ($member['gender'] ?? '')));
+        $profileImgUrl = ($gDash === 'female' || strncmp($gDash, 'female', 6) === 0)
+            ? public_url_for_path('assets/images/female.png')
+            : public_url_for_path('assets/images/male.png');
+    }
 
     $assignment = (object)$assignmentRow;
     $memberId = $assignedProfileId;

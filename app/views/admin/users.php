@@ -30,42 +30,6 @@ require_once __DIR__ . '/../../helpers/admin_member_display.php';
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <?php
-$adminUserListDefaultAvatar = static function (array $u): string {
-    $base = rtrim((string) BASE_URL, '/');
-    $g = strtolower(trim((string) ($u['gender'] ?? '')));
-    if ($g === 'female' || strncmp($g, 'female', 6) === 0) {
-        return $base . '/assets/images/female.svg';
-    }
-    if ($g === 'male' || strncmp($g, 'male', 4) === 0) {
-        return $base . '/assets/images/male.svg';
-    }
-
-    return $base . '/assets/images/male.svg';
-};
-
-$adminUserListPhotoUrl = static function (array $u) use ($adminUserListDefaultAvatar): string {
-    $base = rtrim((string) BASE_URL, '/');
-    $p = trim((string) ($u['avatar'] ?? ''));
-    $usable = $p !== '';
-    if ($usable) {
-        $norm = strtolower(str_replace('\\', '/', $p));
-        if (strpos($norm, 'uploads/avatars/default') !== false
-            || strpos($norm, 'default-avatar') !== false
-            || strpos($norm, 'avatar-placeholder') !== false) {
-            $usable = false;
-        }
-    }
-    if ($usable) {
-        if (preg_match('#^https?://#i', $p)) {
-            return $p;
-        }
-
-        return $base . '/' . ltrim($p, '/');
-    }
-
-    return $adminUserListDefaultAvatar($u);
-};
-
 $allCount = is_array($users ?? null) ? count($users) : 0;
 $approvedCount = 0;
 $unapprovedCount = 0;
@@ -168,7 +132,7 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
                 </div>
                 <div class="users-status-wrap text-end">
                     <div class="status-pill-row">
-                        <button type="button" class="status-pill sp-approved" title="Queues member on Registration Fee page for plan assignment" onclick="submitBulkStatus('approved')">Approve → Reg. fee</button>
+                        <button type="button" class="status-pill sp-approved" title="Queues member on Registration Fee page for plan assignment" onclick="submitBulkStatus('approved')">Approved</button>
                         <button type="button" class="status-pill sp-unapproved" onclick="submitBulkStatus('unapproved')">Unapproved</button>
                         <button type="button" class="status-pill sp-suspended" onclick="submitBulkStatus('suspended')"><i class="fa fa-user-times"></i> Suspended</button>
                     </div>
@@ -262,8 +226,8 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
                 <div class="user-main-content">
                     <div class="profile-image-box">
                         <?php
-                        $listPhotoSrc = $adminUserListPhotoUrl($u);
-                        $listPhotoFallback = $adminUserListDefaultAvatar($u);
+                        $listPhotoSrc = admin_user_card_photo_url($u);
+                        $listPhotoFallback = admin_user_default_avatar_url($u);
                         ?>
                         <img src="<?= htmlspecialchars($listPhotoSrc, ENT_QUOTES, 'UTF-8') ?>"
                              alt=""

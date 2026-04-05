@@ -95,15 +95,7 @@ $photoSlots = [
 ];
 
 $resolveMediaUrl = static function (string $path): string {
-    $path = trim($path);
-    if ($path === '') {
-        return '';
-    }
-    if (preg_match('#^https?://#i', $path)) {
-        return $path;
-    }
-
-    return rtrim(BASE_URL, '/') . '/' . ltrim($path, '/');
+    return public_url_for_path($path);
 };
 
 $memberListStatus = strtolower((string) ($user['user_status'] ?? 'unapproved'));

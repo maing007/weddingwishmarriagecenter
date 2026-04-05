@@ -1,9 +1,16 @@
 
 <?php
 // $user, $error, $success available
-$profileImgUrl = !empty($user['avatar'])
-    ? BASE_URL . $user['avatar']
-    : BASE_URL . '/assets/images/default-avatar.png';
+$profileImgUrl = '';
+if (!empty($user['avatar'])) {
+    $profileImgUrl = public_url_for_path((string) $user['avatar']);
+}
+if ($profileImgUrl === '') {
+    $g = strtolower(trim((string) ($user['gender'] ?? '')));
+    $profileImgUrl = ($g === 'female' || strncmp($g, 'female', 6) === 0)
+        ? public_url_for_path('assets/images/female.png')
+        : public_url_for_path('assets/images/male.png');
+}
     $currentReligion = $user['religion'] ?? ''; // jo DB mein save hai
     $phone = $user['phone'] ?? '';
 $countryCode = $user['country_code'] ?? '';

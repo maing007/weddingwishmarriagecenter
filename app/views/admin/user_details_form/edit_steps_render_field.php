@@ -119,6 +119,29 @@ function admin_edit_steps_render_field(string $col, array $user, ?array $admin_d
         return;
     }
 
+    if ($col === 'photo1_status' || preg_match('/^photo[2-6]_url$/', $col) === 1
+        || in_array($col, ['id_proof_file', 'cv_file'], true)) {
+        $current = trim((string) ($raw ?? ''));
+        $isDoc = in_array($col, ['id_proof_file', 'cv_file'], true);
+        $accept = $isDoc ? 'image/jpeg,image/png,image/webp,image/gif,application/pdf' : 'image/jpeg,image/png,image/webp,image/gif';
+        echo '<div class="edit-steps-file-field">';
+        if ($current !== '') {
+            $openUrl = public_url_for_path($current);
+            echo '<div class="mb-2"><span class="text-muted small">Current file:</span> ';
+            echo '<a href="' . htmlspecialchars($openUrl, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener">Open / download</a></div>';
+            if (!$isDoc || preg_match('/\.(jpe?g|png|gif|webp)$/i', $current)) {
+                echo '<div class="mb-2"><img src="' . htmlspecialchars($openUrl, ENT_QUOTES, 'UTF-8') . '" alt="" style="max-height:120px;max-width:100%;object-fit:contain;border:1px solid #ddd;border-radius:4px;"></div>';
+            }
+        } else {
+            echo '<div class="mb-2 text-muted small">No file uploaded yet.</div>';
+        }
+        echo '<input type="file" class="form-control" id="' . $fidEsc . '" name="' . $nameEsc . '" accept="' . htmlspecialchars($accept, ENT_QUOTES, 'UTF-8') . '">';
+        echo '<small class="text-muted d-block mt-1">Choose a file only when replacing. Leave empty to keep the current file.</small>';
+        echo '</div>';
+
+        return;
+    }
+
     if ($col === 'lead' && !empty($admin_details)) {
         $v = trim((string) ($raw ?? ''));
         echo '<select class="form-control" id="' . $fidEsc . '" name="' . $nameEsc . '"><option value="">Select lead</option>';

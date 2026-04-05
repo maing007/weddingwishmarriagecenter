@@ -25,9 +25,14 @@ $csrf = htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8');
             <div class="row">
                 <?php foreach ($savedProfiles as $profile): ?>
                     <?php
-                    $profileImg = !empty($profile['avatar'])
-                        ? BASE_URL . '/' . ltrim((string)$profile['avatar'], '/')
-                        : BASE_URL . '/assets/images/default-avatar.png';
+                    if (!empty($profile['avatar'])) {
+                        $profileImg = public_url_for_path((string) $profile['avatar']);
+                    } else {
+                        $gSv = strtolower(trim((string) ($profile['gender'] ?? '')));
+                        $profileImg = ($gSv === 'female' || strncmp($gSv, 'female', 6) === 0)
+                            ? public_url_for_path('assets/images/female.png')
+                            : public_url_for_path('assets/images/male.png');
+                    }
 
                     $fullName = trim(($profile['first_name'] ?? '') . ' ' . ($profile['last_name'] ?? ''));
                     $age = (!empty($profile['dob']) && $profile['dob'] !== '0000-00-00')

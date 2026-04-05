@@ -72,7 +72,7 @@ require __DIR__.'/partials/sidebar.php';
                     <a class="counter-box green text-decoration-none" href="<?= BASE_URL ?>/admin/users/interactions?id=<?= (int)$u['id'] ?>&action=accepted">Accepted (<?= (int)($u['accepted_count'] ?? 0) ?>)</a>
                 </div>
                 <div class="user-main-content">
-                    <div class="profile-image-box"><img src="<?= BASE_URL . (!empty($u['avatar']) ? $u['avatar'] : '/assets/images/default-avatar.png') ?>" alt=""></div>
+                    <div class="profile-image-box"><img src="<?= htmlspecialchars(admin_user_card_photo_url($u), ENT_QUOTES, 'UTF-8') ?>" alt=""></div>
                     <div class="details-column details-grid">
                         <p><strong>Gender</strong><span>:</span> <?= htmlspecialchars($u['gender'] ?? '-') ?></p>
                         <p><strong>Mobile</strong><span>:</span> <?= htmlspecialchars($u['phone'] ?? '-') ?></p>

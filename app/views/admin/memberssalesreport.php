@@ -414,6 +414,21 @@ require __DIR__ . '/partials/sidebar.php';
     .msr-btn-addproof {
         background: #2ecc71;
     }
+    .msr-btn-download {
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        background: #5a9fd4;
+        color: #fff !important;
+        border: none;
+        text-decoration: none;
+        display: inline-block;
+        white-space: nowrap;
+    }
+    .msr-btn-download:hover {
+        background: #4a8fc4;
+        color: #fff !important;
+    }
     .msr-btn-addproof:hover {
         background: #27ae60;
         color: #fff;
@@ -707,15 +722,28 @@ require __DIR__ . '/partials/sidebar.php';
                                                 <th>Amount</th>
                                                 <th>Txn ID</th>
                                                 <th>Bank</th>
+                                                <th>Proof file</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php foreach ($proofs as $pr): ?>
+                                                <?php
+                                                $receiptPath = trim((string) ($pr['receipt_path'] ?? ''));
+                                                $receiptUrl = $receiptPath !== '' ? public_url_for_path($receiptPath) : '';
+                                                $receiptFn = $receiptPath !== '' ? basename(str_replace('\\', '/', $receiptPath)) : '';
+                                                ?>
                                                 <tr>
                                                     <td><?= htmlspecialchars((string) ($pr['paid_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                                                     <td><?= htmlspecialchars($fmtMoney($pr['paid_amount'] ?? 0), ENT_QUOTES, 'UTF-8') ?></td>
                                                     <td><?= htmlspecialchars((string) ($pr['transaction_id'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                                                     <td><?= htmlspecialchars((string) ($pr['bank_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+                                                    <td>
+                                                        <?php if ($receiptUrl !== ''): ?>
+                                                            <a class="btn msr-btn-download" href="<?= htmlspecialchars($receiptUrl, ENT_QUOTES, 'UTF-8') ?>" download="<?= htmlspecialchars($receiptFn !== '' ? $receiptFn : 'payment-proof', ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">Download</a>
+                                                        <?php else: ?>
+                                                            <span class="text-muted">—</span>
+                                                        <?php endif; ?>
+                                                    </td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>

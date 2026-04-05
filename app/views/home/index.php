@@ -876,10 +876,10 @@
         $recentProfiles = $recentProfiles ?? [];
         $lastImgStyle = 'border: 3px solid #0d010e; box-shadow: 0px 1px 10px 0px rgb(4 4 4 / 29%);';
         $demoCards = [
-            ['name' => 'Shaheer Ahmad Test', 'line' => '27 Years, Muslim', 'img' => BASE_URL . '/assets/images/male.svg'],
-            ['name' => 'Dr Binte Farooq', 'line' => '31 Years, Muslim, Lahore, Pakistan', 'img' => BASE_URL . '/assets/images/female.svg'],
-            ['name' => 'Muhsin latif', 'line' => '26 Years, Muslim, Pakistan', 'img' => BASE_URL . '/assets/images/male.svg'],
-            ['name' => 'Mr Haris', 'line' => '30 Years, Muslim, Lahore, Pakistan', 'img' => BASE_URL . '/assets/images/male.svg'],
+            ['name' => 'Shaheer Ahmad Test', 'line' => '27 Years, Muslim', 'img' => public_url_for_path('assets/images/male.png')],
+            ['name' => 'Dr Binte Farooq', 'line' => '31 Years, Muslim, Lahore, Pakistan', 'img' => public_url_for_path('assets/images/female.png')],
+            ['name' => 'Muhsin latif', 'line' => '26 Years, Muslim, Pakistan', 'img' => public_url_for_path('assets/images/male.png')],
+            ['name' => 'Mr Haris', 'line' => '30 Years, Muslim, Lahore, Pakistan', 'img' => public_url_for_path('assets/images/male.png')],
         ];
         ?>
         <div class="row margin-top-20">
@@ -896,9 +896,13 @@
                   $rage = '-';
                 }
               }
+              $rg = strtolower(trim((string) ($rp['gender'] ?? '')));
+              $rimgDef = ($rg === 'female' || strncmp($rg, 'female', 6) === 0)
+                  ? public_url_for_path('assets/images/female.png')
+                  : public_url_for_path('assets/images/male.png');
               $rimg = !empty($rp['photo_path'])
-                ? BASE_URL . '/' . ltrim((string)$rp['photo_path'], '/')
-                : BASE_URL . '/assets/images/male.svg';
+                  ? public_url_for_path((string) $rp['photo_path'])
+                  : $rimgDef;
               $rline = $rage !== '-' ? $rage . ' Years' : '';
               if (!empty($rp['religion'])) {
                 $rline .= ($rline !== '' ? ', ' : '') . $rp['religion'];

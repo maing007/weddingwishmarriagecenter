@@ -284,7 +284,7 @@ $edit_basic_locked = !empty($edit_basic_locked);
                         <strong>Other steps are disabled</strong> until Basic Details are complete. Fill the Basic tab, then click <em>Update all details</em>.
                     </div>
                 <?php endif; ?>
-                <form method="post" action="<?= BASE_URL ?>/admin/users/edit-steps" class="m-0">
+                <form method="post" action="<?= BASE_URL ?>/admin/users/edit-steps" class="m-0" enctype="multipart/form-data">
                     <input type="hidden" name="id" value="<?= (int)$user['id'] ?>">
                     <div class="step-nav" id="editStepNav">
                         <?php $first = true; ?>

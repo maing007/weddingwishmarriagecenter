@@ -11,9 +11,14 @@ if ($dob !== '' && $dob !== '0000-00-00') {
 }
 
 $rawPhoto = (string)($profile->photo2_url ?? $profile->photo1_status ?? $profile->avatar ?? '');
-$photoUrl = $rawPhoto !== ''
-    ? BASE_URL . '/' . ltrim($rawPhoto, '/')
-    : BASE_URL . '/assets/images/default-avatar.png';
+if ($rawPhoto !== '') {
+    $photoUrl = public_url_for_path($rawPhoto);
+} else {
+    $gPub = strtolower(trim((string) ($profile->gender ?? '')));
+    $photoUrl = ($gPub === 'female' || strncmp($gPub, 'female', 6) === 0)
+        ? public_url_for_path('assets/images/female.png')
+        : public_url_for_path('assets/images/male.png');
+}
 ?>
 
 <style>

@@ -471,31 +471,20 @@ class AdminUsersController
         exit;
     }
 
-    // ✅ SECURE FILE UPLOAD
+    // ✅ SECURE FILE UPLOAD (public/uploads/avatars via app_save_upload)
     private function uploadAvatar($file)
     {
-        if ($file && !empty($file['tmp_name'])) {
-
-            $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-
-            if (!in_array($ext, $allowed)) {
-                return '/uploads/avatars/default.png';
-            }
-
-            if ($file['size'] > 2 * 1024 * 1024) { // 2MB limit
-                return '/uploads/avatars/default.png';
-            }
-
-            $name = 'user_' . uniqid() . '.' . $ext;
-            $path = __DIR__ . '/../../uploads/avatars/' . $name;
-
-            if (move_uploaded_file($file['tmp_name'], $path)) {
-                return '/uploads/avatars/' . $name;
-            }
+        if (!$file || empty($file['tmp_name'])) {
+            return '/uploads/avatars/default.png';
         }
+        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+        $ext = strtolower(pathinfo((string) ($file['name'] ?? ''), PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowed, true) || ($file['size'] ?? 0) > 2 * 1024 * 1024) {
+            return '/uploads/avatars/default.png';
+        }
+        $rel = app_save_upload($file, 'avatars');
 
-        return '/uploads/avatars/default.png';
+        return $rel !== null ? '/' . $rel : '/uploads/avatars/default.png';
     }
 
     public function viewUserProfile()
@@ -520,10 +509,6 @@ class AdminUsersController
             $dob = new DateTime($user['dob']);
             $age = (new DateTime())->diff($dob)->y;
         }
-
-        $profileImgUrl = !empty($user['avatar'])
-            ? BASE_URL . '/' . ltrim($user['avatar'], '/')
-            : BASE_URL . '/assets/images/default-avatar.png';
 
         $title = $user['first_name'] . ' ' . $user['last_name'];
 
@@ -874,6 +859,7 @@ class AdminUsersController
         } else {
             $post['password'] = password_hash($newPwd, PASSWORD_BCRYPT);
         }
+        $this->mergeMemberMediaUploadsIntoPost($post);
         $updated = $this->model->updateAllUserDetails($id, $post);
         $_SESSION['flash_' . ($updated ? 'success' : 'error')] =
             $updated ? 'Profile updated successfully.' : 'No fields updated.';
@@ -883,19 +869,65 @@ class AdminUsersController
 
     private function saveUploadedFile(array $file, string $folder): ?string
     {
-        if (empty($file['tmp_name']) || (int)($file['error'] ?? 1) !== UPLOAD_ERR_OK) {
-            return null;
+        $folder = trim(str_replace('\\', '/', $folder), '/');
+        if ($folder === 'uploads') {
+            $sub = '';
+        } elseif (str_starts_with($folder, 'uploads/')) {
+            $sub = substr($folder, strlen('uploads/'));
+        } else {
+            $sub = $folder;
         }
-        $targetDir = __DIR__ . '/../../public/' . trim($folder, '/') . '/';
-        if (!is_dir($targetDir)) {
-            mkdir($targetDir, 0775, true);
+        $rel = app_save_upload($file, $sub);
+
+        return $rel === null ? null : '/' . $rel;
+    }
+
+    /**
+     * Persist new photos / ID proof / CV from edit-steps (multipart). Paths are web-visible under /public/uploads/.
+     */
+    private function mergeMemberMediaUploadsIntoPost(array &$post): void
+    {
+        $maxBytes = 8 * 1024 * 1024;
+        $photoCols = ['photo1_status', 'photo2_url', 'photo3_url', 'photo4_url', 'photo5_url', 'photo6_url'];
+        $photoExt = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        $docCols = ['id_proof_file', 'cv_file'];
+        $docExt = array_merge($photoExt, ['pdf']);
+
+        foreach ($photoCols as $col) {
+            if (empty($_FILES[$col]) || (int)($_FILES[$col]['error'] ?? 1) !== UPLOAD_ERR_OK) {
+                continue;
+            }
+            $f = $_FILES[$col];
+            if (($f['size'] ?? 0) > $maxBytes) {
+                continue;
+            }
+            $ext = strtolower(pathinfo((string) $f['name'], PATHINFO_EXTENSION));
+            if ($ext === '' || !in_array($ext, $photoExt, true)) {
+                continue;
+            }
+            $rel = $this->saveUploadedFile($f, 'uploads');
+            if ($rel !== null) {
+                $post[$col] = ltrim($rel, '/');
+            }
         }
-        $safeName = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', (string)$file['name']);
-        $dest = $targetDir . $safeName;
-        if (!move_uploaded_file($file['tmp_name'], $dest)) {
-            return null;
+
+        foreach ($docCols as $col) {
+            if (empty($_FILES[$col]) || (int)($_FILES[$col]['error'] ?? 1) !== UPLOAD_ERR_OK) {
+                continue;
+            }
+            $f = $_FILES[$col];
+            if (($f['size'] ?? 0) > $maxBytes) {
+                continue;
+            }
+            $ext = strtolower(pathinfo((string) $f['name'], PATHINFO_EXTENSION));
+            if ($ext === '' || !in_array($ext, $docExt, true)) {
+                continue;
+            }
+            $rel = $this->saveUploadedFile($f, 'uploads');
+            if ($rel !== null) {
+                $post[$col] = ltrim($rel, '/');
+            }
         }
-        return '/' . trim($folder, '/') . '/' . $safeName;
     }
 
     public function openTaskForm()

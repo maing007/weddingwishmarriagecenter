@@ -153,24 +153,20 @@ class AdminUserDetailsController
     }
 
     /* ===============================
-       FILE UPLOAD FUNCTION
+       FILE UPLOAD → public/uploads/… (app_save_upload)
     =============================== */
     private function uploadFile($file, $folder = 'uploads/')
     {
-        if (!empty($file['name'])) {
-            $targetDir = __DIR__ . '/../../public/' . $folder;
-            if (!is_dir($targetDir)) {
-                mkdir($targetDir, 0777, true);
-            }
-
-            $fileName = time() . '_' . $file['name'];
-            $targetFile = $targetDir . $fileName;
-
-            if (move_uploaded_file($file['tmp_name'], $targetFile)) {
-                return $folder . $fileName;
-            }
+        $folder = trim(str_replace('\\', '/', $folder), '/');
+        if ($folder === 'uploads' || $folder === '') {
+            $sub = '';
+        } elseif (str_starts_with($folder, 'uploads/')) {
+            $sub = substr($folder, strlen('uploads/'));
+        } else {
+            $sub = $folder;
         }
-        return null;
+
+        return app_save_upload($file, $sub);
     }
 
     /* ===============================

@@ -19,9 +19,13 @@ $profiles = $profiles ?? [];
                     <?php
                     $pid = (int)($profile->id ?? 0);
                     $name = trim(($profile->first_name ?? '') . ' ' . ($profile->second_name ?? $profile->last_name ?? ''));
+                    $gSr = strtolower(trim((string) ($profile->gender ?? '')));
+                    $imgDefault = ($gSr === 'female' || strncmp($gSr, 'female', 6) === 0)
+                        ? public_url_for_path('assets/images/female.png')
+                        : public_url_for_path('assets/images/male.png');
                     $img = !empty($profile->avatar_path)
-                        ? BASE_URL . '/' . ltrim((string)$profile->avatar_path, '/')
-                        : BASE_URL . '/assets/images/male.svg';
+                        ? public_url_for_path((string) $profile->avatar_path)
+                        : $imgDefault;
                     $ageStr = isset($profile->age) && $profile->age !== null ? (int)$profile->age . ' yrs' : '-';
                     ?>
                     <div class="col-md-3 col-sm-6 mb-4">

@@ -68,13 +68,13 @@ $blogs = $this->blogModel->getAllBlogs();
     // ===== ADD BLOG (Show Form + Save) =====
     public function create()
     {
-        $uploadDir = __DIR__ . '/../../public/uploads/blogs/';
+        $uploadDir = app_public_uploads_subdir('blogs');
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Media delete action from same page
             if (!empty($_POST['media_delete']) && !empty($_POST['file_name'])) {
                 $fileName = basename((string)$_POST['file_name']);
-                $target = $uploadDir . $fileName;
+                $target = $uploadDir . DIRECTORY_SEPARATOR . $fileName;
                 if ($fileName !== '' && is_file($target)) {
                     @unlink($target);
                 }
@@ -87,17 +87,11 @@ $blogs = $this->blogModel->getAllBlogs();
             $status  = $_POST['status'] ?? 'draft';
             $image   = null;
 
-            // ---- Image Upload Optional ----
+            // ---- Image Upload Optional → public/uploads/blogs ----
             if (!empty($_FILES['image']['name'])) {
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
-                }
-
-                $fileName = time() . '_' . basename($_FILES['image']['name']);
-                $target   = $uploadDir . $fileName;
-
-                if (move_uploaded_file($_FILES['image']['tmp_name'], $target)) {
-                    $image = $fileName;
+                $rel = app_save_upload($_FILES['image'], 'blogs');
+                if ($rel !== null) {
+                    $image = basename($rel);
                 }
             }
 
@@ -120,7 +114,7 @@ $blogs = $this->blogModel->getAllBlogs();
                     if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
                         continue;
                     }
-                    $full = $uploadDir . $it;
+                    $full = $uploadDir . DIRECTORY_SEPARATOR . $it;
                     if (!is_file($full)) {
                         continue;
                     }

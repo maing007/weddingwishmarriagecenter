@@ -354,9 +354,12 @@
 
     // Avatar
     if (!empty($user['photo1_status'])) {
-        $avatar = BASE_URL . '/' . ltrim($user['photo1_status'], '/');
+        $avatar = public_url_for_path((string) $user['photo1_status']);
     } else {
-        $avatar = BASE_URL . '/assets/images/default-avatar.png';
+        $gSide = strtolower(trim((string) ($user['gender'] ?? '')));
+        $avatar = ($gSide === 'female' || strncmp($gSide, 'female', 6) === 0)
+            ? public_url_for_path('assets/images/female.png')
+            : public_url_for_path('assets/images/male.png');
     }
     ?>
 
