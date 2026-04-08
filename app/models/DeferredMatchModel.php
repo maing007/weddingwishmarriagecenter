@@ -60,4 +60,47 @@ class DeferredMatchModel
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
+
+    /**
+     * Log a defer action from the member dashboard discovery feed (admin Deferred Matches report).
+     */
+    public function insertFromDashboardFeed(int $viewerId, int $targetId): void
+    {
+        if (!function_exists('matri_id_display')) {
+            require_once dirname(__DIR__) . '/helpers/matri.php';
+        }
+
+        $stmt = $this->db->prepare(
+            'SELECT id, first_name, second_name, matri_id FROM user_details WHERE id IN (?, ?)'
+        );
+        $stmt->execute([$viewerId, $targetId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $byId = [];
+        foreach ($rows as $r) {
+            $byId[(int) $r['id']] = $r;
+        }
+        $v = $byId[$viewerId] ?? null;
+        $t = $byId[$targetId] ?? null;
+        if (!$v || !$t) {
+            return;
+        }
+
+        $myName = trim(($v['first_name'] ?? '') . ' ' . ($v['second_name'] ?? ''));
+        $otherName = trim(($t['first_name'] ?? '') . ' ' . ($t['second_name'] ?? ''));
+        $myMid = matri_id_display($v['matri_id'] ?? '', $viewerId);
+        $otherMid = matri_id_display($t['matri_id'] ?? '', $targetId);
+
+        $ins = $this->db->prepare('
+            INSERT INTO deferred_matches (my_matri_id, my_name, other_matri_id, other_name, staff_name, deferred_at, auto_deferred)
+            VALUES (?, ?, ?, ?, ?, NOW(), ?)
+        ');
+        $ins->execute([
+            $myMid,
+            $myName !== '' ? $myName : '-',
+            $otherMid,
+            $otherName !== '' ? $otherName : '-',
+            'Member',
+            'user_dashboard_feed',
+        ]);
+    }
 }

@@ -10,12 +10,20 @@ $error = $error ?? '';
 $success = $success ?? '';
 $assignment = $assignment ?? null;
 $profileDetails = $profileDetails ?? null;
+$isDiscoverContext = $isDiscoverContext ?? false;
+$canDiscover = $canDiscover ?? false;
+$feedInteraction = $feedInteraction ?? null;
+$showContactDetails = $showContactDetails ?? ($assignment !== null);
 
 $fullName = trim(($member['first_name'] ?? '') . ' ' . ($member['second_name'] ?? $member['last_name'] ?? ''));
 $status = $assignment ? (string)($assignment->status ?? '') : '';
 $assignmentId = $assignment ? (int)$assignment->id : 0;
 $csrf = htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8');
 $bio = trim((string)($member['about_us'] ?? $member['bio'] ?? ''));
+
+$viewedAt = $feedInteraction['viewed_at'] ?? null;
+$approvedAt = $feedInteraction['approved_at'] ?? null;
+$deferredAt = $feedInteraction['deferred_at'] ?? null;
 ?>
 <div class="dash-content-wrapper">
     <div class="container mt-4 feed-detail-page">
@@ -77,13 +85,21 @@ $bio = trim((string)($member['about_us'] ?? $member['bio'] ?? ''));
                                 <span class="label label-danger">Declined</span>
                             <?php endif; ?>
                         </p>
+                    <?php elseif ($isDiscoverContext && $canDiscover): ?>
+                        <p style="margin-bottom: 10px;">
+                            <?php if (!empty($viewedAt)): ?>
+                                <span class="label label-default">Viewed</span>
+                            <?php else: ?>
+                                <span class="label label-info">New</span>
+                            <?php endif; ?>
+                        </p>
                     <?php endif; ?>
 
                     <div class="fd-actions">
                         <form method="post" action="<?= BASE_URL ?>/dashboard/save-profile">
                             <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
                             <input type="hidden" name="user_id" value="<?= (int)$memberId ?>">
-                            <input type="hidden" name="return" value="<?= $assignmentId ? 'assignment' : 'dashboard' ?>">
+                            <input type="hidden" name="return" value="<?= ($isDiscoverContext && $canDiscover) ? 'discover-profile' : ($assignmentId ? 'assignment' : 'dashboard') ?>">
                             <?php if ($assignmentId): ?>
                                 <input type="hidden" name="assignment_id" value="<?= $assignmentId ?>">
                             <?php endif; ?>
@@ -94,8 +110,34 @@ $bio = trim((string)($member['about_us'] ?? $member['bio'] ?? ''));
                             <a class="btn btn-success btn-sm" href="<?= BASE_URL ?>/dashboard/accept-assignment?id=<?= $assignmentId ?>">Accept</a>
                             <a class="btn btn-danger btn-sm" href="<?= BASE_URL ?>/dashboard/decline-assignment?id=<?= $assignmentId ?>"
                                onclick="return confirm('Decline this assignment?');">Decline</a>
+                        <?php elseif ($isDiscoverContext && $canDiscover): ?>
+                            <form method="post" action="<?= BASE_URL ?>/dashboard/feed-action" style="display:inline-block;">
+                                <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+                                <input type="hidden" name="action" value="approve">
+                                <input type="hidden" name="target_user_id" value="<?= (int)$memberId ?>">
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+                            <form method="post" action="<?= BASE_URL ?>/dashboard/feed-action" style="display:inline-block;">
+                                <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+                                <input type="hidden" name="action" value="deferred">
+                                <input type="hidden" name="target_user_id" value="<?= (int)$memberId ?>">
+                                <button type="submit" class="btn btn-warning btn-sm">Deferred</button>
+                            </form>
                         <?php endif; ?>
                     </div>
+
+                    <?php if ($showContactDetails && (!empty($member['phone']) || !empty($member['email']))): ?>
+                        <div class="small text-muted" style="margin-top: 12px;">
+                            <?php if (!empty($member['email'])): ?>
+                                <div><strong>Email:</strong> <?= htmlspecialchars((string)$member['email'], ENT_QUOTES, 'UTF-8') ?></div>
+                            <?php endif; ?>
+                            <?php if (!empty($member['phone'])): ?>
+                                <div><strong>Phone:</strong> <?= htmlspecialchars(trim(($member['country_code'] ?? '') . ' ' . (string)$member['phone']), ENT_QUOTES, 'UTF-8') ?></div>
+                            <?php endif; ?>
+                        </div>
+                    <?php elseif (!$showContactDetails): ?>
+                        <p class="text-muted small" style="margin-top: 12px;"><em>Contact details are hidden. <?php if ($assignment): ?>They may be shared when your match is confirmed by admin.<?php else ?>Contact admin or support if you wish to proceed.<?php endif ?></em></p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

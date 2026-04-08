@@ -52,6 +52,18 @@ class MemberAssignmentModel
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
+    /** Latest assignment between a member and an assigned profile (either direction not needed — always assigned_to → assigned_member). */
+    public function findByPair(int $assignedTo, int $assignedMember): ?array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT * FROM member_assignments WHERE assigned_to = ? AND assigned_member = ? ORDER BY id DESC LIMIT 1'
+        );
+        $stmt->execute([$assignedTo, $assignedMember]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
+
     /** Assignment row only if it belongs to the logged-in member (assigned_to). */
     public function findOwnedBy(int $assignmentId, int $assignedToUserId): ?array
     {

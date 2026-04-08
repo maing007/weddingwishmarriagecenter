@@ -102,6 +102,7 @@ $router->get('/dashboard',         'DashboardController@index');
 $router->get('/dashboard/profile', 'DashboardController@editProfileForm');
 $router->post('/dashboard/profile', 'DashboardController@updateProfile');
 $router->post('/dashboard/save-profile', 'DashboardController@saveProfile');
+$router->post('/dashboard/feed-action', 'DashboardController@feedAction');
 
 $router->get('/dashboard/profile-complete', 'ProfileCompletionController@create');
 $router->post('/dashboard/profile-complete/save', 'ProfileCompletionController@store');

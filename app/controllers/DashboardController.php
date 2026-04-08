@@ -36,12 +36,31 @@ class DashboardController extends Controller
     public function index()
     {
         $title = 'Dashboard';
+        $uid = (int) $_SESSION['user_id'];
         $model = new MemberAssignmentModel();
-        $assignments = $model->getUserAssignments((int)$_SESSION['user_id']);
+        $assignments = $model->getUserAssignments($uid);
+
+        $viewer = $this->userModel->findById($uid);
+        $discoverMembers = [];
+        try {
+            require_once __DIR__ . '/../models/MemberFeedModel.php';
+            $feedModel = new MemberFeedModel();
+            $discoverMembers = $feedModel->getDiscoverMembers(
+                $uid,
+                (string) ($viewer['gender'] ?? ''),
+                48
+            );
+        } catch (Throwable $e) {
+            error_log('Dashboard discover feed: ' . $e->getMessage());
+            $discoverMembers = [];
+        }
 
         $error = $_SESSION['flash_error'] ?? '';
         $success = $_SESSION['flash_success'] ?? '';
         unset($_SESSION['flash_error'], $_SESSION['flash_success']);
+
+        $feedApprovePopup = !empty($_SESSION['feed_approve_popup']);
+        unset($_SESSION['feed_approve_popup']);
 
         require __DIR__ . '/../views/dashboard/home.php';
     }
@@ -251,6 +270,11 @@ class DashboardController extends Controller
             if ($aid > 0) {
                 $target = BASE_URL . '/dashboard/openAssignment?id=' . $aid;
             }
+        } elseif ($ret === 'discover-profile') {
+            $pid = (int) ($_POST['user_id'] ?? 0);
+            if ($pid > 0) {
+                $target = BASE_URL . '/dashboard/user/' . $pid . '?context=discover';
+            }
         }
 
         header('Location: ' . $target);
@@ -262,17 +286,68 @@ class DashboardController extends Controller
 ========================= */
 public function viewUserProfile($id)
 {
-    $userId = (int)$id;
+    $targetId = (int) $id;
+    $viewerId = (int) $_SESSION['user_id'];
 
-    $member = $this->userModel->findMemberForDisplay($userId);
+    $member = $this->userModel->findMemberForDisplay($targetId);
     if (!$member) {
         $_SESSION['flash_error'] = 'User not found.';
         header('Location: ' . BASE_URL . '/dashboard');
         exit;
     }
 
+    require_once __DIR__ . '/../models/MemberAssignmentModel.php';
+    $assignmentModel = new MemberAssignmentModel();
+    $assignmentRow = $assignmentModel->findByPair($viewerId, $targetId);
+    $assignment = $assignmentRow ? (object) $assignmentRow : null;
+
+    $viewer = $this->userModel->findById($viewerId);
+    $context = strtolower(trim((string) ($_GET['context'] ?? '')));
+    $isDiscoverContext = ($context === 'discover');
+
+    require_once __DIR__ . '/../models/MemberFeedModel.php';
+    $feedModel = new MemberFeedModel();
+    $feedInteraction = null;
+    try {
+        $feedInteraction = $feedModel->getInteraction($viewerId, $targetId);
+    } catch (Throwable $e) {
+        $feedInteraction = null;
+    }
+
+    $canDiscover = $feedModel->canDiscoverInteract(
+        $viewerId,
+        $targetId,
+        (string) ($viewer['gender'] ?? ''),
+        (string) ($member['gender'] ?? '')
+    );
+    $savedOk = $this->userModel->isProfileSaved($viewerId, $targetId);
+    $allowed = $assignment !== null
+        || $savedOk
+        || MemberFeedModel::isOppositeGender($viewer['gender'] ?? '', $member['gender'] ?? '');
+
+    if (!$allowed) {
+        $_SESSION['flash_error'] = 'You cannot view this profile.';
+        header('Location: ' . BASE_URL . '/dashboard');
+        exit;
+    }
+
+    if ($isDiscoverContext && (!$canDiscover || $assignment !== null)) {
+        $_SESSION['flash_error'] = 'This profile is not available in discovery.';
+        header('Location: ' . BASE_URL . '/dashboard');
+        exit;
+    }
+
+    if ($isDiscoverContext && $canDiscover && $assignment === null) {
+        try {
+            $feedModel->markViewed($viewerId, $targetId);
+            $feedInteraction = $feedModel->getInteraction($viewerId, $targetId);
+        } catch (Throwable $e) {
+            // ignore
+        }
+    }
+
     require_once __DIR__ . '/../models/UserProfile.php';
-    $profileDetails = (new UserProfile())->getByUserId($userId) ?: null;
+    $profileDetails = (new UserProfile())->getByUserId($targetId) ?: null;
 
     $age = null;
     if (!empty($member['dob']) && $member['dob'] !== '0000-00-00') {
@@ -295,10 +370,89 @@ public function viewUserProfile($id)
     $success = $_SESSION['flash_success'] ?? '';
     unset($_SESSION['flash_error'], $_SESSION['flash_success']);
 
-    $assignment = null;
-    $memberId = $userId;
+    $memberId = $targetId;
+    $showContactDetails = $assignment !== null;
 
     require __DIR__ . '/../views/dashboard/feed-view.php';
+}
+
+/**
+ * Discovery feed: approve (remove from feed; contact admin for next steps) or defer (admin deferred matches).
+ */
+public function feedAction()
+{
+    $viewerId = (int) $_SESSION['user_id'];
+    if (
+        empty($_POST['csrf_token']) ||
+        empty($_SESSION['csrf_token']) ||
+        !hash_equals($_SESSION['csrf_token'], (string) $_POST['csrf_token'])
+    ) {
+        $_SESSION['flash_error'] = 'Invalid form submission.';
+        header('Location: ' . BASE_URL . '/dashboard');
+        exit;
+    }
+
+    $action = strtolower(trim((string) ($_POST['action'] ?? '')));
+    $targetId = (int) ($_POST['target_user_id'] ?? 0);
+    if ($targetId <= 0 || $targetId === $viewerId) {
+        $_SESSION['flash_error'] = 'Invalid profile.';
+        header('Location: ' . BASE_URL . '/dashboard');
+        exit;
+    }
+
+    require_once __DIR__ . '/../models/MemberFeedModel.php';
+    $feedModel = new MemberFeedModel();
+    $viewer = $this->userModel->findById($viewerId);
+    $target = $this->userModel->findById($targetId);
+    if (!$viewer || !$target) {
+        $_SESSION['flash_error'] = 'Profile not found.';
+        header('Location: ' . BASE_URL . '/dashboard');
+        exit;
+    }
+
+    if (!$feedModel->canDiscoverInteract(
+        $viewerId,
+        $targetId,
+        (string) ($viewer['gender'] ?? ''),
+        (string) ($target['gender'] ?? '')
+    )) {
+        $_SESSION['flash_error'] = 'This action is not allowed for this profile.';
+        header('Location: ' . BASE_URL . '/dashboard');
+        exit;
+    }
+
+    $existing = $feedModel->getInteraction($viewerId, $targetId);
+    if ($action === 'approve') {
+        if (!empty($existing['approved_at'])) {
+            $_SESSION['flash_success'] = 'You have already approved this profile.';
+            header('Location: ' . BASE_URL . '/dashboard');
+            exit;
+        }
+        $feedModel->approve($viewerId, $targetId);
+        $_SESSION['flash_success'] = 'Thank you. Please contact admin or support for the next steps.';
+        $_SESSION['feed_approve_popup'] = true;
+    } elseif ($action === 'deferred') {
+        if (!empty($existing['deferred_at'])) {
+            $_SESSION['flash_success'] = 'This profile was already deferred.';
+            header('Location: ' . BASE_URL . '/dashboard');
+            exit;
+        }
+        $feedModel->defer($viewerId, $targetId);
+        require_once __DIR__ . '/../models/DeferredMatchModel.php';
+        try {
+            (new DeferredMatchModel())->insertFromDashboardFeed($viewerId, $targetId);
+        } catch (Throwable $e) {
+            error_log('DeferredMatch insertFromDashboardFeed: ' . $e->getMessage());
+        }
+        $_SESSION['flash_success'] = 'Profile deferred. Our team has been notified.';
+    } else {
+        $_SESSION['flash_error'] = 'Unknown action.';
+        header('Location: ' . BASE_URL . '/dashboard');
+        exit;
+    }
+
+    header('Location: ' . BASE_URL . '/dashboard');
+    exit;
 }
 
 public function openAssignment()
@@ -358,6 +512,11 @@ public function openAssignment()
     $error = $_SESSION['flash_error'] ?? '';
     $success = $_SESSION['flash_success'] ?? '';
     unset($_SESSION['flash_error'], $_SESSION['flash_success']);
+
+    $isDiscoverContext = false;
+    $canDiscover = false;
+    $feedInteraction = null;
+    $showContactDetails = true;
 
     require __DIR__ . '/../views/dashboard/feed-view.php';
 }

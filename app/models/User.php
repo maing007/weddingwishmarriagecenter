@@ -304,4 +304,14 @@ class User
 
         return $stmt->execute([$userId, $savedUserId]);
     }
+
+    public function isProfileSaved(int $userId, int $savedUserId): bool
+    {
+        $stmt = $this->db->prepare(
+            'SELECT 1 FROM saved_profiles WHERE user_id = ? AND saved_user_id = ? LIMIT 1'
+        );
+        $stmt->execute([$userId, $savedUserId]);
+
+        return (bool) $stmt->fetchColumn();
+    }
 }
