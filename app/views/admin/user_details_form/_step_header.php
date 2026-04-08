@@ -8,6 +8,7 @@ $steps = [
     'partner' => ['label' => 'Partner Preference', 'href' => BASE_URL . '/admin/add_user/user/partner'],
     'upload' => ['label' => 'Upload Photos', 'href' => BASE_URL . '/admin/add_user/user/upload'],
 ];
+require_once __DIR__ . '/_wizard_step_session.php';
 ?>
 <style>
     .admin-user-steps .admin-content {

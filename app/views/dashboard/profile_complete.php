@@ -5,7 +5,7 @@ $error = $error ?? '';
 ?>
 <div class="dash-content-wrapper">
     <div class="container-fluid py-3 profile-wizard">
-        <style>
+    <style>
             .profile-wizard {
                 --pw-primary: #2563eb;
                 --pw-border: #e5e7eb;
@@ -33,7 +33,7 @@ $error = $error ?? '';
                 border-radius: 8px;
                 border: 1px solid var(--pw-border);
                 background: #f9fafb;
-                font-size: 0.8rem;
+                font-size: 1.5rem;
                 font-weight: 600;
                 color: #4b5563;
                 cursor: pointer;
@@ -70,7 +70,7 @@ $error = $error ?? '';
             .profile-wizard .step-pane { display: none; }
             .profile-wizard .step-pane.active { display: block; }
             .profile-wizard label {
-                font-size: 0.875rem;
+                font-size: 1.5rem;
                 font-weight: 600;
                 color: #374151;
                 margin-bottom: 0.35rem;
@@ -79,7 +79,7 @@ $error = $error ?? '';
             .profile-wizard .form-control {
                 border-radius: 8px;
                 border: 1px solid #d1d5db;
-                font-size: 0.95rem;
+                font-size: 1.5rem;
             }
             .profile-wizard .form-control:focus {
                 border-color: #22c55e;

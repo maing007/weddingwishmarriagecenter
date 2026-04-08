@@ -142,25 +142,12 @@ require __DIR__ . '/_step_header.php';
     }
 </style>
 
-<!-- FLASH -->
-<?php if (!empty($_SESSION['flash_error'])): ?>
-    <div class="alert alert-danger container mt-3">
-        <?= $_SESSION['flash_error'];
-        unset($_SESSION['flash_error']); ?>
-    </div>
-<?php endif; ?>
-
-<?php if (!empty($_SESSION['flash_success'])): ?>
-    <div class="alert alert-success container mt-3">
-        <?= $_SESSION['flash_success'];
-        unset($_SESSION['flash_success']); ?>
-    </div>
-<?php endif; ?>
+<?php require __DIR__ . '/_wizard_flash.php'; ?>
 <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> -->
 <div class="spacer">
     <div class="row">
         <div class="col-lg-12">
-            <form method="post" action="<?= BASE_URL ?>/admin/user/residence" enctype="multipart/form-data" class="form-horizontal">
+            <form method="post" action="<?= BASE_URL ?>/admin/user/residence" enctype="multipart/form-data" class="form-horizontal" novalidate>
 
                 <div class="form-group">
                     <label class="col-sm-3 col-lg-3 control-label">Country *</label>
@@ -168,7 +155,7 @@ require __DIR__ . '/_step_header.php';
                         <select name="country" class="form-control">
                             <option value="">Select Country</option>
                             <?php foreach ($countries_names as $country) : ?>
-                                <option value="<?= $country ?>"><?= $country ?></option>
+                                <option value="<?= htmlspecialchars($country, ENT_QUOTES, 'UTF-8') ?>"<?= wz_sel('residence', 'country', (string) $country) ?>><?= htmlspecialchars($country, ENT_QUOTES, 'UTF-8') ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -180,7 +167,7 @@ require __DIR__ . '/_step_header.php';
                         <select name="state" class="form-control">
                             <option value="">Select State</option>
                             <?php foreach ($states as $state) : ?>
-                                <option value="<?= $state ?>"><?= $state ?></option>
+                                <option value="<?= htmlspecialchars($state, ENT_QUOTES, 'UTF-8') ?>"<?= wz_sel('residence', 'state', (string) $state) ?>><?= htmlspecialchars($state, ENT_QUOTES, 'UTF-8') ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -192,7 +179,7 @@ require __DIR__ . '/_step_header.php';
                         <select name="city" class="form-control">
                             <option value="">Select City</option>
                             <?php foreach ($cities as $city) : ?>
-                                <option value="<?= $city ?>"><?= $city ?></option>
+                                <option value="<?= htmlspecialchars($city, ENT_QUOTES, 'UTF-8') ?>"<?= wz_sel('residence', 'city', (string) $city) ?>><?= htmlspecialchars($city, ENT_QUOTES, 'UTF-8') ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -204,7 +191,7 @@ require __DIR__ . '/_step_header.php';
                         <select name="area" class="form-control">
                             <option value="">Select Area</option>
                             <?php foreach ($areas as $area) : ?>
-                                <option value="<?= $area ?>"><?= $area ?></option>
+                                <option value="<?= htmlspecialchars($area, ENT_QUOTES, 'UTF-8') ?>"<?= wz_sel('residence', 'area', (string) $area) ?>><?= htmlspecialchars($area, ENT_QUOTES, 'UTF-8') ?></option>
                             <?php endforeach; ?>
 
                         </select>
@@ -214,14 +201,14 @@ require __DIR__ . '/_step_header.php';
                 <div class="form-group">
                     <label class="col-sm-3 col-lg-3 control-label">Address</label>
                     <div class="col-sm-9 col-lg-7">
-                        <textarea name="address" class="form-control" rows="4" placeholder="Address"></textarea>
+                        <textarea name="address" class="form-control" rows="4" placeholder="Address"><?= htmlspecialchars(wz('residence', 'address'), ENT_QUOTES, 'UTF-8') ?></textarea>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="col-sm-3 col-lg-3 control-label">Location Pin</label>
                     <div class="col-sm-9 col-lg-7">
-                        <input type="text" name="location_pin" class="form-control" placeholder="Location Pin">
+                        <input type="text" name="location_pin" class="form-control" placeholder="Location Pin" value="<?= htmlspecialchars(wz('residence', 'location_pin'), ENT_QUOTES, 'UTF-8') ?>">
                     </div>
                 </div>
 
@@ -230,10 +217,10 @@ require __DIR__ . '/_step_header.php';
                     <div class="col-sm-9 col-lg-7">
                         <select name="house_type" class="form-control">
                             <option value="">Select House Type</option>
-                            <option value="Does not matter">Does not matter</option>
-                            <option value="Rented">Rented</option>
-                            <option value="Owned">Owned</option>
-                            <option value="On Lease">On Lease</option>
+                            <option value="Does not matter"<?= wz_sel('residence', 'house_type', 'Does not matter') ?>>Does not matter</option>
+                            <option value="Rented"<?= wz_sel('residence', 'house_type', 'Rented') ?>>Rented</option>
+                            <option value="Owned"<?= wz_sel('residence', 'house_type', 'Owned') ?>>Owned</option>
+                            <option value="On Lease"<?= wz_sel('residence', 'house_type', 'On Lease') ?>>On Lease</option>
                         </select>
                     </div>
                 </div>
@@ -241,28 +228,28 @@ require __DIR__ . '/_step_header.php';
                 <div class="form-group">
                     <label class="col-sm-3 col-lg-3 control-label">House Size (Marla) *</label>
                     <div class="col-sm-9 col-lg-7">
-                        <input type="number" name="house_size_marla" class="form-control" placeholder="House Size (Marla)">
+                        <input type="number" name="house_size_marla" class="form-control" placeholder="House Size (Marla)" value="<?= htmlspecialchars(wz('residence', 'house_size_marla'), ENT_QUOTES, 'UTF-8') ?>">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="col-sm-3 col-lg-3 control-label">Phone</label>
                     <div class="col-sm-9 col-lg-7">
-                        <input type="text" name="phone" class="form-control" placeholder="Phone">
+                        <input type="text" name="phone" class="form-control" placeholder="Phone" value="<?= htmlspecialchars(wz('residence', 'phone'), ENT_QUOTES, 'UTF-8') ?>">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="col-sm-3 col-lg-3 control-label">Time To Call</label>
                     <div class="col-sm-9 col-lg-7">
-                        <input type="text" name="time_to_call" class="form-control" placeholder="Time To Call">
+                        <input type="text" name="time_to_call" class="form-control" placeholder="Time To Call" value="<?= htmlspecialchars(wz('residence', 'time_to_call'), ENT_QUOTES, 'UTF-8') ?>">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="col-sm-3 col-lg-3 control-label">Contact Person Name</label>
                     <div class="col-sm-9 col-lg-7">
-                        <input type="text" name="contact_person_name" class="form-control" placeholder="Contact Person Name">
+                        <input type="text" name="contact_person_name" class="form-control" placeholder="Contact Person Name" value="<?= htmlspecialchars(wz('residence', 'contact_person_name'), ENT_QUOTES, 'UTF-8') ?>">
                     </div>
                 </div>
 
@@ -271,11 +258,11 @@ require __DIR__ . '/_step_header.php';
                     <div class="col-sm-9 col-lg-7">
                         <select name="contact_person_relation" class="form-control">
                             <option value="">Select Contact Person Relation</option>
-                            <option value="self">Self</option>
-                            <option value="brother">Brother</option>
-                            <option value="sister">Sister</option>
-                            <option value="parent">Parent</option>
-                            <option value="relative">Relative</option>
+                            <option value="self"<?= wz_sel('residence', 'contact_person_relation', 'self') ?>>Self</option>
+                            <option value="brother"<?= wz_sel('residence', 'contact_person_relation', 'brother') ?>>Brother</option>
+                            <option value="sister"<?= wz_sel('residence', 'contact_person_relation', 'sister') ?>>Sister</option>
+                            <option value="parent"<?= wz_sel('residence', 'contact_person_relation', 'parent') ?>>Parent</option>
+                            <option value="relative"<?= wz_sel('residence', 'contact_person_relation', 'relative') ?>>Relative</option>
                         </select>
                     </div>
                 </div>
@@ -285,12 +272,12 @@ require __DIR__ . '/_step_header.php';
                     <div class="col-sm-9 col-lg-7">
                         <select name="residence" class="form-control">
                             <option value="">Select Residence</option>
-                            <option value="Does not matter">Does not matter</option>
-                            <option value="Citizen">Citizen</option>
-                            <option value="Permanent Resident">Permanent Resident</option>
-                            <option value="Student Visa">Student Visa</option>
-                            <option value="Temporary Visa">Temporary Visa</option>
-                            <option value="Work permit">Work permit</option>
+                            <option value="Does not matter"<?= wz_sel('residence', 'residence', 'Does not matter') ?>>Does not matter</option>
+                            <option value="Citizen"<?= wz_sel('residence', 'residence', 'Citizen') ?>>Citizen</option>
+                            <option value="Permanent Resident"<?= wz_sel('residence', 'residence', 'Permanent Resident') ?>>Permanent Resident</option>
+                            <option value="Student Visa"<?= wz_sel('residence', 'residence', 'Student Visa') ?>>Student Visa</option>
+                            <option value="Temporary Visa"<?= wz_sel('residence', 'residence', 'Temporary Visa') ?>>Temporary Visa</option>
+                            <option value="Work permit"<?= wz_sel('residence', 'residence', 'Work permit') ?>>Work permit</option>
                         </select>
                     </div>
                 </div>

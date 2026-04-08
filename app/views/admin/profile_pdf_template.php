@@ -174,7 +174,7 @@ require __DIR__ . '/partials/sidebar.php';
             padding: 10px;
         }
         .logo-text {
-            font-size: 40px;
+            font-size: 30px;
     margin: 0;
     padding: 4px 0;
     line-height: 1;
@@ -182,12 +182,13 @@ require __DIR__ . '/partials/sidebar.php';
     letter-spacing: 3px;
     color: #6e032a;
     /* text-transform: uppercase; */
-    font-family: "Dancing Script", serif !important;
+    /* font-family: "Dancing Script", serif !important; */
         }
         .logo { 
             /* flex: 1;  */
             text-align: left;
             display: flex;
+            margin-left: -80px;
             align-items: center;
             filter: saturate(150%) contrast(110%) brightness(105%);
             filter: drop-shadow(0 0 10px rgba(255, 255, 0, 0.8)); /* Yellow glow */
@@ -206,7 +207,7 @@ require __DIR__ . '/partials/sidebar.php';
         .column-2 { flex: 2; min-width: 0; display: flex; flex-direction: column; }
         .title-column {
             width: 50%;
-            /*text-align: end;*/
+            text-align: end;
             padding-right: 5px;
             font-weight: bold;
             color: #fff;

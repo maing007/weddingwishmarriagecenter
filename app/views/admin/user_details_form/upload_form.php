@@ -141,12 +141,14 @@ require __DIR__ . '/_step_header.php';
     }
 </style>
 
+<?php require __DIR__ . '/_wizard_flash.php'; ?>
+
 <div class="container spacer mt-5">
     <div class="card">
         <h4 class="mb-4">Upload Photos</h4>
         <div class="col-lg-12">
 
-            <form id="uploadForm" action="<?= BASE_URL; ?>/admin/user/submit" method="POST" enctype="multipart/form-data">
+            <form id="uploadForm" action="<?= BASE_URL; ?>/admin/user/submit" method="POST" enctype="multipart/form-data" novalidate>
 
 
                 <!-- Photo 1 -->

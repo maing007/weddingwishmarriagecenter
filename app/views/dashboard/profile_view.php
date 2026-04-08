@@ -37,97 +37,160 @@ $dash = static function ($v): string {
 ?>
 <div class="dash-content-wrapper">
     <div class="container py-3 profile-view-page">
-        <style>
-            .profile-view-page .pv-hero {
-                background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 55%, #3b82f6 100%);
-                color: #fff;
-                border-radius: 16px;
-                padding: 1.75rem;
-                box-shadow: 0 18px 40px rgba(37, 99, 235, 0.25);
-                overflow: hidden;
-            }
-            .profile-view-page .pv-hero-inner { display: table; width: 100%; }
-            .profile-view-page .pv-hero-cell {
-                display: table-cell;
-                vertical-align: middle;
-                padding-right: 15px;
-            }
-            .profile-view-page .pv-hero-cell:last-child { text-align: right; padding-right: 0; }
-            @media (max-width: 767px) {
-                .profile-view-page .pv-hero-inner,
-                .profile-view-page .pv-hero-cell {
-                    display: block;
-                    text-align: center !important;
-                    padding-right: 0;
-                }
-            }
-            .profile-view-page .pv-avatar {
-                width: 120px;
-                height: 120px;
-                border-radius: 50%;
-                object-fit: cover;
-                border: 4px solid rgba(255, 255, 255, 0.35);
-            }
-            .profile-view-page .pv-hero h1 {
-                font-size: 1.5rem;
-                font-weight: 700;
-                margin: 0 0 0.35rem;
-            }
-            .profile-view-page .pv-meta {
-                opacity: 0.92;
-                font-size: 0.9rem;
-                margin: 0;
-            }
-            .profile-view-page .pv-badges .label { font-size: 12px; margin-right: 6px; }
-            .profile-view-page .pv-card {
-                background: #fff;
-                border: 1px solid #e5e7eb;
-                border-radius: 12px;
-                overflow: hidden;
-                box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
-            }
-            .profile-view-page .pv-card h2 {
-                font-size: 0.85rem;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.04em;
-                color: #6b7280;
-                margin: 0;
-                padding: 1rem 1.25rem;
-                background: #f9fafb;
-                border-bottom: 1px solid #e5e7eb;
-            }
-            .profile-view-page .pv-table { margin: 0; }
-            .profile-view-page .pv-table th {
-                width: 34%;
-                background: #fafafa;
-                font-weight: 600;
-                font-size: 0.875rem;
-                color: #4b5563;
-                padding: 0.65rem 1.25rem;
-                border-color: #eee;
-            }
-            .profile-view-page .pv-table td {
-                font-size: 0.9rem;
-                padding: 0.65rem 1.25rem;
-                border-color: #eee;
-                color: #111827;
-            }
-            .profile-view-page .pv-about {
-                padding: 1.15rem 1.25rem;
-                font-size: 0.95rem;
-                line-height: 1.55;
-                color: #374151;
-            }
-            .profile-view-page .pv-actions .btn {
-                border-radius: 8px;
-                font-weight: 600;
-            }
-            @media (max-width: 576px) {
-                .profile-view-page .pv-table th,
-                .profile-view-page .pv-table td { font-size: 0.8rem; }
-            }
-        </style>
+    <style>
+
+/* BASE */
+.profile-view-page {
+    font-size: 18px; /* master control */
+}
+
+/* HERO SECTION */
+.profile-view-page .pv-hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 55%, #3b82f6 100%);
+    color: #fff;
+    border-radius: 16px;
+    padding: 2.2rem;
+    box-shadow: 0 18px 40px rgba(37, 99, 235, 0.25);
+    overflow: hidden;
+}
+
+.profile-view-page .pv-hero-inner {
+    display: table;
+    width: 100%;
+}
+
+.profile-view-page .pv-hero-cell {
+    display: table-cell;
+    vertical-align: middle;
+    padding-right: 15px;
+}
+
+.profile-view-page .pv-hero-cell:last-child {
+    text-align: right;
+    padding-right: 0;
+}
+
+/* MOBILE HERO FIX */
+@media (max-width: 767px) {
+    .profile-view-page .pv-hero-inner,
+    .profile-view-page .pv-hero-cell {
+        display: block;
+        text-align: center !important;
+        padding-right: 0;
+    }
+}
+
+/* AVATAR */
+.profile-view-page .pv-avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.35);
+}
+
+/* NAME */
+.profile-view-page .pv-hero h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0 0 0.4rem;
+}
+
+/* META */
+.profile-view-page .pv-meta {
+    opacity: 0.95;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+/* BADGES */
+.profile-view-page .pv-badges .label {
+    font-size: 14px;
+    margin-right: 6px;
+}
+
+/* CARD */
+.profile-view-page .pv-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+/* CARD HEADER */
+.profile-view-page .pv-card h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    margin: 0;
+    padding: 1.2rem 1.5rem;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* TABLE */
+.profile-view-page .pv-table {
+    margin: 0;
+}
+
+.profile-view-page .pv-table th {
+    width: 34%;
+    background: #fafafa;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #4b5563;
+    padding: 1rem 1.5rem;
+    border-color: #eee;
+}
+
+.profile-view-page .pv-table td {
+    font-size: 1.1rem;
+    padding: 1rem 1.5rem;
+    border-color: #eee;
+    color: #111827;
+}
+
+/* ABOUT */
+.profile-view-page .pv-about {
+    padding: 1.4rem 1.5rem;
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: #374151;
+}
+
+/* BUTTONS */
+.profile-view-page .pv-actions .btn {
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.6rem 1.2rem;
+}
+
+/* SMALL DEVICES */
+@media (max-width: 576px) {
+    .profile-view-page {
+        font-size: 16px;
+    }
+
+    .profile-view-page .pv-hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .profile-view-page .pv-table th,
+    .profile-view-page .pv-table td {
+        font-size: 1rem;
+        padding: 0.7rem 1rem;
+    }
+
+    .profile-view-page .pv-about {
+        font-size: 1.1rem;
+    }
+}
+
+</style>
 
         <?php if (!empty($error)): ?>
             <div class="alert alert-danger"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>

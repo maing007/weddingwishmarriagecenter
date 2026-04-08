@@ -83,11 +83,13 @@ require __DIR__ . '/_step_header.php';
     }
 </style>
 
+<?php require __DIR__ . '/_wizard_flash.php'; ?>
+
 <div class="container spacer mt-5">
     <div class="card">
         <h4 class="mb-4">Partner Preference</h4>
 
-        <form action="<?= BASE_URL; ?>/admin/user/partner" method="POST">
+        <form action="<?= BASE_URL; ?>/admin/user/partner" method="POST" novalidate>
 
             <div class="container">
 

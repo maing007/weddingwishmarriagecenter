@@ -142,24 +142,11 @@ require __DIR__ . '/_step_header.php';
         margin-top: 120px;
     }
 </style>
-<!-- FLASH -->
-<?php if (!empty($_SESSION['flash_error'])): ?>
-    <div class="alert alert-danger container mt-3">
-        <?= $_SESSION['flash_error'];
-        unset($_SESSION['flash_error']); ?>
-    </div>
-<?php endif; ?>
-
-<?php if (!empty($_SESSION['flash_success'])): ?>
-    <div class="alert alert-success container mt-3">
-        <?= $_SESSION['flash_success'];
-        unset($_SESSION['flash_success']); ?>
-    </div>
-<?php endif; ?>
+<?php require __DIR__ . '/_wizard_flash.php'; ?>
 
 <div class="container spacer  mt-5">
 
-    <form action="<?= BASE_URL ?>/admin/user/basic" method="POST" enctype="multipart/form-data" class="col-lg-12 mb-5">
+    <form action="<?= BASE_URL ?>/admin/user/basic" method="POST" enctype="multipart/form-data" class="col-lg-12 mb-5" novalidate>
         <div class="col-mb-4 card">
             <div class="">
                 <h4 class="mb-4">Basic User Details</h4>
@@ -170,8 +157,8 @@ require __DIR__ . '/_step_header.php';
                             <option value="">Select Lead</option>
                             <?php if (!empty($admin_details)) : ?>
                                 <?php foreach ($admin_details as $admin) : ?>
-                                    <option value="<?= $admin['name']; ?>">
-                                        <?= $admin['name']; ?>
+                                    <option value="<?= htmlspecialchars($admin['name'], ENT_QUOTES, 'UTF-8') ?>"<?= wz_sel('basic', 'lead', (string) $admin['name']) ?>>
+                                        <?= htmlspecialchars($admin['name'], ENT_QUOTES, 'UTF-8') ?>
                                     </option>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -184,28 +171,29 @@ require __DIR__ . '/_step_header.php';
                     <label for="gender">Gender</label>
                     <div class=" col-md-12 flex items-center">
 
-                        <input type="radio" name="gender" id="male" value="male">
+                        <input type="radio" name="gender" id="male" value="male"<?= wz_radio('basic', 'gender', 'male') ?>>
                         <label for="male">Male</label>
-                        <input type="radio" name="gender" id="female" value="female">
+                        <input type="radio" name="gender" id="female" value="female"<?= wz_radio('basic', 'gender', 'female') ?>>
                         <label for="female">Female</label>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-12">
                         <label for="first_name">First Name</label>
-                        <input type="text" id="first_name" name="first_name" class="form-control" placeholder="Enter first name" required>
+                        <input type="text" id="first_name" name="first_name" class="form-control" placeholder="Enter first name" value="<?= htmlspecialchars(wz('basic', 'first_name'), ENT_QUOTES, 'UTF-8') ?>" required>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-12">
                         <label for="last_name">Last Name</label>
-                        <input type="text" id="last_name" name="second_name" class="form-control" placeholder="Enter last name" required>
+                        <input type="text" id="last_name" name="second_name" class="form-control" placeholder="Enter last name" value="<?= htmlspecialchars(wz('basic', 'second_name'), ENT_QUOTES, 'UTF-8') ?>" required>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-12">
                         <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" class="form-control" placeholder="Enter email address" required>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="Enter email address" value="<?= htmlspecialchars(wz('basic', 'email'), ENT_QUOTES, 'UTF-8') ?>" required autocomplete="email">
+                        <small id="emailAvailability" class="form-text text-muted" aria-live="polite"></small>
                     </div>
                 </div>
                 <div class="row">
@@ -223,8 +211,8 @@ require __DIR__ . '/_step_header.php';
                             <!-- Country Dropdown -->
                             <select name="country_code" class="form-control" style="max-width:180px;">
                                 <?php foreach ($countries as $country): ?>
-                                    <option value="<?= $country['code'] ?>">
-                                        <?= $country['flag'] ?> <?= $country['code'] ?>
+                                    <option value="<?= htmlspecialchars($country['code'], ENT_QUOTES, 'UTF-8') ?>"<?= wz_sel('basic', 'country_code', (string) $country['code']) ?>>
+                                        <?= htmlspecialchars((string) $country['flag'], ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars((string) $country['code'], ENT_QUOTES, 'UTF-8') ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -235,6 +223,7 @@ require __DIR__ . '/_step_header.php';
                                 name="mobile_number"
                                 class="form-control"
                                 placeholder="Enter mobile number"
+                                value="<?= htmlspecialchars(wz('basic', 'mobile_number'), ENT_QUOTES, 'UTF-8') ?>"
                                 required>
                         </div>
 
@@ -243,15 +232,15 @@ require __DIR__ . '/_step_header.php';
                 <div class="row">
                     <div class="col-md-12 flex items-center">
                         <label for="marital_status">Marital Status</label>
-                        <input type="radio" name="marital_status" id="single" value="single">
+                        <input type="radio" name="marital_status" id="single" value="single"<?= wz_radio('basic', 'marital_status', 'single') ?>>
                         <label for="single">Single</label>
-                        <input type="radio" name="marital_status" id="married" value="married">
+                        <input type="radio" name="marital_status" id="married" value="married"<?= wz_radio('basic', 'marital_status', 'married') ?>>
                         <label for="married">Married</label>
-                        <input type="radio" name="marital_status" id="divorced" value="divorced">
+                        <input type="radio" name="marital_status" id="divorced" value="divorced"<?= wz_radio('basic', 'marital_status', 'divorced') ?>>
                         <label for="divorced">Divorced</label>
-                        <input type="radio" name="marital_status" id="separated" value="separated">
+                        <input type="radio" name="marital_status" id="separated" value="separated"<?= wz_radio('basic', 'marital_status', 'separated') ?>>
                         <label for="separated">Separated</label>
-                        <input type="radio" name="marital_status" id="widowed" value="widowed">
+                        <input type="radio" name="marital_status" id="widowed" value="widowed"<?= wz_radio('basic', 'marital_status', 'widowed') ?>>
                         <label for="widowed">Widow/Widower</label>
                     </div>
                 </div>
@@ -261,12 +250,12 @@ require __DIR__ . '/_step_header.php';
                             <label for="number_of_children">Number of Children</label>
                             <select id="number_of_children" name="total_children" class="form-control">
                                 <option value="">Select number of children</option>
-                                <option value="0">0</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5+">5+</option>
+                                <option value="0"<?= wz_sel('basic', 'total_children', '0') ?>>0</option>
+                                <option value="1"<?= wz_sel('basic', 'total_children', '1') ?>>1</option>
+                                <option value="2"<?= wz_sel('basic', 'total_children', '2') ?>>2</option>
+                                <option value="3"<?= wz_sel('basic', 'total_children', '3') ?>>3</option>
+                                <option value="4"<?= wz_sel('basic', 'total_children', '4') ?>>4</option>
+                                <option value="5+"<?= wz_sel('basic', 'total_children', '5+') ?>>5+</option>
                             </select>
                         </div>
                     </div>
@@ -274,8 +263,8 @@ require __DIR__ . '/_step_header.php';
                     <div class="row">
                         <div class="col-md-12 flex items-center">
                             <label for="status">Status</label>
-                            <input type="radio" name="status_children" value="Living_with_me"> Living with me
-                            <input type="radio" name="status_children" value="Not_Living_with_me"> Not Living with me
+                            <input type="radio" name="status_children" value="Living_with_me"<?= wz_radio('basic', 'status_children', 'Living_with_me') ?>> Living with me
+                            <input type="radio" name="status_children" value="Not_Living_with_me"<?= wz_radio('basic', 'status_children', 'Not_Living_with_me') ?>> Not Living with me
                         </div>
                     </div>
                 </div>
@@ -284,13 +273,13 @@ require __DIR__ . '/_step_header.php';
                         <label for="mother_tongue">Mother Tongue</label>
                         <select id="mother_tongue" name="mother_tongue" class="form-control" placeholder="Select mother tongue">
                             <option value="">Select mother tongue</option>
-                            <option value="urdu">Urdu</option>
-                            <option value="punjabi">Punjabi</option>
-                            <option value="sindhi">Sindhi</option>
-                            <option value="pashto">Pashto</option>
-                            <option value="balochi">Balochi</option>
-                            <option value="english">English</option>
-                            <option value="other">Other</option>
+                            <option value="urdu"<?= wz_sel('basic', 'mother_tongue', 'urdu') ?>>Urdu</option>
+                            <option value="punjabi"<?= wz_sel('basic', 'mother_tongue', 'punjabi') ?>>Punjabi</option>
+                            <option value="sindhi"<?= wz_sel('basic', 'mother_tongue', 'sindhi') ?>>Sindhi</option>
+                            <option value="pashto"<?= wz_sel('basic', 'mother_tongue', 'pashto') ?>>Pashto</option>
+                            <option value="balochi"<?= wz_sel('basic', 'mother_tongue', 'balochi') ?>>Balochi</option>
+                            <option value="english"<?= wz_sel('basic', 'mother_tongue', 'english') ?>>English</option>
+                            <option value="other"<?= wz_sel('basic', 'mother_tongue', 'other') ?>>Other</option>
                         </select>
                     </div>
                 </div>
@@ -299,12 +288,16 @@ require __DIR__ . '/_step_header.php';
 
 
                         <label for="languages_known">Languages Known</label>
-                        <?php $selectedLanguages = $_POST['language_known'] ?? []; ?>
+                        <?php
+                        $selectedLanguages = $_SESSION['user_form']['basic']['language_known'] ?? [];
+                        if (!is_array($selectedLanguages)) {
+                            $selectedLanguages = ($selectedLanguages === '' || $selectedLanguages === null) ? [] : [(string) $selectedLanguages];
+                        }
+                        ?>
                         <select name="language_known[]" id="languages" class="form-control" multiple>
                             <?php foreach ($languages as $lang): ?>
-                                <option value="<?= $lang ?>"
-                                    <?= in_array($lang, $selectedLanguages) ? 'selected' : '' ?>>
-                                    <?= $lang ?>
+                                <option value="<?= htmlspecialchars($lang, ENT_QUOTES, 'UTF-8') ?>"<?= wz_multi_contains('basic', 'language_known', $lang) ? ' selected' : '' ?>>
+                                    <?= htmlspecialchars($lang, ENT_QUOTES, 'UTF-8') ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -313,7 +306,7 @@ require __DIR__ . '/_step_header.php';
                     <div class="row">
                         <div class="col-md-12">
                             <label for="date_of_birth">Date of Birth</label>
-                            <input type="date" id="date_of_birth" name="dob" class="form-control" placeholder="Select date of birth">
+                            <input type="date" id="date_of_birth" name="dob" class="form-control" placeholder="Select date of birth" value="<?= htmlspecialchars(wz('basic', 'dob'), ENT_QUOTES, 'UTF-8') ?>">
                         </div>
                     </div>
                     <div class="row">
@@ -325,11 +318,11 @@ require __DIR__ . '/_step_header.php';
                             <label for="religion">Religion</label>
                             <select id="religion" name="religion" class="form-control" placeholder="Select religion">
                                 <option value="">Select religion</option>
-                                <option value="islam">Islam</option>
-                                <option value="christianity">Christianity</option>
-                                <option value="hinduism">Hinduism</option>
-                                <option value="buddhism">Buddhism</option>
-                                <option value="other">Other</option>
+                                <option value="islam"<?= wz_sel('basic', 'religion', 'islam') ?>>Islam</option>
+                                <option value="christianity"<?= wz_sel('basic', 'religion', 'christianity') ?>>Christianity</option>
+                                <option value="hinduism"<?= wz_sel('basic', 'religion', 'hinduism') ?>>Hinduism</option>
+                                <option value="buddhism"<?= wz_sel('basic', 'religion', 'buddhism') ?>>Buddhism</option>
+                                <option value="other"<?= wz_sel('basic', 'religion', 'other') ?>>Other</option>
                             </select>
                         </div>
                     </div>
@@ -338,10 +331,10 @@ require __DIR__ . '/_step_header.php';
                             <label for="sect">Sect</label>
                             <select id="sect" name="maslak" class="form-control" placeholder="Select sect">
                                 <option value="">Select sect</option>
-                                <option value="sunni">Sunni</option>
-                                <option value="shia">Shia</option>
-                                <option value="ahmadiyya">Ahmadiyya</option>
-                                <option value="other">Other</option>
+                                <option value="sunni"<?= wz_sel('basic', 'maslak', 'sunni') ?>>Sunni</option>
+                                <option value="shia"<?= wz_sel('basic', 'maslak', 'shia') ?>>Shia</option>
+                                <option value="ahmadiyya"<?= wz_sel('basic', 'maslak', 'ahmadiyya') ?>>Ahmadiyya</option>
+                                <option value="other"<?= wz_sel('basic', 'maslak', 'other') ?>>Other</option>
                             </select>
                         </div>
                     </div>
@@ -352,7 +345,7 @@ require __DIR__ . '/_step_header.php';
                                 <option value="">Select Caste</option>
 
                                 <?php foreach ($castes as $caste): ?>
-                                    <option value="<?= $caste ?>"><?= $caste ?></option>
+                                    <option value="<?= htmlspecialchars($caste, ENT_QUOTES, 'UTF-8') ?>"<?= wz_sel('basic', 'caste', (string) $caste) ?>><?= htmlspecialchars($caste, ENT_QUOTES, 'UTF-8') ?></option>
                                 <?php endforeach; ?>
                                 <option value="other">Other</option>
                             </select>
@@ -363,7 +356,7 @@ require __DIR__ . '/_step_header.php';
                     <div class="row">
                         <div class="col-md-12">
                             <label for="sub_caste">Sub Caste</label>
-                            <input type="text" name="sub_caste" id="sub_caste" class="form-control" placeholder="Enter sub caste">
+                            <input type="text" name="sub_caste" id="sub_caste" class="form-control" placeholder="Enter sub caste" value="<?= htmlspecialchars(wz('basic', 'sub_caste'), ENT_QUOTES, 'UTF-8') ?>">
                         </div>
                     </div>
                     <div class="row">
@@ -375,7 +368,7 @@ require __DIR__ . '/_step_header.php';
                             <select id="education" name="education" class="form-control" placeholder="Select education">
                                 <option value="">Select education</option>
                                 <?php foreach ($educations as $education): ?>
-                                    <option value="<?= $education ?>"><?= $education ?></option>
+                                    <option value="<?= htmlspecialchars($education, ENT_QUOTES, 'UTF-8') ?>"<?= wz_sel('basic', 'education', (string) $education) ?>><?= htmlspecialchars($education, ENT_QUOTES, 'UTF-8') ?></option>
                                 <?php endforeach; ?>
                                 <option value="other">Other</option>
                             </select>
@@ -387,10 +380,10 @@ require __DIR__ . '/_step_header.php';
                             <label for="employee_in">Employee In</label>
                             <select id="employee_in" name="employed_in" class="form-control" placeholder="Select employee in">
                                 <option value="">Select employee in</option>
-                                <option value="private">Private Sector</option>
-                                <option value="public">Public Sector</option>
-                                <option value="self_employed">Self Employed</option>
-                                <option value="other">Other</option>
+                                <option value="private"<?= wz_sel('basic', 'employed_in', 'private') ?>>Private Sector</option>
+                                <option value="public"<?= wz_sel('basic', 'employed_in', 'public') ?>>Public Sector</option>
+                                <option value="self_employed"<?= wz_sel('basic', 'employed_in', 'self_employed') ?>>Self Employed</option>
+                                <option value="other"<?= wz_sel('basic', 'employed_in', 'other') ?>>Other</option>
                             </select>
                         </div>
                     </div>
@@ -400,10 +393,10 @@ require __DIR__ . '/_step_header.php';
                             <label for="annual_income">Annual Income</label>
                             <select id="annual_income" name="annual_income" class="form-control" placeholder="Select annual income">
                                 <option value="">Select annual income</option>
-                                <option value="below_500k">Below 500,000 PKR</option>
-                                <option value="500k_1m">500,000 - 1,000,000 PKR</option>
-                                <option value="1m_2m">1,000,000 - 2,000,000 PKR</option>
-                                <option value="above_2m">Above 2,000,000 PKR</option>
+                                <option value="below_500k"<?= wz_sel('basic', 'annual_income', 'below_500k') ?>>Below 500,000 PKR</option>
+                                <option value="500k_1m"<?= wz_sel('basic', 'annual_income', '500k_1m') ?>>500,000 - 1,000,000 PKR</option>
+                                <option value="1m_2m"<?= wz_sel('basic', 'annual_income', '1m_2m') ?>>1,000,000 - 2,000,000 PKR</option>
+                                <option value="above_2m"<?= wz_sel('basic', 'annual_income', 'above_2m') ?>>Above 2,000,000 PKR</option>
                             </select>
                         </div>
                     </div>
@@ -414,7 +407,7 @@ require __DIR__ . '/_step_header.php';
                             <select id="occupation" name="occupation" class="form-control" placeholder="Select occupation">
                                 <option value="">Select occupation</option>
                                 <?php foreach ($jobs as $job): ?>
-                                    <option value="<?= $job ?>"><?= $job ?></option>
+                                    <option value="<?= htmlspecialchars($job, ENT_QUOTES, 'UTF-8') ?>"<?= wz_sel('basic', 'occupation', (string) $job) ?>><?= htmlspecialchars($job, ENT_QUOTES, 'UTF-8') ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -426,7 +419,7 @@ require __DIR__ . '/_step_header.php';
                             <select id="designation" name="designation" class="form-control" placeholder="Select designation">
                                 <option value="">Select designation</option>
                                 <?php foreach ($designations as $designation): ?>
-                                    <option value="<?= $designation ?>"><?= $designation ?></option>
+                                    <option value="<?= htmlspecialchars($designation, ENT_QUOTES, 'UTF-8') ?>"<?= wz_sel('basic', 'designation', (string) $designation) ?>><?= htmlspecialchars($designation, ENT_QUOTES, 'UTF-8') ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -435,7 +428,7 @@ require __DIR__ . '/_step_header.php';
                     <div class="row">
                         <div class="col-md-12">
                             <label for="work_detail">Work Detail</label>
-                            <input type="text" id="work_detail" name="work_detail" class="form-control" placeholder="Enter work detail">
+                            <input type="text" id="work_detail" name="work_detail" class="form-control" placeholder="Enter work detail" value="<?= htmlspecialchars(wz('basic', 'work_detail'), ENT_QUOTES, 'UTF-8') ?>">
                         </div>
                     </div>
                     <div class="row">
@@ -444,13 +437,13 @@ require __DIR__ . '/_step_header.php';
                     <div class="row">
                         <div class="col-md-12">
                             <label for="registration_fee">Registration Fee</label>
-                            <input type="number" name="registration_fee" id="registration_fee" class="form-control" placeholder="Enter registration fee">
+                            <input type="number" name="registration_fee" id="registration_fee" class="form-control" placeholder="Enter registration fee" value="<?= htmlspecialchars(wz('basic', 'registration_fee'), ENT_QUOTES, 'UTF-8') ?>">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-12">
                             <label for="final_fee">Final Fee</label>
-                            <input type="number" name="final_fee" id="final_fee" class="form-control" placeholder="Enter final fee">
+                            <input type="number" name="final_fee" id="final_fee" class="form-control" placeholder="Enter final fee" value="<?= htmlspecialchars(wz('basic', 'final_fee'), ENT_QUOTES, 'UTF-8') ?>">
                         </div>
                     </div>
                     <div class="row">
@@ -485,6 +478,34 @@ require __DIR__ . '/_step_header.php';
 <!-- End of <body> -->
 <script src="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@4.0.1/dist/js/multi-select-tag.min.js"></script>
 
+<script>
+(function () {
+    var emailInput = document.getElementById('email');
+    var emailHint = document.getElementById('emailAvailability');
+    if (!emailInput || !emailHint) return;
+    var t = null;
+    function checkEmail() {
+        var v = (emailInput.value || '').trim();
+        if (!v || !v.includes('@')) {
+            emailHint.textContent = '';
+            return;
+        }
+        clearTimeout(t);
+        t = setTimeout(function () {
+            fetch('<?= BASE_URL ?>/admin/user/check-email?email=' + encodeURIComponent(v), { headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (!data || !data.ok) return;
+                    emailHint.textContent = data.message || '';
+                    emailHint.style.color = data.available ? '#15803d' : '#b91c1c';
+                })
+                .catch(function () { emailHint.textContent = ''; });
+        }, 400);
+    }
+    emailInput.addEventListener('blur', checkEmail);
+    emailInput.addEventListener('input', checkEmail);
+})();
+</script>
 <script>
     var tagSelector = new MultiSelectTag('languages', {
         maxSelection: 5, // default unlimited.

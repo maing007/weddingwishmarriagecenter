@@ -140,37 +140,41 @@ require __DIR__ . '/_step_header.php';
         margin-top: 120px;
     }
 </style>
+<?php
+$suggested_about_us = $suggested_about_us ?? '';
+require __DIR__ . '/_wizard_flash.php';
+?>
 <div class="container spacer mt-5">
     <div class="col-lg-12">
-        <form method="post" action="<?= BASE_URL; ?>/admin/user/other" enctype="multipart/form-data" class="form-horizontal">
+        <form method="post" action="<?= BASE_URL; ?>/admin/user/other" enctype="multipart/form-data" class="form-horizontal" novalidate>
 
             <h3>About</h3>
 
             <div class="form-group">
                 <label class="col-sm-3 col-lg-3 control-label">About Us</label>
                 <div class="col-sm-9 col-lg-7">
-                    <textarea rows="4" name="about_us" class="form-control" placeholder="About Us"></textarea>
+                    <textarea rows="4" name="about_us" class="form-control" placeholder="About Us"><?= htmlspecialchars($suggested_about_us, ENT_QUOTES, 'UTF-8') ?></textarea>
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="col-sm-3 col-lg-3 control-label">Hobby</label>
                 <div class="col-sm-9 col-lg-7">
-                    <textarea rows="4" name="hobby" class="form-control" placeholder="Hobby"></textarea>
+                    <textarea rows="4" name="hobby" class="form-control" placeholder="Hobby"><?= htmlspecialchars(wz('other', 'hobby'), ENT_QUOTES, 'UTF-8') ?></textarea>
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="col-sm-3 col-lg-3 control-label">Birth Place</label>
                 <div class="col-sm-9 col-lg-7">
-                    <input type="text" name="birth_place" class="form-control" placeholder="Birth Place">
+                    <input type="text" name="birth_place" class="form-control" placeholder="Birth Place" value="<?= htmlspecialchars(wz('other', 'birth_place'), ENT_QUOTES, 'UTF-8') ?>">
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="col-sm-3 col-lg-3 control-label">Birth Time</label>
                 <div class="col-sm-9 col-lg-7">
-                    <input type="time" name="birth_time" class="form-control" placeholder="Birth Time">
+                    <input type="time" name="birth_time" class="form-control" placeholder="Birth Time" value="<?= htmlspecialchars(wz('other', 'birth_time'), ENT_QUOTES, 'UTF-8') ?>">
                 </div>
             </div>
 
@@ -179,13 +183,13 @@ require __DIR__ . '/_step_header.php';
                 <div class="col-sm-9 col-lg-7">
                     <select name="profile_by" class="form-control" required>
                         <option value="">Select Profile By</option>
-                        <option value="Does not matter">Does not matter</option>
-                        <option value="Self" selected>Self</option>
-                        <option value="Parents">Parents</option>
-                        <option value="Guardian">Guardian</option>
-                        <option value="Friends">Friends</option>
-                        <option value="Sibling">Sibling</option>
-                        <option value="Relatives">Relatives</option>
+                        <option value="Does not matter"<?= wz_sel('other', 'profile_by', 'Does not matter') ?>>Does not matter</option>
+                        <option value="Self"<?= (trim((string) wz('other', 'profile_by')) === '' || strcasecmp(trim((string) wz('other', 'profile_by')), 'Self') === 0) ? ' selected' : '' ?>>Self</option>
+                        <option value="Parents"<?= wz_sel('other', 'profile_by', 'Parents') ?>>Parents</option>
+                        <option value="Guardian"<?= wz_sel('other', 'profile_by', 'Guardian') ?>>Guardian</option>
+                        <option value="Friends"<?= wz_sel('other', 'profile_by', 'Friends') ?>>Friends</option>
+                        <option value="Sibling"<?= wz_sel('other', 'profile_by', 'Sibling') ?>>Sibling</option>
+                        <option value="Relatives"<?= wz_sel('other', 'profile_by', 'Relatives') ?>>Relatives</option>
                     </select>
                 </div>
             </div>
@@ -195,11 +199,11 @@ require __DIR__ . '/_step_header.php';
                 <div class="col-sm-9 col-lg-7">
                     <select name="reference" class="form-control" required>
                         <option value="">Select Reference</option>
-                        <option value="Does not matter">Does not matter</option>
-                        <option value="Advertisements">Advertisements</option>
-                        <option value="Friends">Friends</option>
-                        <option value="Search Engines">Search Engines</option>
-                        <option value="Others">Others</option>
+                        <option value="Does not matter"<?= wz_sel('other', 'reference', 'Does not matter') ?>>Does not matter</option>
+                        <option value="Advertisements"<?= wz_sel('other', 'reference', 'Advertisements') ?>>Advertisements</option>
+                        <option value="Friends"<?= wz_sel('other', 'reference', 'Friends') ?>>Friends</option>
+                        <option value="Search Engines"<?= wz_sel('other', 'reference', 'Search Engines') ?>>Search Engines</option>
+                        <option value="Others"<?= wz_sel('other', 'reference', 'Others') ?>>Others</option>
                     </select>
                 </div>
             </div>
@@ -328,7 +332,7 @@ require __DIR__ . '/_step_header.php';
             <div class="form-group">
                 <label class="col-sm-3 col-lg-3 control-label">Family Details</label>
                 <div class="col-sm-9 col-lg-7">
-                    <textarea rows="4" name="family_details" class="form-control" placeholder="Family Details"></textarea>
+                    <textarea rows="4" name="family_details" class="form-control" placeholder="Family Details"><?= htmlspecialchars(wz('other', 'family_details'), ENT_QUOTES, 'UTF-8') ?></textarea>
                 </div>
             </div>
 

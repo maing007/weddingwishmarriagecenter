@@ -145,13 +145,14 @@ require __DIR__ . '/_step_header.php';
     .spacer { margin-top: 0; }
 </style>
 
+<?php require __DIR__ . '/_wizard_flash.php'; ?>
 
 <div class="container spacer pacer">
     <div class="card">
     <h4 class="mb-4">Physical Info</h4>
 
     <div class="col-lg-12">
-        <form id="physicalForm" method="post" action="<?= BASE_URL ?>/admin/user/physical" enctype="multipart/form-data" class="form-horizontal">
+        <form id="physicalForm" method="post" action="<?= BASE_URL ?>/admin/user/physical" enctype="multipart/form-data" class="form-horizontal" novalidate>
 
             <div class="form-group">
                 <label class="col-sm-3 col-lg-3 control-label">Height *</label>
@@ -159,7 +160,7 @@ require __DIR__ . '/_step_header.php';
                     <select name="height" class="form-control">
                         <option value="">Select Height</option>
                         <?php foreach ($heights as $height) : ?>
-                            <option value="<?= $height ?>"><?= $height ?></option>
+                            <option value="<?= htmlspecialchars($height, ENT_QUOTES, 'UTF-8') ?>"<?= wz_sel('physical', 'height', (string) $height) ?>><?= htmlspecialchars($height, ENT_QUOTES, 'UTF-8') ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -171,7 +172,7 @@ require __DIR__ . '/_step_header.php';
                     <select name="weight" class="form-control">
                         <option value="">Select Weight</option>
                         <?php foreach ($weights as $weight) : ?>
-                            <option value="<?= $weight ?>"><?= $weight ?></option>
+                            <option value="<?= htmlspecialchars($weight, ENT_QUOTES, 'UTF-8') ?>"<?= wz_sel('physical', 'weight', (string) $weight) ?>><?= htmlspecialchars($weight, ENT_QUOTES, 'UTF-8') ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -182,11 +183,11 @@ require __DIR__ . '/_step_header.php';
                 <div class="col-sm-9 col-lg-7">
                     <select name="eating_habits" class="form-control">
                         <option value="">Select Eating Habits</option>
-                        <option value="Does not matter">Does not matter</option>
-                        <option value="Occasionally Non-Veg">Occasionally Non-Veg</option>
-                        <option value="Veg">Veg</option>
-                        <option value="Eggetarian">Eggetarian</option>
-                        <option value="Non-Veg">Non-Veg</option>
+                        <option value="Does not matter"<?= wz_sel('physical', 'eating_habits', 'Does not matter') ?>>Does not matter</option>
+                        <option value="Occasionally Non-Veg"<?= wz_sel('physical', 'eating_habits', 'Occasionally Non-Veg') ?>>Occasionally Non-Veg</option>
+                        <option value="Veg"<?= wz_sel('physical', 'eating_habits', 'Veg') ?>>Veg</option>
+                        <option value="Eggetarian"<?= wz_sel('physical', 'eating_habits', 'Eggetarian') ?>>Eggetarian</option>
+                        <option value="Non-Veg"<?= wz_sel('physical', 'eating_habits', 'Non-Veg') ?>>Non-Veg</option>
                     </select>
                 </div>
             </div>
@@ -194,20 +195,20 @@ require __DIR__ . '/_step_header.php';
             <div class="form-group">
                 <label class="col-sm-3 col-lg-3 control-label">Smoking *</label>
                 <div class="col-sm-9 col-lg-7 flex">
-                    <label><input type="radio" name="smoking" value="Does not matter"> Does not matter</label>
-                    <label><input type="radio" name="smoking" value="No"> No</label>
-                    <label><input type="radio" name="smoking" value="Yes"> Yes</label>
-                    <label><input type="radio" name="smoking" value="Occasionally"> Occasionally</label>
+                    <label><input type="radio" name="smoking" value="Does not matter"<?= wz_radio('physical', 'smoking', 'Does not matter') ?>> Does not matter</label>
+                    <label><input type="radio" name="smoking" value="No"<?= wz_radio('physical', 'smoking', 'No') ?>> No</label>
+                    <label><input type="radio" name="smoking" value="Yes"<?= wz_radio('physical', 'smoking', 'Yes') ?>> Yes</label>
+                    <label><input type="radio" name="smoking" value="Occasionally"<?= wz_radio('physical', 'smoking', 'Occasionally') ?>> Occasionally</label>
                 </div>
             </div>
 
             <div class="form-group flex">
                 <label class="col-sm-3 col-lg-3 control-label ">Drinking *</label>
                 <div class="col-sm-9 col-lg-7 flex">
-                    <label><input type="radio" name="drinking" value="Does not matter"> Does not matter</label>
-                    <label><input type="radio" name="drinking" value="No"> No</label>
-                    <label><input type="radio" name="drinking" value="Yes"> Yes</label>
-                    <label><input type="radio" name="drinking" value="Occasionally"> Occasionally</label>
+                    <label><input type="radio" name="drinking" value="Does not matter"<?= wz_radio('physical', 'drinking', 'Does not matter') ?>> Does not matter</label>
+                    <label><input type="radio" name="drinking" value="No"<?= wz_radio('physical', 'drinking', 'No') ?>> No</label>
+                    <label><input type="radio" name="drinking" value="Yes"<?= wz_radio('physical', 'drinking', 'Yes') ?>> Yes</label>
+                    <label><input type="radio" name="drinking" value="Occasionally"<?= wz_radio('physical', 'drinking', 'Occasionally') ?>> Occasionally</label>
                 </div>
             </div>
 
@@ -216,11 +217,11 @@ require __DIR__ . '/_step_header.php';
                 <div class="col-sm-9 col-lg-7">
                     <select name="body_type" class="form-control">
                         <option value="">Select Body Type</option>
-                        <option value="Does not matter">Does not matter</option>
-                        <option value="Slim">Slim</option>
-                        <option value="Average">Average</option>
-                        <option value="Athletic">Athletic</option>
-                        <option value="Heavy">Heavy</option>
+                        <option value="Does not matter"<?= wz_sel('physical', 'body_type', 'Does not matter') ?>>Does not matter</option>
+                        <option value="Slim"<?= wz_sel('physical', 'body_type', 'Slim') ?>>Slim</option>
+                        <option value="Average"<?= wz_sel('physical', 'body_type', 'Average') ?>>Average</option>
+                        <option value="Athletic"<?= wz_sel('physical', 'body_type', 'Athletic') ?>>Athletic</option>
+                        <option value="Heavy"<?= wz_sel('physical', 'body_type', 'Heavy') ?>>Heavy</option>
                     </select>
                 </div>
             </div>
@@ -230,12 +231,12 @@ require __DIR__ . '/_step_header.php';
                 <div class="col-sm-9 col-lg-7">
                     <select name="skin_tone" class="form-control">
                         <option value="">Select Skin Tone</option>
-                        <option value="Does not matter">Does not matter</option>
-                        <option value="Wheatish">Wheatish</option>
-                        <option value="Very Fair">Very Fair</option>
-                        <option value="Fair">Fair</option>
-                        <option value="Wheatish Brown">Wheatish Brown</option>
-                        <option value="Dark">Dark</option>
+                        <option value="Does not matter"<?= wz_sel('physical', 'skin_tone', 'Does not matter') ?>>Does not matter</option>
+                        <option value="Wheatish"<?= wz_sel('physical', 'skin_tone', 'Wheatish') ?>>Wheatish</option>
+                        <option value="Very Fair"<?= wz_sel('physical', 'skin_tone', 'Very Fair') ?>>Very Fair</option>
+                        <option value="Fair"<?= wz_sel('physical', 'skin_tone', 'Fair') ?>>Fair</option>
+                        <option value="Wheatish Brown"<?= wz_sel('physical', 'skin_tone', 'Wheatish Brown') ?>>Wheatish Brown</option>
+                        <option value="Dark"<?= wz_sel('physical', 'skin_tone', 'Dark') ?>>Dark</option>
                     </select>
                 </div>
             </div>
@@ -245,14 +246,14 @@ require __DIR__ . '/_step_header.php';
                 <div class="col-sm-9 col-lg-7">
                     <select name="blood_group" class="form-control">
                         <option value="">Select Blood Group</option>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
+                        <option value="A+"<?= wz_sel('physical', 'blood_group', 'A+') ?>>A+</option>
+                        <option value="A-"<?= wz_sel('physical', 'blood_group', 'A-') ?>>A-</option>
+                        <option value="AB+"<?= wz_sel('physical', 'blood_group', 'AB+') ?>>AB+</option>
+                        <option value="AB-"<?= wz_sel('physical', 'blood_group', 'AB-') ?>>AB-</option>
+                        <option value="B+"<?= wz_sel('physical', 'blood_group', 'B+') ?>>B+</option>
+                        <option value="B-"<?= wz_sel('physical', 'blood_group', 'B-') ?>>B-</option>
+                        <option value="O+"<?= wz_sel('physical', 'blood_group', 'O+') ?>>O+</option>
+                        <option value="O-"<?= wz_sel('physical', 'blood_group', 'O-') ?>>O-</option>
                     </select>
                 </div>
             </div>
