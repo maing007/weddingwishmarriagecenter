@@ -14,6 +14,10 @@ error_reporting(E_ALL);
 require_once APP_ROOT . '/config/config.php';
 // Ensures matri_id_display() exists if production config.php was not updated with the require inside it.
 require_once APP_ROOT . '/app/helpers/matri.php';
+// Ensures app_save_upload() / app_public_uploads_dir() exist (payment proofs, wizard uploads, etc.).
+if (!function_exists('app_save_upload') && is_file(APP_ROOT . '/app/helpers/upload_storage.php')) {
+    require_once APP_ROOT . '/app/helpers/upload_storage.php';
+}
 require_once APP_ROOT . '/core/Router.php';
 require_once APP_ROOT . '/core/Controller.php';
 require_once APP_ROOT . '/core/Database.php';
@@ -235,6 +239,7 @@ $router->get('/dashboard/openAssignment', 'DashboardController@openAssignment');
 $router->get('/dashboard/accept-assignment', 'DashboardController@acceptAssignment');
 $router->get('/dashboard/decline-assignment', 'DashboardController@declineAssignment');
 
+$router->get('/admin/user/check-email', 'AdminUserDetailsController@checkEmailJson');
 $router->post('/admin/user/basic', 'AdminUserDetailsController@saveBasicDetails');
 $router->post('/admin/user/residence', 'AdminUserDetailsController@saveResidence');
 $router->post('/admin/user/physical', 'AdminUserDetailsController@savePhysical');

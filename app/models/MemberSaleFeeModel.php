@@ -13,6 +13,17 @@ class MemberSaleFeeModel
         $this->ensureTable();
     }
 
+    private function ensureUploadHelper(): void
+    {
+        if (function_exists('app_save_upload')) {
+            return;
+        }
+        $path = dirname(__DIR__) . '/helpers/upload_storage.php';
+        if (is_file($path)) {
+            require_once $path;
+        }
+    }
+
     private function ensureTable(): void
     {
         $this->db->exec("
@@ -867,6 +878,10 @@ class MemberSaleFeeModel
 
         $receiptPath = '';
         if (!empty($file['tmp_name']) && is_uploaded_file($file['tmp_name'])) {
+            $this->ensureUploadHelper();
+            if (!function_exists('app_save_upload')) {
+                return ['ok' => false, 'message' => 'Upload helper is missing on the server. Ensure app/helpers/upload_storage.php is deployed and config loads it.'];
+            }
             $ext = strtolower(pathinfo((string) $file['name'], PATHINFO_EXTENSION));
             if (!in_array($ext, ['jpg', 'jpeg', 'png', 'pdf', 'webp'], true)) {
                 return ['ok' => false, 'message' => 'Invalid file type.'];

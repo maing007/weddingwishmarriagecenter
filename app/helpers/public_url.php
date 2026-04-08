@@ -153,6 +153,10 @@ if (!function_exists('admin_member_first_upload_relative_path')) {
  * Resolve a DB-stored path to a file under /public (blocks traversal and remote URLs).
  */
 if (!function_exists('admin_member_photo_public_absolute_path')) {
+    /**
+     * Resolve a DB path like uploads/… to a real file.
+     * Tries APP_ROOT/public/… (repo layout) then APP_ROOT/… (document root = project folder on shared hosting).
+     */
     function admin_member_photo_public_absolute_path(string $relative): ?string
     {
         if (!defined('APP_ROOT')) {
@@ -169,13 +173,34 @@ if (!function_exists('admin_member_photo_public_absolute_path')) {
             $norm = substr($norm, 7);
         }
         $norm = ltrim($norm, '/');
-        $publicRoot = rtrim((string) APP_ROOT, '/') . '/public';
-        $full = realpath($publicRoot . '/' . $norm);
-        $base = realpath($publicRoot);
-        if ($full === false || $base === false || strpos($full, $base) !== 0) {
+
+        $root = rtrim(str_replace('\\', '/', (string) APP_ROOT), '/');
+        $rootReal = realpath($root);
+        if ($rootReal === false) {
             return null;
         }
 
-        return is_file($full) ? $full : null;
+        $candidates = [
+            $root . '/public/' . $norm,
+            $root . '/' . $norm,
+        ];
+
+        foreach ($candidates as $try) {
+            $full = realpath($try);
+            if ($full === false || !is_file($full)) {
+                continue;
+            }
+            if (strpos($full, $rootReal) !== 0) {
+                continue;
+            }
+            $fullNorm = str_replace('\\', '/', $full);
+            if (!preg_match('#(^|/)(uploads|assets)(/)#', $fullNorm)) {
+                continue;
+            }
+
+            return $full;
+        }
+
+        return null;
     }
 }
