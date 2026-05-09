@@ -1,0 +1,42 @@
+
+@media (max-width: 767px)
+{	
+
+	.membership-plan .tabbable-line > .nav-tabs
+	{
+		height: auto;
+	}
+
+	.membership-plan .tabbable-line > .nav-tabs > li > a
+	{
+		font-size: 15px;
+		height: auto;
+	}
+
+	.extra-days-free-box h4
+	{
+		font-size: 14px;
+	}
+
+	.bank-data-box
+	{
+		margin-bottom: 15px;
+	}
+
+	.membership-plan .tabbable-line > .nav-tabs > li > a > h4 > span
+	{
+		display: block;
+	}
+
+	.plan-selected
+	{
+		width: 60%;
+	}
+
+	@keyframes plan-select-ani {
+	  0%   {margin-left: 10%;}
+	  50%   {margin-left: 40%;}
+	  100%  { margin-left: auto;}
+	}
+}
+

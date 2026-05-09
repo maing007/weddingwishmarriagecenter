@@ -1,0 +1,1267 @@
+/* ---- 1199px ---- */
+
+@media (max-width:1199px) {
+    ._hamburge {
+        width: auto;
+    }
+    ._hamburge ul li {
+        margin-right: 0px;
+    }
+}
+
+._hamburge ul li:nth-child(6) {
+    margin-right: 20px;
+}
+
+._hamburge ul li a {
+    font-size: 16px;
+}
+
+._pdRTBL1 {
+    padding-right: 15px;
+}
+
+._pdRTBL2 {
+    padding-left: 25px;
+}
+
+._pdRTBL3 {
+    padding-left: 35px;
+}
+
+._bg_pattern {
+    background-size: cover;
+    background-position-y: 0;
+}
+
+._breakLine {
+    padding: 43px 0 31px;
+}
+
+.ml-- {
+    margin-left: 0px;
+}
+
+.p--1,
+.p--2,
+.p--3 {
+    padding-left: 0px;
+}
+
+.Terms {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.CopyTag {
+    text-align: center;
+}
+
+.name-t {
+    margin-top: 30px;
+}
+
+.card-feature-new {
+    width: 100%;
+}
+
+.custom-select-trigger {
+    font-size: 14px;
+}
+
+._Realimg img {
+    width: 100%;
+}
+
+
+}
+
+/* ---- 991px ---- */
+@media (max-width:991px) {
+    ._topLeft {
+        display: none;
+    }
+    
+    ._topRight {
+        float: none;
+        display: flex;
+        justify-content: center;
+    }
+    
+    ._flright {
+        float: none;
+    }
+    
+    ._pdRTBL1 {
+        padding-right: 0px;
+        text-align: center;
+    }
+    
+    ._pdRTBL2 {
+        padding-left: 0px;
+        text-align: center;
+    }
+    
+    ._pdRTBL3 {
+        padding-left: 0px;
+        text-align: center;
+    }
+    
+    ._iconPngOne img {
+        margin: auto;
+    }
+    
+    ._iconPngTwo img {
+        margin: auto;
+    }
+    
+    ._iconPngThree img {
+        margin: auto;
+    }
+    
+    ._headContent span {
+        margin: auto;
+    }
+    
+    ._openThisSite {
+        margin-top: 50px;
+    }
+    
+    ._contentPr {
+        margin-top: 25px;
+    }
+    
+    ._headContent {
+        margin: 30px 0 10px;
+    }
+    
+    ._bg_pattern {
+        background-size: cover;
+        background-position-y: 0;
+    }
+    
+    ._bg_pattern {
+        background-size: contain;
+        background-position-y: 20px;
+    }
+    
+    .prMiddel {
+        width: 100%;
+        margin: auto;
+        padding-bottom: 25px;
+    }
+    
+    .pContentRealwedding p {
+        font-size: 14px;
+    }
+    
+    ._realWeddingName span {
+        font-size: 28px;
+    }
+    
+    ._readMoreRealWedding {
+        padding-right: 0px;
+        text-align: center;
+    }
+    
+    ._Availablenowat a img {
+        display: inline-block;
+        height: 50px;
+        width: 170px;
+    }
+    
+    ._headerTitleApps {
+        margin: 30px 0 30px;
+    }
+    
+    ._contentApps p {
+        color: rgb(255, 255, 255);
+        font-size: 16px;
+    }
+    
+    ._Availablenowat {
+        margin-top: 25px;
+    }
+    
+    ._imgMobielApps {
+        margin-top: 100px;
+    }
+    
+    ._footerOne {
+        margin-top: 30px;
+    }
+    
+    nav.footerLink {
+        margin-top: 5px;
+    }
+    
+    ._footerTitle {
+        margin-top: 25px;
+    }
+    
+    ._footerTitle h4 {
+        margin: 0;
+    }
+    
+    .socialIcon {
+        margin-top: 10px;
+    }
+    
+    .appSotrs {
+        margin-top: 10px;
+    }
+    
+    .__copyRight {
+        margin-top: 30px;
+    }
+    
+    .find-box {
+        width: 90.2%;
+    }
+    
+    .card-feature-new {
+        width: 100%;
+    }
+    
+    .finder-form-transparent {
+        background-color: white;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ebebeb;
+    }
+    
+    .search-section {
+        background: transparent;
+        -moz-box-shadow: none;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+        width: 90%;
+    }
+    
+    .custom-select-trigger {
+        padding: 0 0px 0 0px;
+    }
+    
+    .searchnow {
+        margin-left: 0px;
+        border-top-right-radius: 8px;
+        border-bottom-left-radius: 8px;
+        border-top-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+    
+    .main-title-head p {
+        font-size: 22px;
+    }
+    
+    .custom-select-trigger:after {
+        right: 10px;
+    }
+    
+    ._Realimg img {
+        width: 100%;
+    }
+    
+    .feature-Profile img {
+        width: 100%;
+    }
+}
+@media (max-width:777px) {
+    ._rightSideContent {
+        position: static;
+    }
+    
+    ._imgHead {
+        display: none;
+    }
+    
+    ._ContentLogo {
+        display: none;
+    }
+    
+    ._searchTable {
+        width: 80%;
+    }
+    
+    .custom-select-wrapper {
+        width: 100%;
+    }
+    
+    .custom-select {
+        width: 100%;
+        border-bottom: 1px solid rgba(59, 60, 31, 0.43);
+    }
+    
+    ._searchTable {
+        width: 85%;
+        padding: 20px 35px;
+    }
+    
+    ._rdoButton {
+        margin-left: 27px;
+    }
+    
+    ._bannerContent {
+        margin-top: 30px;
+    }
+    
+    ._imgBannerBB img {
+        width: 100%;
+        height: 305px;
+        object-fit: cover;
+    }
+    
+    ._HeadingSec {
+        padding: 60px 0 40px;
+    }
+    
+    ._iconPngTwo {
+        margin-top: 40px;
+    }
+    
+    ._iconPngThree {
+        margin-top: 40px;
+    }
+    
+    ._headContent {
+        margin: 10px 0 0px;
+    }
+    
+    ._contentPr p {
+        text-align: justify;
+    }
+    
+    ._bg_pattern {
+        background-image: unset;
+    }
+    
+    ._RealWeddingStart {
+        width: 60%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    ._mt15 {
+        margin-top: 30px;
+    }
+    
+    ._pdRTBL1,
+    ._pdRTBL2,
+    ._pdRTBL3 {
+        width: 70%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .pr-0 {
+        padding-right: 15px;
+    }
+    
+    .pl-0 {
+        padding-left: 15px;
+    }
+    
+    ._headerTitleApps {
+        text-align: center;
+    }
+    
+    ._contentApps {
+        text-align: center;
+    }
+    
+    ._Availablenowat {
+        margin-top: 50px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    ._bgPatternNew {
+        padding-bottom: 40px;
+    }
+    
+    .downLoadApp span {
+        margin-top: 25px;
+    }
+    
+    .step-box {
+        float: none;
+        height: auto;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .owl-theme .owl-controls {
+        position: absolute;
+        right: 0;
+        top: auto;
+        z-index: 9999;
+        margin-top: 0 !important;
+        bottom: 55px;
+    }
+    
+    .slider-p {
+        font-size: 16px;
+        text-align: justify;
+        line-height: normal;
+    }
+    
+    .margin-new-100 {
+        margin-top: 44px;
+    }
+    
+    .class-mobile-app {
+        margin-top: 0em;
+    }
+    
+    .class-mobile-app p {
+        text-align: center;
+        font-size: 14px;
+    }
+    
+    .new-img-app {
+        position: relative;
+        right: 0px;
+        margin: auto;
+    }
+    
+    .planning {
+        margin-top: 0px;
+        min-height: 400px;
+    }
+    
+    ._bg_pattern_plan {
+        min-height: 400px;
+    }
+    
+    .class-mobile-app-footer {
+        margin-top: 1em;
+    }
+    
+    .margin-five-mobile {
+        margin-top: 5px;
+    }
+    
+    .find-love {
+        margin-top: 10px;
+        margin-bottom: 15px;
+        width: 100%;
+    }
+    
+    .register-free {
+        width: 100%;
+        min-height: 440px;
+        background-color: #fff;
+        border-radius: 10px;
+        position: relative;
+        top: 0;
+        z-index: 123;
+        left: 0;
+        right: 0;
+        height: auto;
+        padding: 15px;
+        box-shadow: 2px 1px 20px 5px rgba(0, 0, 0, 0.04);
+        margin-bottom: 20px;
+        margin-top: 20px;
+    }
+    
+    .padding-zero {
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+    
+    .new-section-left {
+        position: relative;
+        left: 0;
+    }
+    
+    .label-new p {
+        font-size: 15.5px;
+    }
+    
+    .mobile-margin-top-15 {
+        margin-top: 15px;
+    }
+    
+    .float-right-mobile {
+        float: right;
+    }
+    
+    .finder-form-transparent {
+        background-color: white;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ebebeb;
+    }
+    
+    .search-section {
+        background: transparent;
+        -moz-box-shadow: none;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+        width: 90%;
+    }
+    
+    .custom-select-trigger {
+        padding: 0 0px 0 0px;
+    }
+    
+    .searchnow {
+        margin-left: 0px;
+        border-top-right-radius: 8px;
+        border-bottom-left-radius: 8px;
+        border-top-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        margin-top: 10px;
+    }
+    
+    .main-title-head p {
+        font-size: 22px;
+    }
+    
+    .custom-select-trigger:after {
+        right: 10px;
+    }
+    
+    .new-main {
+        margin-top: 0px;
+        width: 100%;
+    }
+    
+    .title-box {
+        margin-bottom: 30px;
+    }
+    
+    .title-box p {
+        text-align: center;
+    }
+    
+    .img-box img {
+        display: block;
+        height: 100px;
+        margin-right: auto;
+        margin-left: auto;
+        margin-top: 20px;
+    }
+    
+    .title-box span {
+        margin: auto;
+    }
+    
+    .get-new {
+        width: 150px !important;
+        margin-bottom: 20px !important;
+    }
+    
+    .planning-bg-find {
+        background-color: rgb(217, 85, 72);
+    }
+    
+    ._Realimg img {
+        width: 100%;
+    }
+    
+    .logo-box img {
+        width: 100%;
+    }
+    
+    .start-p {
+        width: 100% !important;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 30px;
+    }
+    
+    .are-planing p {
+        font-size: 30px;
+    }
+    
+    .wedding-bg-plan {
+        padding-top: 30px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    .wedding-plan {
+        min-height: 247px;
+        background-size: cover;
+    }
+    
+    .img-box-simple img {
+        margin: auto;
+        display: block;
+    }
+    
+    .box-simple-P P {
+        text-align: center;
+    }
+    
+    .box-simple-P-details p {
+        text-align: center;
+        margin: 0 0 30px;
+    }
+    
+    .feature-Profile img {
+        width: 100%;
+    }
+    
+    .new-footer-ul {
+        margin-top: 10px;
+        margin-bottom: 20px;
+        min-height: 100px;
+    }
+    
+    .more-d {
+        margin-bottom: 16px;
+    }
+    
+    .container-new-footer {
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+    
+    .margin-zero-m {
+        margin-top: 0px;
+    }
+    
+    .cms-title p {
+        margin: 10px 0 10px;
+    }
+    
+    .nb-copyright {
+        height: auto;
+    }
+    
+    .card-feature-new {
+        width: 100%;
+    }
+    /***** Home Page ***/
+    
+    .nikaah_banner {
+        background-image: none;
+        height: auto;
+    }
+    
+    .nikaah-title h1 {
+        font-size: 29px;
+        margin-top: 70px;
+    }
+    
+    .padding-right-zero {
+        padding-right: 15px;
+    }
+    
+    .padding-left-zero {
+        padding-left: 15px;
+    }
+    
+    .search-box {
+        -moz-box-shadow: 0px 0px 20px 0px rgba(59, 60, 31, 0.12);
+        -webkit-box-shadow: 0px 0px 20px 0px rgba(59, 60, 31, 0.12);
+        box-shadow: 0px 0px 20px 0px rgba(59, 60, 31, 0.12);
+        height: auto;
+        padding: 0px;
+        margin-bottom: 30px;
+        width: 100%;
+    }
+    
+    .register-form-box {
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .new-ni-hr {
+        width: 100%;
+    }
+    
+    .main-width-new {
+        width: 100%;
+    }
+    
+    .register-box {
+        clear: both;
+    }
+    
+    .main-heading-title p {
+        font-size: 16px;
+    }
+    
+    .mt-zero {
+        margin-top: 0px;
+    }
+    
+    .register-title p {
+        font-size: 16px;
+    }
+    
+    .succes-stories-box {
+        height: auto;
+    }
+    
+    .succes-stories-img img {
+        width: 100%;
+    }
+    
+    .testimonial {
+        padding: 0px 0px 0px 0px;
+    }
+    
+    .Wedding-Planner {
+        height: 161px;
+    }
+    
+    .are-planning p {
+        font-size: 24px;
+        margin: 84px 0 10px;
+    }
+    
+    .are-planning-dec p {
+        font-size: 16px;
+        margin: 40px 0 10px;
+    }
+    
+    .new-badge {
+        left: 30px;
+    }
+    
+    .margin-auto {
+        width: 100%;
+    }
+    
+    .banner-gardient {
+        height: auto;
+        background: linear-gradient(90deg, rgb(170, 7, 107), rgb(8, 56, 114));
+    }
+    
+    .main-matrimony-title h1 {
+        font-size: 27px;
+        margin-top: 16px;
+        line-height: 30px;
+    }
+    
+    .main-matrimony-title p {
+        font-size: 14px;
+        margin: 0px 0 10px;
+    }
+    
+    .icon-left {
+        width: 18%;
+        right: 216px;
+        top: -17px;
+    }
+    
+    .icon-right {
+        position: absolute;
+        top: -17px;
+        left: 216px;
+        width: 18%;
+    }
+    
+    .margin-top-zero {
+        margin-top: 0px;
+    }
+    
+    .margin-top-25-m {
+        margin-top: 25px;
+    }
+    
+    .right-icon-2 {
+        position: absolute;
+        right: 245px;
+    }
+    
+    .main-brd h2 {
+        font-size: 24px;
+    }
+    
+    .main-brd p {
+        font-size: 14px;
+    }
+    
+    .find-step {
+        margin: auto;
+    }
+    
+    .find-step-title h3 {
+        text-align: center;
+        font-size: 18px;
+    }
+    
+    .find-step-title p {
+        text-align: center;
+    }
+    
+    .are-p-new {
+        font-size: 30px;
+    }
+    
+    .font-size-18 {
+        font-size: 13px;
+    }
+    
+    .tab .nav-tabs li {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 14px;
+    }
+    /***** Home Page ***/
+    
+    .testimonial img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .matri_title {
+        position: relative;
+        width: 100%;
+        top: auto;
+        right: 0;
+        left: 0;
+    }
+    
+    .search-new {
+        position: relative;
+        right: 0;
+        left: 0;
+        bottom: 0;
+    }
+    
+    .matri_title h1 {
+        font-size: 31px;
+        text-align: center;
+        color: #000;
+        margin-bottom: 0;
+    }
+    
+    .matri_title h2 {
+        font-size: 14px;
+        text-align: center;
+        color: #4e4848;
+        margin-top: 24px;
+        margin-bottom: 24px;
+    }
+    
+    .get-s {
+        margin-bottom: 20px;
+    }
+    
+    .line-dot ul li a {
+        font-size: 14px;
+    }
+    
+    .cust_padding {
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+    
+    .search_new_ind {
+        position: relative;
+        right: auto;
+        top: auto;
+    }
+    
+    .indian-matri {
+        position: relative;
+        width: 100%;
+        bottom: auto;
+        right: auto;
+        left: auto;
+        z-index: 888;
+        top: auto;
+    }
+    
+    .register_box {
+        width: 100%;
+        height: auto;
+        background-color: #fff;
+        padding-left: 21px;
+        padding-right: 21px;
+        border: 1px solid #ED3237;
+    }
+    
+    .indian-matri h1 {
+        font-size: 38px;
+        color: #000;
+        text-align: center;
+        text-shadow: none;
+    }
+    
+    .indian-matri p {
+        color: #000;
+        text-align: center;
+        margin: 15px 0px 24px;
+    }
+    
+    .md-radio label {
+        padding: 0 23px;
+        font-size: 14px;
+    }
+    
+    .md-radio label:before {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .md-radio label:after {
+        /*top: 5px;
+		left: 5px;*/
+    }
+    
+    .search_for {
+        margin-top: 21px;
+        background: transparent;
+    }
+    
+    .indian-matri-title img {
+        margin-bottom: 20px;
+    }
+    
+    .pic-2 {
+        width: 100%;
+        bottom: 0px;
+    }
+    
+    #testimonial-slider-2 .owl-prev {
+        display: none;
+    }
+    
+    #testimonial-slider-2 .owl-next {
+        display: none;
+    }
+    
+    .frame {
+        background-size: 14%;
+    }
+    
+    .banner-new img {
+        width: 100%;
+        height: auto;
+        /*height: 135px;*/
+        /*object-fit: contain;*/
+    }
+    
+    .reg-pad-r-0 {
+        padding-right: 15px;
+    }
+    
+    .reg-pad-r-10 {
+        padding-right: 15px;
+    }
+    
+    .reg-pad-l-10 {
+        padding-left: 15px;
+    }
+    
+    .reg-fect-box {
+        position: relative;
+        top: auto;
+        right: auto;
+        width: 100%;
+        border-radius: 15px;
+        margin-top: 20px;
+        /*height: auto;*/
+    }
+    
+    .reg-fect-box .owl-theme .owl-controls .owl-page {
+        display: none;
+    }
+    
+    .millions-of-happy-stories-box {
+        height: auto;
+    }
+    
+    .service-box-new {
+        min-height: auto;
+        border-radius: 15px;
+    }
+    
+    .millions-of-happy-stories-box .owl-theme .owl-controls .owl-page {
+        display: none;
+    }
+    
+    .testimonial-stories img {
+        width: 100%;
+        height: auto;
+    }
+    
+    .option-1-data {
+        background-size: cover;
+    }
+    
+    .option-2-data img,
+    .option-3-data img,
+    .option-4-data img {
+        height: auto;
+    }
+    
+    .option-2-data,
+    .option-3-data {
+        height: auto;
+        text-align: center;
+    }
+    
+    .stay-connected {
+        background: url(../images/mobile-app-rc-bg.png) right 0px bottom 0px no-repeat;
+        height: auto;
+    }
+    
+    .m-center {
+        text-align: center;
+    }
+    
+    .mobile-app-box {
+        width: 100%;
+    }
+    
+    .why-choose-us-right-border {
+        border-right: none;
+    }
+    
+    .why-choose-us-data p,
+    .why-choose-us-data h3 {
+        text-align: center;
+    }
+    
+    .tabbable-line>.nav-tabs>li>a {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+    
+    .bm-pad-l {
+        padding-left: 10px;
+    }
+    
+    .pad-r-0 {
+        padding-right: 15px;
+    }
+    
+    .features {
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+}
+@media (max-width:624px) {
+    ._searchTable {
+        width: 90%;
+        padding: 20px 35px;
+    }
+    
+    ._searchTable {
+        width: 100%;
+        padding: 20px 25px;
+    }
+    
+    ._imgBannerBB img {
+        width: 100%;
+        height: 252px;
+        object-fit: cover;
+    }
+    
+    ._breakLine h2 {
+        white-space: inherit;
+        color: rgb(255, 255, 255);
+    }
+    
+    ._RealWeddingStart {
+        width: 70%;
+    }
+    
+    .CopyTag span,
+    .Terms ul li a {
+        font-size: 16px;
+    }
+    
+    .img-de {
+        width: 100%;
+    }
+    
+    .left-icon {
+        display: none;
+    }
+    
+    .right-icon {
+        display: none;
+    }
+    
+    .find-box {
+        width: 100%;
+    }
+    
+    .m-c-m-title h1 {
+        font-size: 18px;
+    }
+    
+    .main-brd {
+        margin-top: 0px;
+    }
+    
+    .step-box {
+        float: none;
+        height: auto;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* ---- 524px ---- */
+@media (max-width:524px) {
+    ._nameOf p {
+        font-size: 15px;
+    }
+    
+    ._topNav ul li:first-child a {
+        margin-right: 15px;
+    }
+    
+    ._topNav ul li:nth-child(2) a {
+        margin-right: 33px;
+    }
+    
+    ._topNav ul li:nth-child(4) a,
+    ._topNav ul li:nth-child(5) a {
+        margin-left: 15px;
+    }
+    
+    ._topNav ul li a,
+    ._topNav ul li span {
+        font-size: 14px;
+    }
+    
+    ._imgBannerBB img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+    }
+    
+    ._bannerContent {
+        margin-top: 10px;
+    }
+    
+    ._breakLine {
+        padding: 43px 0 31px;
+    }
+    
+    ._breakLine h2 {
+        font-size: 28px;
+    }
+    
+    ._RealWeddingStart {
+        width: 80%;
+    }
+    
+    ._Availablenowat a img {
+        height: 43px;
+        width: 140px;
+    }
+    
+    ._Availablenowat a:last-child {
+        margin-left: 15px;
+    }
+}
+
+/* ---- 424px ---- */
+@media (max-width:424px) {
+    ._nameOf p {
+        letter-spacing: normal;
+        font-size: 14px;
+    }
+    
+    ._topNav ul li:first-child a {
+        margin-right: 10px;
+    }
+    
+    ._topNav ul li:nth-child(2) a {
+        margin-right: 26px;
+    }
+    
+    ._topNav ul li a,
+    ._topNav ul li span {
+        letter-spacing: normal;
+        font-size: 13px;
+    }
+    
+    ._searchTable {
+        padding: 20px 10px;
+    }
+    
+    ._imgBannerBB img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+    }
+    
+    ._rdoButton label {
+        margin-right: 22px;
+    }
+    
+    ._HeadingSec h2 {
+        font-size: 30px;
+    }
+    
+    ._RealWeddingStart {
+        width: 100%;
+    }
+    
+    ._pdRTBL1,
+    ._pdRTBL2,
+    ._pdRTBL3 {
+        width: 100%;
+    }
+    
+    ._Availablenowat a img {
+        height: 37px;
+        width: 120px;
+    }
+    
+    .CopyTag span,
+    .Terms ul li a {
+        font-size: 14px;
+    }
+}
+
+/* ---- 324px ---- */
+@media (max-width:324px) {
+    ._nameOf p {
+        font-size: 13px;
+        text-transform: capitalize;
+    }
+    
+    ._topNav ul li:first-child a {
+        margin-right: 6px;
+    }
+    
+    ._topNav ul li:nth-child(2) a {
+        margin-right: 7px;
+    }
+    
+    ._topNav ul li a,
+    ._topNav ul li span {
+        font-size: 11px;
+        text-transform: capitalize;
+    }
+    
+    ._topNav ul li:nth-child(4) a,
+    ._topNav ul li:nth-child(5) a {
+        margin-left: 8px;
+    }
+    
+    ._HeadingSec h2 {
+        font-size: 27px;
+    }
+    
+    ._Availablenowat a img {
+        height: 30px;
+        width: 95px;
+    }
+}
+@media only screen and (min-device-width: 375px) and (max-device-width: 667px) and (orientation: portrait) {
+    .only-iphone {
+        margin-top: 20em;
+    }
+}
+@media (min-width: 1920px) {
+    .stay-connected {
+        background-size: cover;
+    }
+}
