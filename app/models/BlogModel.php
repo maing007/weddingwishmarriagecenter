@@ -38,6 +38,21 @@ public function getBlogById($id)
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * @return array<int, array{slug: string, created_at: string|null}>
+     */
+    public function getPublishedSlugsForSitemap(): array
+    {
+        $sql = "SELECT slug, created_at FROM blogs
+                WHERE status = 'published' AND slug IS NOT NULL AND TRIM(slug) <> ''
+                ORDER BY id DESC";
+        $stmt = $this->db->query($sql);
+        if ($stmt === false) {
+            return [];
+        }
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 public function createBlog($title, $content, $image = null, $status = 'draft')
 {
     $sql = "INSERT INTO blogs (title, content, image, status) VALUES (:title, :content, :image, :status)";

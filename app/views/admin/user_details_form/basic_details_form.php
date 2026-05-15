@@ -192,8 +192,9 @@ require __DIR__ . '/_step_header.php';
                 <div class="row">
                     <div class="col-md-12">
                         <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" class="form-control" placeholder="Enter email address" value="<?= htmlspecialchars(wz('basic', 'email'), ENT_QUOTES, 'UTF-8') ?>" required autocomplete="email">
+                        <input type="email" id="email" name="email" class="form-control" placeholder="Enter email address" value="<?= htmlspecialchars(wz('basic', 'email'), ENT_QUOTES, 'UTF-8') ?>" required autocomplete="email" aria-describedby="emailAvailability emailDuplicateError">
                         <small id="emailAvailability" class="form-text text-muted" aria-live="polite"></small>
+                        <div id="emailDuplicateError" class="text-danger small mt-1" style="display:none;" role="alert">This email is already registered.</div>
                     </div>
                 </div>
                 <div class="row">
@@ -372,7 +373,7 @@ require __DIR__ . '/_step_header.php';
                                 <?php endforeach; ?>
                                 <option value="other">Other</option>
                             </select>
-                            <input type="text" id="customEducation" name="education" class="form-control mt-2" placeholder="Enter custom education" style="display: none;">
+                            <input type="text" id="customEducation" name="education_custom" class="form-control mt-2" placeholder="Enter custom education" style="display: none;" value="<?= htmlspecialchars(wz('basic', 'education_custom'), ENT_QUOTES, 'UTF-8') ?>" autocomplete="off">
                         </div>
                     </div>
                     <div class="row">
@@ -482,28 +483,140 @@ require __DIR__ . '/_step_header.php';
 (function () {
     var emailInput = document.getElementById('email');
     var emailHint = document.getElementById('emailAvailability');
-    if (!emailInput || !emailHint) return;
+    var dupEl = document.getElementById('emailDuplicateError');
+    var form = emailInput && emailInput.closest('form');
+    if (!emailInput || !emailHint || !form) return;
+
     var t = null;
-    function checkEmail() {
+    var emailStatus = 'unknown';
+
+    function setDuplicateUI(taken) {
+        if (dupEl) {
+            dupEl.style.display = taken ? 'block' : 'none';
+        }
+        if (taken) {
+            emailInput.classList.add('is-invalid');
+        } else {
+            emailInput.classList.remove('is-invalid');
+        }
+    }
+
+    function applyCheckResult(data) {
+        if (!data || !data.ok) {
+            emailStatus = 'unknown';
+            return;
+        }
+        if (data.available === null) {
+            emailStatus = 'invalid';
+            emailHint.textContent = data.message || '';
+            emailHint.className = 'form-text text-muted';
+            emailHint.style.color = '';
+            setDuplicateUI(false);
+            return;
+        }
+        if (data.available === true) {
+            emailStatus = 'available';
+            emailHint.textContent = data.message || 'Email is available.';
+            emailHint.className = 'form-text';
+            emailHint.style.color = '#15803d';
+            setDuplicateUI(false);
+            return;
+        }
+        emailStatus = 'taken';
+        emailHint.textContent = '';
+        emailHint.style.color = '';
+        setDuplicateUI(true);
+    }
+
+    function fetchEmailStatus(email, done) {
+        fetch('<?= BASE_URL ?>/admin/user/check-email?email=' + encodeURIComponent(email), { headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                applyCheckResult(data);
+                if (typeof done === 'function') done();
+            })
+            .catch(function () {
+                emailHint.textContent = '';
+                emailStatus = 'unknown';
+                if (typeof done === 'function') done();
+            });
+    }
+
+    function scheduleCheck() {
         var v = (emailInput.value || '').trim();
-        if (!v || !v.includes('@')) {
+        if (!v) {
             emailHint.textContent = '';
+            emailHint.className = 'form-text text-muted';
+            emailHint.style.color = '';
+            setDuplicateUI(false);
+            emailStatus = 'unknown';
+            return;
+        }
+        if (!v.includes('@')) {
+            emailHint.textContent = '';
+            setDuplicateUI(false);
+            emailStatus = 'unknown';
             return;
         }
         clearTimeout(t);
-        t = setTimeout(function () {
-            fetch('<?= BASE_URL ?>/admin/user/check-email?email=' + encodeURIComponent(v), { headers: { 'Accept': 'application/json' } })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    if (!data || !data.ok) return;
-                    emailHint.textContent = data.message || '';
-                    emailHint.style.color = data.available ? '#15803d' : '#b91c1c';
-                })
-                .catch(function () { emailHint.textContent = ''; });
-        }, 400);
+        t = setTimeout(function () { fetchEmailStatus(v); }, 400);
     }
-    emailInput.addEventListener('blur', checkEmail);
-    emailInput.addEventListener('input', checkEmail);
+
+    emailInput.addEventListener('blur', scheduleCheck);
+    emailInput.addEventListener('input', scheduleCheck);
+
+    form.addEventListener('submit', function (e) {
+        var v = (emailInput.value || '').trim();
+        if (emailStatus === 'taken') {
+            e.preventDefault();
+            emailInput.focus();
+            return;
+        }
+        if (emailStatus === 'available') {
+            return;
+        }
+        if (!v || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+            return;
+        }
+        e.preventDefault();
+        fetchEmailStatus(v, function () {
+            if (emailStatus === 'taken') {
+                emailInput.focus();
+                return;
+            }
+            if (emailStatus === 'invalid') {
+                emailInput.focus();
+                return;
+            }
+            if (emailStatus !== 'available' && emailStatus !== 'unknown') {
+                return;
+            }
+            var code = document.querySelector("select[name='country_code']");
+            var number = document.getElementById("mobile_number");
+            var full = document.getElementById("full_mobile");
+            if (code && number && full) {
+                full.value = code.value + number.value;
+            }
+            form.submit();
+        });
+    });
+})();
+</script>
+<script>
+(function () {
+    var edu = document.getElementById('education');
+    var cust = document.getElementById('customEducation');
+    if (!edu || !cust) return;
+    function syncEducationOther() {
+        if (edu.value === 'other') {
+            cust.style.display = 'block';
+        } else {
+            cust.style.display = 'none';
+            cust.value = '';
+        }
+    }
+    edu.addEventListener('change', syncEducationOther);
+    syncEducationOther();
 })();
 </script>
 <script>

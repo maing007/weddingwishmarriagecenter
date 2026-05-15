@@ -1,6 +1,11 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Project root uploads/ (when DocumentRoot is public/)
+    # Public URL /upload/… maps to same files as /uploads/… (preferred for generated links)
+    RewriteRule ^upload/(.*)$ ../uploads/$1 [L]
+    RewriteRule ^uploads/(.*)$ ../uploads/$1 [L]
+
     # If a directory or a file exists, use it directly
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d

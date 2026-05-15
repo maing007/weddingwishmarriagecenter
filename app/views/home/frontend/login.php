@@ -34,6 +34,9 @@ endif; ?>
                 </div>
               <?php endif; ?>
 
+              <?php if (defined('CLOUDFLARE_TURNSTILE_SITE_KEY') && CLOUDFLARE_TURNSTILE_SITE_KEY !== ''): ?>
+              <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+              <?php endif; ?>
               <form
                 action="<?= BASE_URL ?>/login"
                 method="post"
@@ -122,6 +125,9 @@ endif; ?>
 
                   <div class="row-cstm pt-4">
                     <div class="e-t2 text-center">
+                      <?php if (defined('CLOUDFLARE_TURNSTILE_SITE_KEY') && CLOUDFLARE_TURNSTILE_SITE_KEY !== ''): ?>
+                      <div class="cf-turnstile mb-3" data-sitekey="<?= htmlspecialchars(CLOUDFLARE_TURNSTILE_SITE_KEY, ENT_QUOTES, 'UTF-8') ?>"></div>
+                      <?php endif; ?>
                       <input
                         type="hidden"
                         name="csrf_token"

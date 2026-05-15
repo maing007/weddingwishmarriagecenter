@@ -56,6 +56,7 @@ $msrPayCounts = $msrPayCounts ?? [
     'rishta_paid' => 0,
 ];
 $msrProofsByFee = $msrProofsByFee ?? [];
+$msrDeleteRedirect = '/admin/reports/payments/' . (($saleScope ?? '') === 'rishta' ? 'rishta-fee' : 'registration-fee');
 
 $fmtDateLong = static function ($raw): string {
     if ($raw === null || $raw === '') {
@@ -397,6 +398,14 @@ require __DIR__ . '/partials/sidebar.php';
         border: none;
         color: #fff;
     }
+    .msr-sales-actions .btn-action {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 8px 14px;
+        border-radius: 5px;
+        border: none;
+        line-height: 1.2;
+    }
     .msr-btn-paylink {
         background: #48cae4;
     }
@@ -709,6 +718,12 @@ require __DIR__ . '/partials/sidebar.php';
                                     <?php else: ?>
                                         <button type="button" class="btn msr-btn-invoice" disabled title="Registration invoice only">View Invoice</button>
                                     <?php endif; ?>
+                                    <?php
+                                    $deleteFeeId = $fid;
+                                    $deleteUserId = 0;
+                                    $deleteRedirect = $msrDeleteRedirect;
+                                    require __DIR__ . '/partials/delete_entity_forms.php';
+                                    ?>
                                 </div>
                             </div>
                             <div id="msr-proof-html-<?= (int) $fid ?>" style="display:none!important" aria-hidden="true">
@@ -729,8 +744,10 @@ require __DIR__ . '/partials/sidebar.php';
                                             <?php foreach ($proofs as $pr): ?>
                                                 <?php
                                                 $receiptPath = trim((string) ($pr['receipt_path'] ?? ''));
-                                                $receiptUrl = $receiptPath !== '' ? public_url_for_path($receiptPath) : '';
-                                                $receiptFn = $receiptPath !== '' ? basename(str_replace('\\', '/', $receiptPath)) : '';
+                                                $proofRowId = (int) ($pr['id'] ?? 0);
+                                                $receiptDl = ($proofRowId > 0 && $receiptPath !== '')
+                                                    ? rtrim(BASE_URL, '/') . '/admin/accounts/income/payment-proof/download?proof_id=' . $proofRowId
+                                                    : '';
                                                 ?>
                                                 <tr>
                                                     <td><?= htmlspecialchars((string) ($pr['paid_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
@@ -738,8 +755,8 @@ require __DIR__ . '/partials/sidebar.php';
                                                     <td><?= htmlspecialchars((string) ($pr['transaction_id'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                                                     <td><?= htmlspecialchars((string) ($pr['bank_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                                                     <td>
-                                                        <?php if ($receiptUrl !== ''): ?>
-                                                            <a class="btn msr-btn-download" href="<?= htmlspecialchars($receiptUrl, ENT_QUOTES, 'UTF-8') ?>" download="<?= htmlspecialchars($receiptFn !== '' ? $receiptFn : 'payment-proof', ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">Download</a>
+                                                        <?php if ($receiptDl !== ''): ?>
+                                                            <a class="btn msr-btn-download" href="<?= htmlspecialchars($receiptDl, ENT_QUOTES, 'UTF-8') ?>">Download</a>
                                                         <?php else: ?>
                                                             <span class="text-muted">—</span>
                                                         <?php endif; ?>

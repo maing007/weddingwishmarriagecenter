@@ -1,12 +1,20 @@
 <?php
 
 require_once __DIR__ . '/../models/Contact.php';
+require_once __DIR__ . '/../helpers/cloudflare_security.php';
 
 class ContactController
 {
     public function submit()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST['is_post'])) {
+            header("Location: " . BASE_URL . "/contact");
+            exit;
+        }
+
+        if (CLOUDFLARE_TURNSTILE_SECRET_KEY !== ''
+            && !app_cloudflare_turnstile_verify($_POST['cf-turnstile-response'] ?? null)) {
+            $_SESSION['error'] = 'Security check failed. Please try again.';
             header("Location: " . BASE_URL . "/contact");
             exit;
         }
@@ -19,7 +27,7 @@ class ContactController
             'phone'        => trim($_POST['phone'] ?? ''),
             'subject'      => trim($_POST['subject'] ?? ''),
             'description'  => trim($_POST['description'] ?? ''),
-            'ip_address'   => $_SERVER['REMOTE_ADDR']
+            'ip_address'   => app_client_ip(),
         ];
 
         // Basic validation

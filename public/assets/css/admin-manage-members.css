@@ -654,6 +654,16 @@
   color: #fff;
 }
 
+.btn-action-danger {
+  background: #c0392b;
+  color: #fff;
+}
+.btn-action-danger:hover,
+.btn-action-danger:focus {
+  background: #a93226;
+  color: #fff;
+}
+
 /* Popups */
 .custom-popup-overlay {
   position: fixed;
@@ -2208,5 +2218,15 @@
 .manage-users-page .btn-action-green:hover,
 .manage-users-page .btn-action-green:focus {
   background: #358f73;
+  color: #fff;
+}
+
+.manage-users-page .btn-action-danger {
+  background: #c0392b;
+  color: #fff;
+}
+.manage-users-page .btn-action-danger:hover,
+.manage-users-page .btn-action-danger:focus {
+  background: #a93226;
   color: #fff;
 }

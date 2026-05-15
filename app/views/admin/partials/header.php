@@ -118,5 +118,5 @@
         }
     </style>
 </head>
-<body>
+<body data-admin-base-url="<?= htmlspecialchars(rtrim((string) (defined('BASE_URL') ? BASE_URL : ''), '/'), ENT_QUOTES, 'UTF-8') ?>">
 <div class="admin-wrapper">

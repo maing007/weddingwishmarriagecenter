@@ -258,9 +258,72 @@ class AdminUserModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Same status fields as allUsers() for live JSON polling (approved / paid / etc.).
+     *
+     * @param list<int> $ids
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function profileStatusRowsForIds(array $ids): array
+    {
+        $ids = array_values(array_filter(array_map('intval', $ids), static fn (int $x) => $x > 0));
+        if ($ids === []) {
+            return [];
+        }
+        $regFeePaidSql = $this->sqlRegistrationFeePaidScalar('ud');
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $sql = "
+            SELECT
+                ud.id,
+                COALESCE(ud.user_status, 'approved') AS status,
+                COALESCE(ud.registration_fee_queued, 0) AS registration_fee_queued,
+                {$regFeePaidSql} AS registration_fee_paid
+            FROM user_details ud
+            WHERE ud.id IN ({$placeholders})
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($ids);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    /** Subquery: 1 if registration fee paid for this user_details row (same rules as allUsers). */
+    private function sqlRegistrationFeePaidScalar(string $udAlias = 'ud'): string
+    {
+        $pfx = MATRI_ID_PREFIX;
+        $leg = MATRI_ID_PREFIX_LEGACY;
+
+        return "(
+                    SELECT MAX(
+                        CASE
+                            WHEN LOWER(TRIM(COALESCE(msf.staff_payment_status, ''))) = 'paid' THEN 1
+                            WHEN EXISTS (
+                                SELECT 1 FROM member_fee_payment_proofs p WHERE p.fee_id = msf.id
+                            ) THEN 1
+                            ELSE 0
+                        END
+                    )
+                    FROM member_sale_fees msf
+                    WHERE msf.fee_type = 'registration'
+                      AND (
+                          (msf.linked_user_id IS NOT NULL AND msf.linked_user_id > 0 AND msf.linked_user_id = {$udAlias}.id)
+                          OR (
+                              (msf.linked_user_id IS NULL OR msf.linked_user_id = 0)
+                              AND (
+                                  (NULLIF(TRIM({$udAlias}.matri_id), '') IS NOT NULL AND TRIM(msf.matri_id) = TRIM({$udAlias}.matri_id))
+                                  OR TRIM(msf.matri_id) = CONCAT('{$pfx}', {$udAlias}.id)
+                                  OR TRIM(msf.matri_id) = CONCAT('{$leg}', {$udAlias}.id)
+                              )
+                          )
+                      )
+                )";
+    }
+
     public function spotlightUsers(?string $featuredFilter = null): array
     {
         $avatarSel = self::sqlSelectAvatarFromUserDetails('user_details');
+        $regFeePaidSql = $this->sqlRegistrationFeePaidScalar('user_details');
         $sql = "
             SELECT
                 id,
@@ -277,6 +340,8 @@ class AdminUserModel
                 country,
                 matri_id,
                 COALESCE(featured_status, 'non_featured') AS featured_status,
+                COALESCE(user_details.registration_fee_queued, 0) AS registration_fee_queued,
+                {$regFeePaidSql} AS registration_fee_paid,
                 (
                     SELECT up.id
                     FROM user_packages up
@@ -334,6 +399,7 @@ class AdminUserModel
     public function expiredMembershipUsers(?string $statusFilter = null): array
     {
         $avatarSel = self::sqlSelectAvatarFromUserDetails('user_details');
+        $regFeePaidSql = $this->sqlRegistrationFeePaidScalar('user_details');
         $sql = "
             SELECT
                 id,
@@ -350,6 +416,8 @@ class AdminUserModel
                 country,
                 matri_id,
                 COALESCE(featured_status, 'non_featured') AS featured_status,
+                COALESCE(user_details.registration_fee_queued, 0) AS registration_fee_queued,
+                {$regFeePaidSql} AS registration_fee_paid,
                 (
                     SELECT up.id
                     FROM user_packages up
@@ -408,6 +476,7 @@ class AdminUserModel
     public function followupReportUsers(string $followupFilter = 'all'): array
     {
         $avatarSel = self::sqlSelectAvatarFromUserDetails('ud');
+        $regFeePaidSql = $this->sqlRegistrationFeePaidScalar('ud');
         $sql = "
             SELECT
                 ud.id,
@@ -422,6 +491,8 @@ class AdminUserModel
                 ud.dob,
                 ud.created_at,
                 COALESCE(ud.user_status, 'approved') AS status,
+                COALESCE(ud.registration_fee_queued, 0) AS registration_fee_queued,
+                {$regFeePaidSql} AS registration_fee_paid,
                 fc.comment AS followup_comment,
                 fc.created_at AS followup_at
             FROM user_details ud
@@ -472,10 +543,106 @@ class AdminUserModel
     }
 
 
+    /**
+     * Remove member row and dependent data (fees, proofs, assignments, packages, legacy users row, etc.).
+     */
+    public function deleteUserCompletely(int $id): bool
+    {
+        if ($id <= 0) {
+            return false;
+        }
+        $st = $this->db->prepare('SELECT id, matri_id FROM user_details WHERE id = ? LIMIT 1');
+        $st->execute([$id]);
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            return false;
+        }
+        $matri = trim((string) ($row['matri_id'] ?? ''));
+
+        try {
+            $this->db->beginTransaction();
+
+            $this->deleteFeesAndProofsForUserId($id, $matri);
+
+            $this->db->prepare('DELETE FROM admin_profile_comments WHERE user_id = ?')->execute([$id]);
+
+            $this->tryExec('DELETE FROM member_feed_interactions WHERE viewer_user_id = ? OR target_user_id = ?', [$id, $id]);
+
+            $aidStmt = $this->db->prepare('SELECT id FROM member_assignments WHERE assigned_to = ? OR assigned_member = ?');
+            $aidStmt->execute([$id, $id]);
+            $assignmentIds = $aidStmt->fetchAll(PDO::FETCH_COLUMN);
+            if (is_array($assignmentIds) && $assignmentIds !== []) {
+                $placeholders = implode(',', array_fill(0, count($assignmentIds), '?'));
+                $this->tryExec("DELETE FROM member_assignment_history WHERE assignment_id IN ({$placeholders})", $assignmentIds);
+                $this->tryExec("DELETE FROM member_assignment_views WHERE assignment_id IN ({$placeholders})", $assignmentIds);
+            }
+            $this->db->prepare('DELETE FROM member_assignments WHERE assigned_to = ? OR assigned_member = ?')->execute([$id, $id]);
+
+            $this->tryExec('DELETE FROM saved_profiles WHERE user_id = ? OR saved_user_id = ?', [$id, $id]);
+            $this->tryExec('DELETE FROM auto_generated_matches WHERE male_user_id = ? OR female_user_id = ?', [$id, $id]);
+
+            if ($matri !== '') {
+                $this->tryExec('DELETE FROM deferred_matches WHERE my_matri_id = ? OR other_matri_id = ?', [$matri, $matri]);
+            }
+
+            $this->tryExec('DELETE FROM invoices WHERE user_id = ?', [$id]);
+            $this->tryExec('DELETE FROM user_packages WHERE user_id = ?', [$id]);
+            $this->tryExec('DELETE FROM user_profile_details WHERE user_id = ?', [$id]);
+
+            $this->db->prepare('DELETE FROM users WHERE id = ?')->execute([$id]);
+            $this->db->prepare('DELETE FROM user_details WHERE id = ?')->execute([$id]);
+
+            $this->db->commit();
+
+            return true;
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            error_log('AdminUserModel::deleteUserCompletely: ' . $e->getMessage());
+
+            return false;
+        }
+    }
+
+    /**
+     * @param list<mixed> $params
+     */
+    private function tryExec(string $sql, array $params): void
+    {
+        try {
+            $st = $this->db->prepare($sql);
+            $st->execute($params);
+        } catch (Throwable $e) {
+            error_log('AdminUserModel::tryExec: ' . $e->getMessage());
+        }
+    }
+
+    private function deleteFeesAndProofsForUserId(int $id, string $matri): void
+    {
+        $this->db->prepare('
+            DELETE p FROM member_fee_payment_proofs p
+            INNER JOIN member_sale_fees f ON f.id = p.fee_id
+            WHERE f.linked_user_id = ?
+        ')->execute([$id]);
+        $this->db->prepare('DELETE FROM member_sale_fees WHERE linked_user_id = ?')->execute([$id]);
+
+        if ($matri !== '') {
+            $this->db->prepare('
+                DELETE p FROM member_fee_payment_proofs p
+                INNER JOIN member_sale_fees f ON f.id = p.fee_id
+                WHERE (f.linked_user_id IS NULL OR f.linked_user_id = 0) AND TRIM(f.matri_id) = ?
+            ')->execute([$matri]);
+            $this->db->prepare('
+                DELETE FROM member_sale_fees
+                WHERE (linked_user_id IS NULL OR linked_user_id = 0) AND TRIM(matri_id) = ?
+            ')->execute([$matri]);
+        }
+    }
+
     public function deleteUser($id)
     {
-        $stmt = $this->db->prepare("DELETE FROM user_details WHERE id = ?");
-        return $stmt->execute([$id]);
+        return $this->deleteUserCompletely((int) $id);
     }
 
     public function bulkUpdateUserStatus(array $ids, string $status): bool
@@ -901,6 +1068,7 @@ class AdminUserModel
 
     public function advancedSearchUsers(array $filters): array
     {
+        $regFeePaidSql = $this->sqlRegistrationFeePaidScalar('ud');
         $sql = "
             SELECT
                 ud.id,
@@ -913,6 +1081,9 @@ class AdminUserModel
                 ud.city,
                 ud.created_at,
                 COALESCE(ud.user_status, 'approved') AS user_status,
+                COALESCE(ud.user_status, 'approved') AS status,
+                COALESCE(ud.registration_fee_queued, 0) AS registration_fee_queued,
+                {$regFeePaidSql} AS registration_fee_paid,
                 COALESCE(ud.featured_status, 'non_featured') AS featured_status,
                 au.name AS added_by_name
             FROM user_details ud

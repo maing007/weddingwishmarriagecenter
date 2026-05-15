@@ -98,13 +98,17 @@ require __DIR__.'/partials/sidebar.php';
                         <input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>">
                         <h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id'])) ?>)</h5>
                     </div>
-                    <div class="approved-badge <?= strtolower((string)($u['featured_status'] ?? 'non_featured')) === 'featured' ? 'status-featured' : 'status-nonfeatured' ?>">
-                        <?php if (strtolower((string)($u['featured_status'] ?? 'non_featured')) === 'featured'): ?>
-                            <i class="fa fa-star" aria-hidden="true"></i>
-                        <?php else: ?>
-                            <i class="fa fa-star-o" aria-hidden="true"></i>
-                        <?php endif; ?>
-                        <?= strtoupper(strtolower((string)($u['featured_status'] ?? 'non_featured')) === 'featured' ? 'FEATURED' : 'NON FEATURED') ?>
+                    <div class="d-flex flex-wrap align-items-center gap-2 justify-content-end">
+                        <?php $cardUser = $u;
+                        require __DIR__ . '/partials/member_unified_status_badge.php'; ?>
+                        <div class="approved-badge <?= strtolower((string)($u['featured_status'] ?? 'non_featured')) === 'featured' ? 'status-featured' : 'status-nonfeatured' ?>">
+                            <?php if (strtolower((string)($u['featured_status'] ?? 'non_featured')) === 'featured'): ?>
+                                <i class="fa fa-star" aria-hidden="true"></i>
+                            <?php else: ?>
+                                <i class="fa fa-star-o" aria-hidden="true"></i>
+                            <?php endif; ?>
+                            <?= strtoupper(strtolower((string)($u['featured_status'] ?? 'non_featured')) === 'featured' ? 'FEATURED' : 'NON FEATURED') ?>
+                        </div>
                     </div>
                 </div>
 
@@ -140,6 +144,12 @@ require __DIR__.'/partials/sidebar.php';
                     <button type="button" class="btn-action btn-action-amber" onclick="openViewCommentsPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">View Comment</button>
                     <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/users/edit-steps?id=<?= (int)$u['id'] ?>">Edit Profile</a>
                     <a class="btn-action btn-action-green" target="_blank" href="<?= BASE_URL ?>/admin/users/profile-pdf-template?id=<?= (int)$u['id'] ?>">Profile PDF</a>
+                    <?php
+                    $deleteUserId = (int) $u['id'];
+                    $deleteFeeId = 0;
+                    $deleteRedirect = '/admin/paid-to-spotlight';
+                    require __DIR__ . '/partials/delete_entity_forms.php';
+                    ?>
                 </div>
             </div>
             <?php endforeach; ?>

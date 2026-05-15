@@ -1,140 +1,73 @@
 <?php
-$name = trim(($profile->first_name ?? '') . ' ' . ($profile->second_name ?? ''));
-$dob = (string)($profile->dob ?? '');
-$age = '-';
-if ($dob !== '' && $dob !== '0000-00-00') {
-    try {
-        $age = (new DateTime())->diff(new DateTime($dob))->y . ' years';
-    } catch (Exception $e) {
-        $age = '-';
-    }
+/**
+ * Public profile — same layout as admin PDF card (profile_pdf_card partial).
+ *
+ * @var object $profile user_details row (from SearchModel::getProfile)
+ */
+
+$user = json_decode(json_encode($profile), true);
+if (!is_array($user)) {
+    $user = [];
+}
+if (empty($user['work_detail']) && !empty($user['occupation'])) {
+    $user['work_detail'] = (string) $user['occupation'];
 }
 
-$rawPhoto = (string)($profile->photo2_url ?? $profile->photo1_status ?? $profile->avatar ?? '');
-if ($rawPhoto !== '') {
-    $photoUrl = public_url_for_path($rawPhoto);
-} else {
-    $gPub = strtolower(trim((string) ($profile->gender ?? '')));
-    $photoUrl = ($gPub === 'female' || strncmp($gPub, 'female', 6) === 0)
-        ? public_url_for_path('assets/images/female.png')
-        : public_url_for_path('assets/images/male.png');
-}
+require_once dirname(__DIR__, 3) . '/helpers/profile_pdf_template.php';
+$profilePdfPreferAdminMemberPhoto = false;
+$__pv = profile_pdf_template_compute_vars($user, false);
+$pdfTitleForJs = $__pv['pdfFileTitle'];
 ?>
 
-<style>
-    .public-profile-wrap {
-        margin-top: 30px;
-        margin-bottom: 40px;
-    }
-    .public-profile-card {
-        background: #fff;
-        border: 1px solid #e8e8e8;
-        border-radius: 12px;
-        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-    }
-    .public-profile-head {
-        background: linear-gradient(135deg, #123f73, #2d7cc2);
-        color: #fff;
-        padding: 20px;
-    }
-    .public-profile-name {
-        margin: 0;
-        font-size: 24px;
-        font-weight: 700;
-    }
-    .public-profile-sub {
-        margin-top: 6px;
-        opacity: 0.92;
-        font-size: 14px;
-    }
-    .public-profile-body {
-        padding: 20px;
-    }
-    .public-profile-photo {
-        width: 180px;
-        height: 180px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 4px solid #fff;
-        box-shadow: 0 2px 14px rgba(0,0,0,.15);
-    }
-    .public-kv {
-        border: 1px solid #efefef;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 12px;
-        background: #fafafa;
-    }
-    .public-kv .label {
-        display: inline-block;
-        font-size: 12px;
-        margin-bottom: 6px;
-        background: #d9edf7;
-        color: #31708f;
-    }
-    .public-kv .value {
-        font-size: 15px;
-        color: #333;
-        font-weight: 600;
-    }
-    .public-about {
-        margin-top: 8px;
-        line-height: 1.7;
-        color: #4b4b4b;
-    }
-</style>
-
-<div class="container public-profile-wrap">
-    <div class="public-profile-card">
-        <div class="public-profile-head">
-            <h1 class="public-profile-name"><?= htmlspecialchars($name !== '' ? $name : 'Profile', ENT_QUOTES, 'UTF-8') ?></h1>
-            <div class="public-profile-sub">
-                <?= htmlspecialchars((string)($profile->gender ?? '-'), ENT_QUOTES, 'UTF-8') ?> •
-                <?= htmlspecialchars((string)($profile->religion ?? '-'), ENT_QUOTES, 'UTF-8') ?> •
-                <?= htmlspecialchars($age, ENT_QUOTES, 'UTF-8') ?>
-            </div>
-        </div>
-
-        <div class="public-profile-body">
-            <div class="row">
-                <div class="col-md-4 text-center" style="margin-bottom: 20px;">
-                    <img src="<?= htmlspecialchars($photoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Profile photo" class="public-profile-photo">
-                </div>
-                <div class="col-md-8">
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div class="public-kv">
-                                <span class="label">Matri ID</span>
-                                <div class="value"><?php $midPv = matri_id_display((string) ($profile->matri_id ?? ''), (int) ($profile->id ?? 0)); ?><?= htmlspecialchars($midPv !== '' ? $midPv : '-', ENT_QUOTES, 'UTF-8') ?></div>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="public-kv">
-                                <span class="label">Date of Birth</span>
-                                <div class="value"><?= htmlspecialchars($dob !== '' ? $dob : '-', ENT_QUOTES, 'UTF-8') ?></div>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="public-kv">
-                                <span class="label">City</span>
-                                <div class="value"><?= htmlspecialchars((string)($profile->city ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="public-kv">
-                                <span class="label">Country</span>
-                                <div class="value"><?= htmlspecialchars((string)($profile->country ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <hr>
-
-            <h4 style="margin-top: 0; font-weight: 700;">About</h4>
-            <p class="public-about"><?= nl2br(htmlspecialchars((string)($profile->about_us ?? 'No details added.'), ENT_QUOTES, 'UTF-8')) ?></p>
-        </div>
+<div class="container" style="margin-top: 24px; margin-bottom: 48px;">
+    <div class="public-profile-pdf-wrap" style="overflow-x: auto; padding-bottom: 12px;">
+        <?php require dirname(__DIR__, 2) . '/partials/profile_pdf_card.php'; ?>
     </div>
+
+    <button type="button" class="btn btn-primary" style="margin-top: 10px;" id="publicProfilePdfDownloadBtn">Download PDF</button>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+(function () {
+    var safeName = <?= json_encode($pdfTitleForJs, JSON_UNESCAPED_UNICODE) ?>;
+    var dl = document.getElementById('publicProfilePdfDownloadBtn');
+    if (!dl) return;
+    dl.addEventListener('click', function () {
+        var el = document.getElementById('wwProfilePdfContent');
+        if (!el || typeof html2canvas === 'undefined' || !window.jspdf) {
+            alert('PDF tools failed to load. Check your network connection.');
+            return;
+        }
+        var btn = this;
+        btn.disabled = true;
+        html2canvas(el, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#4da7ba',
+            logging: false
+        }).then(function (canvas) {
+            var img = canvas.toDataURL('image/png');
+            var doc = new jspdf.jsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait' });
+            var pageWidth = doc.internal.pageSize.getWidth();
+            var pageHeight = doc.internal.pageSize.getHeight();
+            var imgWidth = canvas.width;
+            var imgHeight = canvas.height;
+            var scale = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+            var w = imgWidth * scale;
+            var h = imgHeight * scale;
+            var x = (pageWidth - w) / 2;
+            var y = (pageHeight - h) / 2;
+            doc.addImage(img, 'PNG', x, y, w, h);
+            doc.save(safeName.replace(/[^\w\- ().]+/g, '_') + '.pdf');
+        }).catch(function (err) {
+            console.error('PDF generation failed:', err);
+            alert('Failed to generate PDF. If photos are hosted on another domain, try again later.');
+        }).finally(function () {
+            btn.disabled = false;
+        });
+    });
+})();
+</script>

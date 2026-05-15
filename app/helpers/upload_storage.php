@@ -3,19 +3,19 @@
 declare(strict_types=1);
 
 /**
- * Central upload storage: everything from forms goes under public/uploads/
- * so URLs /uploads/… match .htaccess → public/uploads/…
+ * Central upload storage: project root uploads/ (not public/uploads/).
+ * Public URLs use /upload/… (see public_url_for_path + .htaccess); /uploads/… still rewrites for old links.
  */
 if (!function_exists('app_public_uploads_dir')) {
     function app_public_uploads_dir(): string
     {
-        return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads';
+        return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'uploads';
     }
 }
 
 if (!function_exists('app_public_uploads_subdir')) {
     /**
-     * Absolute path to public/uploads/{sub}, e.g. "blogs", "avatars", "tasks/images".
+     * Absolute path to uploads/{sub}, e.g. "blogs", "avatars", "tasks/images".
      */
     function app_public_uploads_subdir(string $sub): string
     {
@@ -33,7 +33,7 @@ if (!function_exists('app_public_uploads_subdir')) {
 
 if (!function_exists('app_save_upload')) {
     /**
-     * Save an HTTP uploaded file under public/uploads/{subDir}.
+     * Save an HTTP uploaded file under uploads/{subDir}.
      *
      * @param array{name?:string,tmp_name?:string,error?:int} $file Single $_FILES element
      * @param string $subDir Subpath under uploads (empty = files directly in uploads/)

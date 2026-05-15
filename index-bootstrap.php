@@ -12,9 +12,12 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once APP_ROOT . '/config/config.php';
+require_once APP_ROOT . '/app/helpers/cloudflare_security.php';
+app_cloudflare_enforce_origin();
+app_send_security_headers();
 // Ensures matri_id_display() exists if production config.php was not updated with the require inside it.
 require_once APP_ROOT . '/app/helpers/matri.php';
-// Ensures app_save_upload() / app_public_uploads_dir() exist (payment proofs, wizard uploads, etc.).
+// Ensures app_save_upload() / app_public_uploads_dir() exist (project root uploads/, payment proofs, wizard uploads, etc.).
 if (!function_exists('app_save_upload') && is_file(APP_ROOT . '/app/helpers/upload_storage.php')) {
     require_once APP_ROOT . '/app/helpers/upload_storage.php';
 }
@@ -47,6 +50,10 @@ $router = new Router();
 /**
  * ROUTES
  */
+
+// SEO / crawlers
+$router->get('/sitemap.xml', 'SitemapController@index');
+$router->get('/robots.txt', 'RobotsController@index');
 
 // Home (banner + register form)
 $router->get('/', 'HomeController@index');
@@ -177,6 +184,8 @@ $router->get('/admin/accounts/income/registration-fee', 'AdminMemberSaleFeesCont
 $router->get('/admin/accounts/income/rishta-fee', 'AdminMemberSaleFeesController@rishtaFee');
 $router->post('/admin/accounts/income/fee-paid-approved', 'AdminMemberSaleFeesController@feePaidApproved');
 $router->post('/admin/accounts/income/assign-plan', 'AdminMemberSaleFeesController@assignPlanSubmit');
+$router->get('/admin/accounts/income/payment-proof/download', 'AdminMemberSaleFeesController@paymentProofDownload');
+$router->post('/admin/accounts/income/delete-fee', 'AdminMemberSaleFeesController@deleteMemberSaleFee');
 $router->post('/admin/accounts/income/payment-proof', 'AdminMemberSaleFeesController@paymentProofSubmit');
 $router->get('/admin/accounts/invoice/registration', 'AdminMemberSaleFeesController@registrationInvoice');
 
@@ -195,9 +204,11 @@ $router->get('/admin/accepted-matches', 'AdminUsersController@acceptedMatches');
 $router->get('/admin/users/interactions', 'AdminUsersController@interactionReport');
 $router->post('/admin/users/comment', 'AdminUsersController@addComment');
 $router->get('/admin/users/comments-json', 'AdminUsersController@commentsJson');
+$router->get('/admin/users/profile-status-json', 'AdminUsersController@profileStatusJson');
 $router->get('/admin/users/member-dynamic-team-json', 'AdminUsersController@memberDynamicTeamJson');
 $router->get('/admin/users/profile-view', 'AdminUsersController@adminProfileView');
 $router->get('/admin/users/profile-pdf-template', 'AdminUsersController@profilePdfTemplate');
+$router->get('/admin/users/member-photo', 'AdminUsersController@memberPhoto');
 $router->get('/admin/users/download-member-photo', 'AdminUsersController@downloadMemberPhoto');
 $router->post('/admin/users/send-email-confirmation', 'AdminUsersController@sendEmailConfirmation');
 $router->get('/admin/users/edit-steps', 'AdminUsersController@editProfileSteps');

@@ -501,6 +501,15 @@
                             </div>
                           </div> -->
                         </div>
+                        <?php if (defined('CLOUDFLARE_TURNSTILE_SITE_KEY') && CLOUDFLARE_TURNSTILE_SITE_KEY !== ''): ?>
+                        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+                        <div class="row add-b-cstm mt-4">
+                          <div class="col-md-3 col-sm-3 col-xs-12"></div>
+                          <div class="col-md-9 col-sm-9 col-xs-12">
+                            <div class="cf-turnstile" data-sitekey="<?= htmlspecialchars(CLOUDFLARE_TURNSTILE_SITE_KEY, ENT_QUOTES, 'UTF-8') ?>"></div>
+                          </div>
+                        </div>
+                        <?php endif; ?>
                         <div class="row add-b-cstm mt-5">
                           <div class="col-md-3 col-sm-3 col-xs-12"></div>
                           <div class="col-md-3 col-sm-3 col-xs-12">

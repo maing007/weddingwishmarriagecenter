@@ -41,9 +41,17 @@ if (!defined('RUN_DB_MIGRATIONS')) {
     define('RUN_DB_MIGRATIONS', getenv('SKIP_DB_MIGRATIONS') !== '1');
 }
 
+/** Cloudflare Turnstile (optional). Set env CLOUDFLARE_TURNSTILE_SITE_KEY and CLOUDFLARE_TURNSTILE_SECRET_KEY */
+if (!defined('CLOUDFLARE_TURNSTILE_SITE_KEY')) {
+    define('CLOUDFLARE_TURNSTILE_SITE_KEY', getenv('CLOUDFLARE_TURNSTILE_SITE_KEY') ?: '');
+}
+if (!defined('CLOUDFLARE_TURNSTILE_SECRET_KEY')) {
+    define('CLOUDFLARE_TURNSTILE_SECRET_KEY', getenv('CLOUDFLARE_TURNSTILE_SECRET_KEY') ?: '');
+}
+
 // Matri helpers (also loaded from index-bootstrap.php after this file for older production configs).
 require_once dirname(__DIR__) . '/app/helpers/matri.php';
 // Upload / asset URL builder (uses BASE_URL).
 require_once dirname(__DIR__) . '/app/helpers/public_url.php';
-// All form uploads → public/uploads/ (see app/helpers/upload_storage.php).
+// All form uploads → project root uploads/ (see app/helpers/upload_storage.php).
 require_once dirname(__DIR__) . '/app/helpers/upload_storage.php';

@@ -23,6 +23,14 @@ class SearchModel
             'cities' => $this->distinctList('city'),
             'body_types' => $this->distinctList('body_type'),
             'complexions' => $this->distinctList('skin_tone'),
+            'marital_statuses' => $this->distinctList('marital_status'),
+            'employed_ins' => $this->distinctList('employed_in'),
+            'annual_incomes' => $this->distinctList('annual_income'),
+            'eating_habits' => $this->distinctList('eating_habits'),
+            'drinkings' => $this->distinctList('drinking'),
+            'smokings' => $this->distinctList('smoking'),
+            'house_types' => $this->distinctList('house_type'),
+            'areas' => $this->distinctList('area'),
         ];
     }
 
@@ -135,8 +143,15 @@ class SearchModel
             'country' => 'country',
             'state' => 'state',
             'city' => 'city',
+            'area' => 'area',
             'body_type' => 'body_type',
             'complexion' => 'skin_tone',
+            'marital_status' => 'marital_status',
+            'employed_in' => 'employed_in',
+            'annual_income' => 'annual_income',
+            'eating_habits' => 'eating_habits',
+            'drinking' => 'drinking',
+            'smoking' => 'smoking',
         ];
 
         foreach ($multiMap as $inputKey => $column) {
@@ -144,7 +159,7 @@ class SearchModel
                 continue;
             }
             $vals = array_values(array_filter(array_map('trim', $filters[$inputKey]), static function ($v) {
-                return $v !== '';
+                return $v !== '' && strcasecmp($v, 'Does not matter') !== 0;
             }));
             if (empty($vals)) {
                 continue;
@@ -157,6 +172,26 @@ class SearchModel
                 $params[$p] = $val;
             }
             $sql .= ' AND ' . $column . ' IN (' . implode(',', $ph) . ')';
+        }
+
+        $houseType = isset($filters['house_type']) ? trim((string) $filters['house_type']) : '';
+        if ($houseType !== '' && strcasecmp($houseType, 'Select House Type') !== 0
+            && strcasecmp($houseType, 'Does not matter') !== 0) {
+            $sql .= ' AND house_type = :house_type';
+            $params[':house_type'] = $houseType;
+        }
+
+        $hsmFrom = isset($filters['house_size_from']) && $filters['house_size_from'] !== ''
+            ? (float) str_replace(',', '.', preg_replace('/[^0-9.,-]/', '', (string) $filters['house_size_from'])) : null;
+        $hsmTo = isset($filters['house_size_to']) && $filters['house_size_to'] !== ''
+            ? (float) str_replace(',', '.', preg_replace('/[^0-9.,-]/', '', (string) $filters['house_size_to'])) : null;
+        if ($hsmFrom !== null && $hsmFrom > 0) {
+            $sql .= ' AND CAST(NULLIF(TRIM(house_size_marla), \'\') AS DECIMAL(12,2)) >= :hsm_from';
+            $params[':hsm_from'] = $hsmFrom;
+        }
+        if ($hsmTo !== null && $hsmTo > 0) {
+            $sql .= ' AND CAST(NULLIF(TRIM(house_size_marla), \'\') AS DECIMAL(12,2)) <= :hsm_to';
+            $params[':hsm_to'] = $hsmTo;
         }
 
         if (!empty($filters['photo_search'])) {
@@ -188,7 +223,8 @@ class SearchModel
     {
         $allowed = [
             'religion', 'caste', 'maslak', 'mother_tongue', 'education', 'occupation',
-            'country', 'state', 'city', 'body_type', 'skin_tone'
+            'country', 'state', 'city', 'body_type', 'skin_tone', 'marital_status', 'employed_in',
+            'annual_income', 'eating_habits', 'drinking', 'smoking', 'house_type', 'area',
         ];
         if (!in_array($column, $allowed, true)) {
             return [];

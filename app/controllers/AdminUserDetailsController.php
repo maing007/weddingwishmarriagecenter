@@ -170,7 +170,7 @@ class AdminUserDetailsController
         header('Content-Type: application/json; charset=utf-8');
         $email = trim((string) ($_GET['email'] ?? ''));
         if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            echo json_encode(['ok' => true, 'available' => false, 'message' => 'Enter a valid email address.']);
+            echo json_encode(['ok' => true, 'available' => null, 'message' => 'Enter a valid email address.']);
             exit;
         }
         $exists = $this->model->emailExists($email);
@@ -201,7 +201,13 @@ class AdminUserDetailsController
             exit;
         }
 
-        $_SESSION['user_form']['basic'] = $_POST;
+        $post = $_POST;
+        if (isset($post['education']) && strtolower(trim((string) $post['education'])) === 'other') {
+            $post['education'] = trim((string) ($post['education_custom'] ?? ''));
+        }
+        unset($post['education_custom']);
+
+        $_SESSION['user_form']['basic'] = $post;
 
         header('Location: ' . BASE_URL . '/admin/add_user/user/residence');
         exit;

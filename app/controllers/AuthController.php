@@ -171,6 +171,14 @@ class AuthController
             exit;
         }
 
+        require_once __DIR__ . '/../helpers/cloudflare_security.php';
+        if (CLOUDFLARE_TURNSTILE_SECRET_KEY !== ''
+            && !app_cloudflare_turnstile_verify($_POST['cf-turnstile-response'] ?? null)) {
+            $_SESSION['flash_error'] = 'Security check failed. Please try again.';
+            header('Location: ' . BASE_URL . '/login');
+            exit;
+        }
+
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
 

@@ -198,7 +198,7 @@ $statusClass="badge-active";
 
 <div class="profile-card" data-name="<?= strtolower($p['first_name'].' '.$p['last_name']) ?>">
 
-<img class="user-img" src="<?= BASE_URL ?>/uploads/users/<?= $p['image'] ?? 'default.png' ?>">
+<img class="user-img" src="<?= htmlspecialchars(public_url_for_path('uploads/users/' . (string) ($p['image'] ?? 'default.png')), ENT_QUOTES, 'UTF-8') ?>">
 
 <div class="user-name">
 <?= htmlspecialchars($p['first_name'].' '.$p['last_name']) ?>

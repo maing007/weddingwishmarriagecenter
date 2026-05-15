@@ -188,8 +188,6 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
         <div id="userList" class="mt-4">
             <?php foreach ($users as $u):
                 $userStatusRaw = strtolower(trim((string) ($u['status'] ?? 'approved')));
-                $regFeePaid = isset($u['registration_fee_paid']) && (int) $u['registration_fee_paid'] === 1;
-                $badgeVariant = ($userStatusRaw === 'approved' && $regFeePaid) ? 'paid' : $userStatusRaw;
                 ?>
             <div class="user-card searchable-card"
                  data-status="<?= htmlspecialchars($userStatusRaw, ENT_QUOTES, 'UTF-8') ?>"
@@ -207,16 +205,8 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
                         <input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>">
                         <h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id'])) ?>)</h5>
                     </div>
-                    <div class="approved-badge status-<?= htmlspecialchars($badgeVariant, ENT_QUOTES, 'UTF-8') ?>">
-                        <?php if ($badgeVariant === 'paid'): ?>
-                            <i class="fa fa-check-circle" aria-hidden="true"></i>
-                        <?php elseif ($userStatusRaw === 'approved'): ?>
-                            <i class="fa fa-thumbs-up" aria-hidden="true"></i>
-                        <?php elseif ($userStatusRaw === 'suspended'): ?>
-                            <i class="fa fa-user-times" aria-hidden="true"></i>
-                        <?php endif; ?>
-                        <?= strtoupper(htmlspecialchars($badgeVariant === 'paid' ? 'paid' : (string) ($u['status'] ?? 'approved'), ENT_QUOTES, 'UTF-8')) ?>
-                    </div>
+                    <?php $cardUser = $u;
+                    require __DIR__ . '/partials/member_unified_status_badge.php'; ?>
                 </div>
 
                 <!-- COUNTER ROW -->
@@ -274,6 +264,12 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
                         <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
                         <button class="btn-action btn-action-teal" type="submit">Email Confirmation</button>
                     </form>
+                    <?php
+                    $deleteUserId = (int) $u['id'];
+                    $deleteFeeId = 0;
+                    $deleteRedirect = '/admin/users';
+                    require __DIR__ . '/partials/delete_entity_forms.php';
+                    ?>
                 </div>
 
             </div>
@@ -289,9 +285,15 @@ $teamOptions = array_values(array_filter(array_unique($teamOptions)));
         </div>
     </div>
 </div>
-    </div>
-</div>
 </main>
+</div>
+
+<!-- Bulk status (Approved / Unapproved / Suspended): real POST form so submit always works -->
+<form id="adminUsersBulkStatusForm" method="post" action="<?= htmlspecialchars(BASE_URL . '/admin/users/bulk-status', ENT_QUOTES, 'UTF-8') ?>" style="display:none;" aria-hidden="true">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+    <input type="hidden" name="bulk_status" id="adminBulkStatusValue" value="">
+    <div id="adminBulkStatusUserIds"></div>
+</form>
 
 <!-- FILTER POPUP -->
 <div id="filterPopup" class="custom-popup-overlay" style="display:none;">
@@ -447,12 +449,15 @@ const sortSelect = document.getElementById("sortUsers");
 const showEntries = document.getElementById("showEntries");
 let activeTab = "all";
 // SELECT ALL FUNCTION
-document.getElementById("selectAllUsers").addEventListener("change", function () {
-    let checked = this.checked;
-    document.querySelectorAll(".user-checkbox").forEach(cb => {
-        cb.checked = checked;
+const selectAllUsersEl = document.getElementById("selectAllUsers");
+if (selectAllUsersEl) {
+    selectAllUsersEl.addEventListener("change", function () {
+        let checked = this.checked;
+        document.querySelectorAll(".user-checkbox").forEach(cb => {
+            cb.checked = checked;
+        });
     });
-});
+}
 let cards = Array.from(document.querySelectorAll(".searchable-card"));
 const advancedFilters = {
     department: "",
@@ -462,8 +467,11 @@ const advancedFilters = {
 };
 
 function updateList(){
-    let search = searchInput.value.toLowerCase();
-    let limit = parseInt(showEntries.value);
+    let search = (searchInput && searchInput.value) ? searchInput.value.toLowerCase() : "";
+    let limit = showEntries ? parseInt(showEntries.value, 10) : 9999;
+    if (isNaN(limit)) {
+        limit = 10;
+    }
     let filtered = cards.filter(card=>{
         let text = card.innerText.toLowerCase();
         let status = card.dataset.status;
@@ -480,7 +488,7 @@ function updateList(){
         return true;
     });
 
-    let sort = sortSelect.value;
+    let sort = sortSelect ? sortSelect.value : "latest_desc";
     filtered.sort((a,b)=>{
         if(sort=="latest_desc") return b.dataset.date - a.dataset.date;
         if(sort=="latest_asc") return a.dataset.date - b.dataset.date;
@@ -492,14 +500,23 @@ function updateList(){
     filtered.slice(0,limit).forEach(c=>c.style.display="block");
 }
 
-searchInput.addEventListener("keyup",updateList);
-sortSelect.addEventListener("change",updateList);
-showEntries.addEventListener("change",updateList);
+if (searchInput) {
+    searchInput.addEventListener("keyup", updateList);
+}
+if (sortSelect) {
+    sortSelect.addEventListener("change", updateList);
+}
+if (showEntries) {
+    showEntries.addEventListener("change", updateList);
+}
 
-document.getElementById("clearSearchBtn").addEventListener("click", function(){
-    searchInput.value = "";
-    updateList();
-});
+const clearSearchBtn = document.getElementById("clearSearchBtn");
+if (clearSearchBtn && searchInput) {
+    clearSearchBtn.addEventListener("click", function () {
+        searchInput.value = "";
+        updateList();
+    });
+}
 
 document.querySelectorAll(".tab-filter").forEach(tab=>{
     tab.addEventListener("click",function(){
@@ -640,7 +657,7 @@ function clearAdvancedFilters(){
     updateList();
 }
 
-function submitBulkStatus(statusValue){
+window.submitBulkStatus = function submitBulkStatus(statusValue){
     const selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked')).map(function(cb){
         return cb.value;
     });
@@ -650,31 +667,24 @@ function submitBulkStatus(statusValue){
         return;
     }
 
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '<?= BASE_URL ?>/admin/users/bulk-status';
+    const form = document.getElementById('adminUsersBulkStatusForm');
+    const bulkVal = document.getElementById('adminBulkStatusValue');
+    const idWrap = document.getElementById('adminBulkStatusUserIds');
+    if (!form || !bulkVal || !idWrap) {
+        alert('Bulk action form is missing. Please refresh the page.');
+        return;
+    }
 
-    const csrf = document.createElement('input');
-    csrf.type = 'hidden';
-    csrf.name = 'csrf_token';
-    csrf.value = '<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>';
-    form.appendChild(csrf);
-
-    const bulkStatus = document.createElement('input');
-    bulkStatus.type = 'hidden';
-    bulkStatus.name = 'bulk_status';
-    bulkStatus.value = statusValue;
-    form.appendChild(bulkStatus);
-
+    bulkVal.value = statusValue;
+    idWrap.innerHTML = '';
     selectedUsers.forEach(function(id){
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = 'selected_users[]';
         input.value = id;
-        form.appendChild(input);
+        idWrap.appendChild(input);
     });
 
-    document.body.appendChild(form);
     form.submit();
 }
 

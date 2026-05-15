@@ -43,6 +43,14 @@ if (!function_exists('public_url_for_path')) {
         }
 
         $norm = ltrim($norm, '/');
+
+        // Web path uses /upload/… (not /uploads/… or /public/uploads/…); disk paths stay uploads/… — see .htaccess.
+        if (preg_match('#^uploads/#i', $norm)) {
+            $norm = preg_replace('#^uploads/#i', 'upload/', $norm, 1);
+        } elseif (strcasecmp($norm, 'uploads') === 0) {
+            $norm = 'upload';
+        }
+
         if (!defined('BASE_URL')) {
             return '/' . $norm;
         }

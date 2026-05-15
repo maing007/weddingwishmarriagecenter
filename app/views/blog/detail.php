@@ -1,6 +1,7 @@
 <?php
-$title = $blog['title'] ?? "Blog Detail";
-// require __DIR__ . '/../partials/header.php';
+if (!isset($title)) {
+    $title = $blog['title'] ?? 'Blog Detail';
+}
 ?>
 
 <div class="container mt-5">
@@ -8,7 +9,7 @@ $title = $blog['title'] ?? "Blog Detail";
         <div class="col-lg-8">
             <!-- Blog Image -->
             <?php if(!empty($blog['image'])): ?>
-                <img src="<?= BASE_URL ?>/uploads/blogs/<?= $blog['image'] ?>" 
+                <img src="<?= htmlspecialchars(public_url_for_path('uploads/blogs/' . (string) $blog['image']), ENT_QUOTES, 'UTF-8') ?>" 
                      class="img-fluid rounded mb-4 shadow-sm" 
                      alt="<?= htmlspecialchars($blog['title']) ?>">
             <?php endif; ?>

@@ -2,6 +2,9 @@
 $title = "Member Advanced Search";
 require __DIR__.'/partials/header.php';
 require __DIR__.'/partials/sidebar.php';
+?>
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin-manage-members.css">
+<?php
 
 $v = static function (array $src, string $key, string $default = ''): string {
     return htmlspecialchars((string)($src[$key] ?? $default), ENT_QUOTES, 'UTF-8');
@@ -331,12 +334,12 @@ $renderOptions = static function (array $items, string $selectedValue, string $p
                 <table class="table table-bordered table-sm mb-0">
                     <thead>
                         <tr>
-                            <th>ID</th><th>Name</th><th>Gender</th><th>Email</th><th>Phone</th><th>Country</th><th>City</th><th>Status</th><th>Featured</th><th>Added By</th>
+                            <th>ID</th><th>Name</th><th>Gender</th><th>Email</th><th>Phone</th><th>Country</th><th>City</th><th>Status</th><th>Featured</th><th>Added By</th><th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                     <?php if (empty($rows)): ?>
-                        <tr><td colspan="10" class="text-center">No members found.</td></tr>
+                        <tr><td colspan="11" class="text-center">No members found.</td></tr>
                     <?php else: foreach ($rows as $r): ?>
                         <tr>
                             <td><?= (int)$r['id'] ?></td>
@@ -346,9 +349,18 @@ $renderOptions = static function (array $items, string $selectedValue, string $p
                             <td><?= htmlspecialchars((string)($r['phone'] ?? '-')) ?></td>
                             <td><?= htmlspecialchars((string)($r['country'] ?? '-')) ?></td>
                             <td><?= htmlspecialchars((string)($r['city'] ?? '-')) ?></td>
-                            <td><?= htmlspecialchars((string)($r['user_status'] ?? '-')) ?></td>
+                            <td class="align-middle"><?php $cardUser = $r;
+                            require __DIR__ . '/partials/member_unified_status_badge.php'; ?></td>
                             <td><?= htmlspecialchars((string)($r['featured_status'] ?? '-')) ?></td>
                             <td><?= htmlspecialchars((string)($r['added_by_name'] ?? '-')) ?></td>
+                            <td>
+                                <?php
+                                $deleteUserId = (int) $r['id'];
+                                $deleteFeeId = 0;
+                                $deleteRedirect = '/admin/advanced-search';
+                                require __DIR__ . '/partials/delete_entity_forms.php';
+                                ?>
+                            </td>
                         </tr>
                     <?php endforeach; endif; ?>
                     </tbody>

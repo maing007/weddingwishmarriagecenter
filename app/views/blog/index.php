@@ -16,7 +16,7 @@ require __DIR__ . '/../partials/header.php';
             <div class="col-sm-6 col-md-4">
                 <div class="card h-100 shadow-sm">
                     <?php if(!empty($b['image'])): ?>
-                        <img src="<?= BASE_URL ?>/uploads/blogs/<?= $b['image'] ?>" class="card-img-top" alt="<?= htmlspecialchars($b['title']) ?>">
+                        <img src="<?= htmlspecialchars(public_url_for_path('uploads/blogs/' . (string) $b['image']), ENT_QUOTES, 'UTF-8') ?>" class="card-img-top" alt="<?= htmlspecialchars($b['title']) ?>">
                     <?php endif; ?>
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title"><?= htmlspecialchars($b['title']) ?></h5>

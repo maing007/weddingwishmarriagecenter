@@ -55,14 +55,8 @@ require __DIR__.'/partials/sidebar.php';
             <div class="user-card searchable-card" data-date="<?= strtotime($u['created_at']) ?>" data-name="<?= strtolower($u['first_name'].' '.$u['last_name']) ?>">
                 <div class="user-card-header">
                     <div class="user-left-title"><input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>"><h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id'])) ?>)</h5></div>
-                    <div class="approved-badge status-<?= strtolower((string)($u['status'] ?? 'unapproved')) ?>">
-                        <?php if (strtolower((string)($u['status'] ?? '')) === 'approved'): ?>
-                            <i class="fa fa-thumbs-up" aria-hidden="true"></i>
-                        <?php elseif (strtolower((string)($u['status'] ?? '')) === 'suspended'): ?>
-                            <i class="fa fa-user-times" aria-hidden="true"></i>
-                        <?php endif; ?>
-                        <?= strtoupper(htmlspecialchars((string)($u['status'] ?? 'UNAPPROVED'))) ?>
-                    </div>
+                    <?php $cardUser = $u;
+                    require __DIR__ . '/partials/member_unified_status_badge.php'; ?>
                 </div>
                 <div class="user-main-content">
                     <?php $cardUser = $u;
@@ -85,6 +79,12 @@ require __DIR__.'/partials/sidebar.php';
                     <button type="button" class="btn-action dark" onclick="openCommentPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">Add Comment</button>
                     <button type="button" class="btn-action yellow-btn" onclick="openViewCommentsPopup(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>')">View Comment</button>
                     <a class="btn-action blue" href="<?= BASE_URL ?>/admin/users/profile-view?id=<?= (int)$u['id'] ?>">View Profile</a>
+                    <?php
+                    $deleteUserId = (int) $u['id'];
+                    $deleteFeeId = 0;
+                    $deleteRedirect = '/admin/member-followup-report';
+                    require __DIR__ . '/partials/delete_entity_forms.php';
+                    ?>
                 </div>
             </div>
             <?php endforeach; ?>

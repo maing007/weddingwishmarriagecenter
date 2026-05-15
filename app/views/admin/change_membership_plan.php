@@ -83,14 +83,8 @@ require __DIR__.'/partials/sidebar.php';
                         <input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>">
                         <h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id'])) ?>)</h5>
                     </div>
-                    <div class="approved-badge status-<?= strtolower((string)($u['status'] ?? 'unapproved')) ?>">
-                        <?php if (strtolower((string)($u['status'] ?? '')) === 'approved'): ?>
-                            <i class="fa fa-thumbs-up" aria-hidden="true"></i>
-                        <?php elseif (strtolower((string)($u['status'] ?? '')) === 'suspended'): ?>
-                            <i class="fa fa-user-times" aria-hidden="true"></i>
-                        <?php endif; ?>
-                        <?= strtoupper(htmlspecialchars((string)($u['status'] ?? 'UNAPPROVED'))) ?>
-                    </div>
+                    <?php $cardUser = $u;
+                    require __DIR__ . '/partials/member_unified_status_badge.php'; ?>
                 </div>
 
                 <div class="counter-row">
@@ -147,6 +141,12 @@ require __DIR__.'/partials/sidebar.php';
                             })">Edit Plan</button>
                     <a class="btn-action btn-action-green" target="_blank" href="<?= BASE_URL ?>/admin/users/profile-pdf-template?id=<?= (int)$u['id'] ?>">Profile (PDF)</a>
                     <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Team List (7)</a>
+                    <?php
+                    $deleteUserId = (int) $u['id'];
+                    $deleteFeeId = 0;
+                    $deleteRedirect = '/admin/change-membership-plan';
+                    require __DIR__ . '/partials/delete_entity_forms.php';
+                    ?>
                 </div>
             </div>
             <?php endforeach; ?>

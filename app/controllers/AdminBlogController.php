@@ -122,7 +122,7 @@ $blogs = $this->blogModel->getAllBlogs();
                         'name' => $it,
                         'size' => filesize($full) ?: 0,
                         'mtime' => filemtime($full) ?: 0,
-                        'url' => BASE_URL . '/uploads/blogs/' . rawurlencode($it),
+                        'url' => public_url_for_path('uploads/blogs/' . $it),
                     ];
                 }
             }

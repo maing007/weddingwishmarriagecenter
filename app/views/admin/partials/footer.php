@@ -43,5 +43,6 @@
         });
     })();
 </script>
+<script src="<?= BASE_URL ?>/assets/js/admin-member-status-poll.js" defer></script>
 </body>
 </html>

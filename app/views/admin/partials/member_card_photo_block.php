@@ -7,12 +7,14 @@ if (empty($cardUser) || !is_array($cardUser)) {
 }
 $u = $cardUser;
 $firstRel = admin_member_first_upload_relative_path($u);
-if ($firstRel !== '') {
-    $u['avatar'] = $firstRel;
-}
-$listPhotoSrc = admin_user_card_photo_url($u);
-$listPhotoFallback = admin_user_default_avatar_url($u);
 $memberId = (int) ($u['id'] ?? 0);
+// Serve through admin PHP (same path resolution as download) so production lists work when direct /uploads/ URLs 404 or mis-resolve.
+if ($memberId > 0 && $firstRel !== '') {
+    $listPhotoSrc = rtrim(BASE_URL, '/') . '/admin/users/member-photo?id=' . $memberId;
+} else {
+    $listPhotoSrc = admin_user_card_photo_url($u);
+}
+$listPhotoFallback = admin_user_default_avatar_url($u);
 $showDl = $memberId > 0 && $firstRel !== '';
 $dlHref = BASE_URL . '/admin/users/download-member-photo?id=' . $memberId;
 ?>
@@ -20,8 +22,9 @@ $dlHref = BASE_URL . '/admin/users/download-member-photo?id=' . $memberId;
     <div class="profile-image-box">
         <img src="<?= htmlspecialchars($listPhotoSrc, ENT_QUOTES, 'UTF-8') ?>"
              alt=""
+             loading="lazy"
              data-fallback="<?= htmlspecialchars($listPhotoFallback, ENT_QUOTES, 'UTF-8') ?>"
-             onerror="if(this.dataset.fallback && this.src !== this.dataset.fallback){this.src=this.dataset.fallback;}">
+             onerror="(function(el){var fb=el.dataset.fallback;if(!fb||el.dataset._fbok)return;el.dataset._fbok='1';if(el.src!==fb){el.src=fb;}})(this)">
     </div>
     <?php if ($showDl): ?>
         <a class="member-photo-download"

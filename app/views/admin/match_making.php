@@ -55,14 +55,8 @@ require __DIR__.'/partials/sidebar.php';
             <div class="user-card searchable-card" data-date="<?= strtotime($u['created_at']) ?>" data-name="<?= strtolower($u['first_name'].' '.$u['last_name']) ?>">
                 <div class="user-card-header">
                     <div class="user-left-title"><input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>"><h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id'])) ?>)</h5></div>
-                    <div class="approved-badge status-<?= strtolower((string)($u['status'] ?? 'unapproved')) ?>">
-                        <?php if (strtolower((string)($u['status'] ?? '')) === 'approved'): ?>
-                            <i class="fa fa-thumbs-up" aria-hidden="true"></i>
-                        <?php elseif (strtolower((string)($u['status'] ?? '')) === 'suspended'): ?>
-                            <i class="fa fa-user-times" aria-hidden="true"></i>
-                        <?php endif; ?>
-                        <?= strtoupper(htmlspecialchars((string)($u['status'] ?? 'UNAPPROVED'))) ?>
-                    </div>
+                    <?php $cardUser = $u;
+                    require __DIR__ . '/partials/member_unified_status_badge.php'; ?>
                 </div>
                 <div class="counter-row">
                     <a class="counter-box blue text-decoration-none" href="<?= BASE_URL ?>/admin/users/interactions?id=<?= (int)$u['id'] ?>&action=opened">Opened (<?= (int)($u['opened_count'] ?? 0) ?>)</a>
@@ -107,6 +101,12 @@ require __DIR__.'/partials/sidebar.php';
                     <a class="btn-action btn-action-green" target="_blank" href="<?= BASE_URL ?>/admin/users/profile-pdf-template?id=<?= (int)$u['id'] ?>&from=match">Profile (PDF)</a>
                     <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Team List (1)</a>
                     <form method="post" action="<?= BASE_URL ?>/admin/users/send-email-confirmation" class="btn-action-form"><input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>"><button class="btn-action btn-action-teal" type="submit">Email Confirmation</button></form>
+                    <?php
+                    $deleteUserId = (int) $u['id'];
+                    $deleteFeeId = 0;
+                    $deleteRedirect = '/admin/match-making';
+                    require __DIR__ . '/partials/delete_entity_forms.php';
+                    ?>
                 </div>
             </div>
             <?php endforeach; ?>

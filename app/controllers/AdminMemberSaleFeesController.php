@@ -18,6 +18,9 @@ class AdminMemberSaleFeesController
             header('Location: ' . BASE_URL . '/admin/login');
             exit;
         }
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
         $this->admin = new Admin();
         $this->model = new MemberSaleFeeModel();
     }
@@ -46,6 +49,9 @@ class AdminMemberSaleFeesController
 
     public function rishtaFee(): void
     {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
         $feeType = MemberSaleFeeModel::TYPE_RISHTA;
         $pageTitle = 'Manage Rishta Fee — ALL';
         $pageHead = 'Manage Rishta Fee — ALL';
@@ -147,11 +153,21 @@ class AdminMemberSaleFeesController
         $_SESSION['flash_' . ($ok ? 'success' : 'error')] = $ok
             ? 'Marked as paid and member approved (when profile is linked).'
             : 'Could not update fee / member. Try again.';
-        $dest = (($row['fee_type'] ?? '') === MemberSaleFeeModel::TYPE_RISHTA)
+        $feeType = (($row['fee_type'] ?? '') === MemberSaleFeeModel::TYPE_RISHTA)
+            ? MemberSaleFeeModel::TYPE_RISHTA
+            : MemberSaleFeeModel::TYPE_REGISTRATION;
+        header('Location: ' . $this->accountsIncomeFeeListUrl($feeType));
+        exit;
+    }
+
+    /** Accounts → Income → Registration fee / Rishta fee list (sidebar). */
+    private function accountsIncomeFeeListUrl(string $feeType): string
+    {
+        $path = ($feeType === MemberSaleFeeModel::TYPE_RISHTA)
             ? '/admin/accounts/income/rishta-fee'
             : '/admin/accounts/income/registration-fee';
-        header('Location: ' . BASE_URL . $dest);
-        exit;
+
+        return rtrim(BASE_URL, '/') . $path;
     }
 
     public function assignPlanSubmit(): void
@@ -181,18 +197,45 @@ class AdminMemberSaleFeesController
 
         $_SESSION['flash_' . ($res['ok'] ? 'success' : 'error')] = $res['message'];
         if ($res['ok']) {
-            $q = http_build_query([
-                'search_filed' => '',
-                'pay_filter' => 'unpaid',
-                'sale_scope' => 'registration',
-                'limit_per_page' => 10,
-                'page' => 1,
-            ]);
-            header('Location: ' . BASE_URL . '/admin/sales-report?' . $q);
+            header('Location: ' . $this->accountsIncomeFeeListUrl(MemberSaleFeeModel::TYPE_REGISTRATION));
             exit;
         }
         header('Location: ' . BASE_URL . '/admin/accounts/income/registration-fee');
         exit;
+    }
+
+    public function deleteMemberSaleFee(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/admin/accounts/income/registration-fee');
+            exit;
+        }
+        $token = (string) ($_POST['csrf_token'] ?? '');
+        if ($token === '' || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            $_SESSION['flash_error'] = 'Invalid request token.';
+            header('Location: ' . BASE_URL . '/admin/accounts/income/registration-fee');
+            exit;
+        }
+        $feeId = (int) ($_POST['fee_id'] ?? 0);
+        $ok = $feeId > 0 && $this->model->deleteMemberSaleFeeById($feeId);
+        $_SESSION['flash_' . ($ok ? 'success' : 'error')] = $ok ? 'Fee / sales row deleted.' : 'Could not delete fee row.';
+        $loc = $this->sanitizeAdminRedirect($_POST['redirect'] ?? '');
+        header('Location: ' . $loc);
+        exit;
+    }
+
+    /** @param mixed $path */
+    private function sanitizeAdminRedirect($path): string
+    {
+        $p = is_string($path) ? trim($path) : '';
+        if ($p === '' || $p[0] !== '/') {
+            return BASE_URL . '/admin/accounts/income/registration-fee';
+        }
+        if (strpos($p, '//') !== false) {
+            return BASE_URL . '/admin/accounts/income/registration-fee';
+        }
+
+        return rtrim(BASE_URL, '/') . $p;
     }
 
     public function paymentProofSubmit(): void
@@ -210,6 +253,54 @@ class AdminMemberSaleFeesController
             exit;
         }
         header('Location: ' . BASE_URL . '/admin/sales-report');
+        exit;
+    }
+
+    /**
+     * Stream payment proof with correct MIME (static /uploads/ often lacks types; nosniff then blocks or flags downloads).
+     */
+    public function paymentProofDownload(): void
+    {
+        $proofId = (int) ($_GET['proof_id'] ?? 0);
+        $resolved = $this->model->paymentProofFileForAdminDownload($proofId);
+        if ($resolved === null) {
+            http_response_code(404);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'Payment proof not found.';
+            exit;
+        }
+        $abs = $resolved['absolute'];
+        $fn = $resolved['filename'];
+
+        $mime = 'application/octet-stream';
+        if (function_exists('finfo_open')) {
+            $fi = finfo_open(FILEINFO_MIME_TYPE);
+            if ($fi !== false) {
+                $det = finfo_file($fi, $abs);
+                finfo_close($fi);
+                if (is_string($det) && $det !== '') {
+                    $mime = $det;
+                }
+            }
+        }
+        $ext = strtolower((string) pathinfo($abs, PATHINFO_EXTENSION));
+        $byExt = [
+            'pdf' => 'application/pdf',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+        ];
+        if ($mime === 'application/octet-stream' && isset($byExt[$ext])) {
+            $mime = $byExt[$ext];
+        }
+
+        header('Content-Type: ' . $mime);
+        header('Content-Disposition: attachment; filename="' . $fn . '"');
+        header('Content-Length: ' . (string) filesize($abs));
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: private, max-age=3600');
+        readfile($abs);
         exit;
     }
 

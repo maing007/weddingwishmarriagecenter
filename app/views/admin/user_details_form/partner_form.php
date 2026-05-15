@@ -262,16 +262,6 @@ require __DIR__ . '/_step_header.php';
                 </div>
 
                 <div class="form-group">
-                    <label>Partner Manglik</label>
-                    <input type="text" name="partner_manglik" class="form-control">
-                </div>
-
-                <div class="form-group">
-                    <label>Partner Star</label>
-                    <input type="text" name="partner_star" class="form-control">
-                </div>
-
-                <div class="form-group">
                     <label>Partner Sect</label>
                     <select name="partner_sect" class="form-control">
                         <option value="">Select Sect</option>

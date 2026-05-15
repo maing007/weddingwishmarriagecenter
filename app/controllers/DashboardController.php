@@ -7,6 +7,33 @@ class DashboardController extends Controller
     protected $paidModel;
       protected $assignmentModel;
 
+    /**
+     * Full user_details row for PDF-style profile card; fallback merge for legacy members.
+     *
+     * @param array|null $profileDetails user_profile_details row
+     */
+    protected function resolveProfilePdfUser(int $targetId, array $member, ?array $profileDetails): array
+    {
+        require_once __DIR__ . '/../models/AdminUserModel.php';
+        $row = (new AdminUserModel())->getUserDetailsById($targetId);
+        if ($row) {
+            return $row;
+        }
+        $merged = $member;
+        if (is_array($profileDetails)) {
+            foreach ($profileDetails as $k => $v) {
+                if (!array_key_exists($k, $merged) || $merged[$k] === '' || $merged[$k] === null) {
+                    $merged[$k] = $v;
+                }
+            }
+        }
+        if (empty($merged['work_detail']) && !empty($merged['occupation'])) {
+            $merged['work_detail'] = (string) $merged['occupation'];
+        }
+
+        return $merged;
+    }
+
     public function __construct()
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -349,23 +376,10 @@ public function viewUserProfile($id)
     require_once __DIR__ . '/../models/UserProfile.php';
     $profileDetails = (new UserProfile())->getByUserId($targetId) ?: null;
 
-    $age = null;
-    if (!empty($member['dob']) && $member['dob'] !== '0000-00-00') {
-        $dob = new DateTime($member['dob']);
-        $age = (new DateTime())->diff($dob)->y;
-    }
+    $profilePdfUser = $this->resolveProfilePdfUser($targetId, $member, $profileDetails);
 
-    $img = $member['photo2_url'] ?? $member['avatar'] ?? ($member['photo1_status'] ?? '');
-    if (!empty($img)) {
-        $profileImgUrl = public_url_for_path((string) $img);
-    } else {
-        $gDash = strtolower(trim((string) ($member['gender'] ?? '')));
-        $profileImgUrl = ($gDash === 'female' || strncmp($gDash, 'female', 6) === 0)
-            ? public_url_for_path('assets/images/female.png')
-            : public_url_for_path('assets/images/male.png');
-    }
-
-    $title = trim(($member['first_name'] ?? '') . ' ' . ($member['second_name'] ?? $member['last_name'] ?? ''));
+    require_once __DIR__ . '/../helpers/profile_pdf_template.php';
+    $title = profile_pdf_template_compute_vars($profilePdfUser, false)['pdfFileTitle'];
     $error = $_SESSION['flash_error'] ?? '';
     $success = $_SESSION['flash_success'] ?? '';
     unset($_SESSION['flash_error'], $_SESSION['flash_success']);
@@ -490,25 +504,13 @@ public function openAssignment()
     require_once __DIR__ . '/../models/UserProfile.php';
     $profileDetails = (new UserProfile())->getByUserId($assignedProfileId) ?: null;
 
-    $age = null;
-    if (!empty($member['dob']) && $member['dob'] !== '0000-00-00') {
-        $dob = new DateTime($member['dob']);
-        $age = (new DateTime())->diff($dob)->y;
-    }
+    $profilePdfUser = $this->resolveProfilePdfUser($assignedProfileId, $member, $profileDetails);
 
-    $img = $member['photo2_url'] ?? $member['avatar'] ?? ($member['photo1_status'] ?? '');
-    if (!empty($img)) {
-        $profileImgUrl = public_url_for_path((string) $img);
-    } else {
-        $gDash = strtolower(trim((string) ($member['gender'] ?? '')));
-        $profileImgUrl = ($gDash === 'female' || strncmp($gDash, 'female', 6) === 0)
-            ? public_url_for_path('assets/images/female.png')
-            : public_url_for_path('assets/images/male.png');
-    }
+    require_once __DIR__ . '/../helpers/profile_pdf_template.php';
+    $title = profile_pdf_template_compute_vars($profilePdfUser, false)['pdfFileTitle'];
 
     $assignment = (object)$assignmentRow;
     $memberId = $assignedProfileId;
-    $title = trim(($member['first_name'] ?? '') . ' ' . ($member['second_name'] ?? ''));
     $error = $_SESSION['flash_error'] ?? '';
     $success = $_SESSION['flash_success'] ?? '';
     unset($_SESSION['flash_error'], $_SESSION['flash_success']);

@@ -55,14 +55,8 @@ require __DIR__.'/partials/sidebar.php';
             <div class="user-card searchable-card" data-date="<?= strtotime($u['created_at']) ?>" data-name="<?= strtolower($u['first_name'].' '.$u['last_name']) ?>">
                 <div class="user-card-header">
                     <div class="user-left-title"><input type="checkbox" class="user-checkbox" value="<?= (int)$u['id'] ?>"><h5><?= htmlspecialchars($u['first_name'].' '.$u['last_name']) ?> (<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id'])) ?>)</h5></div>
-                    <div class="approved-badge status-<?= strtolower((string)($u['status'] ?? 'unapproved')) ?>">
-                        <?php if (strtolower((string)($u['status'] ?? '')) === 'approved'): ?>
-                            <i class="fa fa-thumbs-up" aria-hidden="true"></i>
-                        <?php elseif (strtolower((string)($u['status'] ?? '')) === 'suspended'): ?>
-                            <i class="fa fa-user-times" aria-hidden="true"></i>
-                        <?php endif; ?>
-                        <?= strtoupper(htmlspecialchars((string)($u['status'] ?? 'UNAPPROVED'))) ?>
-                    </div>
+                    <?php $cardUser = $u;
+                    require __DIR__ . '/partials/member_unified_status_badge.php'; ?>
                 </div>
                 <div class="counter-row">
                     <a class="counter-box blue text-decoration-none" href="<?= BASE_URL ?>/admin/users/interactions?id=<?= (int)$u['id'] ?>&action=opened">Opened (<?= (int)($u['opened_count'] ?? 0) ?>)</a>
@@ -102,6 +96,12 @@ require __DIR__.'/partials/sidebar.php';
                     <button type="button" class="btn-action btn-action-green" onclick="openPlanModal({userId:'<?= (int)$u['id'] ?>',packageId:'<?= (int)($u['latest_package_id'] ?? 0) ?>',name:'<?= htmlspecialchars($u['first_name'].' '.$u['last_name'], ENT_QUOTES) ?>',matri:'<?= htmlspecialchars(matri_id_display((string) ($u['matri_id'] ?? ''), (int) $u['id']), ENT_QUOTES) ?>',email:'<?= htmlspecialchars((string)($u['email'] ?? ''), ENT_QUOTES) ?>',phone:'<?= htmlspecialchars((string)($u['phone'] ?? ''), ENT_QUOTES) ?>',fee:'<?= htmlspecialchars((string)($u['final_fee'] ?? '50000'), ENT_QUOTES) ?>',image:'<?= htmlspecialchars(admin_user_card_photo_url($u), ENT_QUOTES) ?>'})">Renew Plan</button>
                     <a class="btn-action btn-action-green" target="_blank" href="<?= BASE_URL ?>/admin/users/profile-pdf-template?id=<?= (int)$u['id'] ?>">Profile (PDF)</a>
                     <a class="btn-action btn-action-cyan" href="<?= BASE_URL ?>/admin/users/open-task?id=<?= (int)$u['id'] ?>">Team List (7)</a>
+                    <?php
+                    $deleteUserId = (int) $u['id'];
+                    $deleteFeeId = 0;
+                    $deleteRedirect = '/admin/expired-members';
+                    require __DIR__ . '/partials/delete_entity_forms.php';
+                    ?>
                 </div>
             </div>
             <?php endforeach; ?>

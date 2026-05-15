@@ -34,6 +34,9 @@ foreach ($planStaff as $adm) {
     }
 }
 sort($teamOptions);
+if ($teamOptions === []) {
+    $teamOptions[] = 'General';
+}
 
 $fmtMoney = static function ($raw): string {
     $n = (float) $raw;
@@ -124,6 +127,13 @@ require __DIR__ . '/partials/sidebar.php';
         align-items: center;
         gap: 8px;
         flex-shrink: 0;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    .income-fee-sales-row-badge {
+        font-size: 11px;
+        padding: 4px 8px;
+        white-space: nowrap;
     }
     .btn-copy-matri {
         width: 32px;
@@ -373,9 +383,9 @@ require __DIR__ . '/partials/sidebar.php';
                 $actTs = strtotime((string) ($r['activation_date'] ?? '')) ?: 0;
                 $paySt = strtolower(trim((string) ($r['staff_payment_status'] ?? '')));
                 $isPendingPlan = (strcasecmp(trim((string) ($r['staff_payment_status'] ?? '')), 'Pending Plan') === 0);
-                $badgeClass = ($paySt === 'paid') ? 'status-approved' : 'status-unapproved';
-                $badgeIcon = ($paySt === 'paid') ? 'fa-thumbs-up' : 'fa-clock-o';
-                $badgeText = $isPendingPlan ? 'PENDING PLAN' : strtoupper((string) ($r['staff_payment_status'] ?? 'UNPAID'));
+                $feeRowBadgeClass = ($paySt === 'paid') ? 'status-approved' : 'status-unapproved';
+                $feeRowIcon = ($paySt === 'paid') ? 'fa-thumbs-up' : 'fa-clock-o';
+                $feeRowText = $isPendingPlan ? 'PENDING PLAN' : strtoupper((string) ($r['staff_payment_status'] ?? 'UNPAID'));
 
                 $planName = trim((string) ($r['active_plan_name'] ?? ''));
                 if ($planName === '') {
@@ -405,10 +415,27 @@ require __DIR__ . '/partials/sidebar.php';
                         <h5><?= htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8') ?> ( <?= htmlspecialchars($matriShow, ENT_QUOTES, 'UTF-8') ?> )</h5>
                     </div>
                     <div class="income-fee-header-actions">
-                        <div class="approved-badge <?= htmlspecialchars($badgeClass, ENT_QUOTES, 'UTF-8') ?>">
-                            <i class="fa <?= htmlspecialchars($badgeIcon, ENT_QUOTES, 'UTF-8') ?>" aria-hidden="true"></i>
-                            <?= htmlspecialchars($badgeText, ENT_QUOTES, 'UTF-8') ?>
-                        </div>
+                        <?php if ($uid > 0): ?>
+                            <?php
+                            $cardUser = [
+                                'id' => $uid,
+                                'status' => $r['user_status'] ?? 'unapproved',
+                                'user_status' => $r['user_status'] ?? '',
+                                'registration_fee_paid' => $r['registration_fee_paid'] ?? 0,
+                                'registration_fee_queued' => $r['registration_fee_queued'] ?? 0,
+                            ];
+                            require __DIR__ . '/partials/member_unified_status_badge.php';
+                            ?>
+                            <div class="approved-badge income-fee-sales-row-badge <?= htmlspecialchars($feeRowBadgeClass, ENT_QUOTES, 'UTF-8') ?>" title="This fee row (staff payment)">
+                                <i class="fa <?= htmlspecialchars($feeRowIcon, ENT_QUOTES, 'UTF-8') ?>" aria-hidden="true"></i>
+                                <?= htmlspecialchars($feeRowText, ENT_QUOTES, 'UTF-8') ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="approved-badge <?= htmlspecialchars($feeRowBadgeClass, ENT_QUOTES, 'UTF-8') ?>">
+                                <i class="fa <?= htmlspecialchars($feeRowIcon, ENT_QUOTES, 'UTF-8') ?>" aria-hidden="true"></i>
+                                <?= htmlspecialchars($feeRowText, ENT_QUOTES, 'UTF-8') ?>
+                            </div>
+                        <?php endif; ?>
                         <button type="button" class="btn-copy-matri" title="Copy Matri ID" aria-label="Copy Matri ID" data-copy="<?= htmlspecialchars($matriShow, ENT_QUOTES, 'UTF-8') ?>">C</button>
                     </div>
                 </div>
@@ -478,7 +505,9 @@ require __DIR__ . '/partials/sidebar.php';
                             <input type="hidden" name="user_id" value="<?= (int) $uid ?>">
                             <button class="btn-action btn-action-teal" type="submit">Email Confirmation</button>
                         </form>
-                        <?php if (!$isRishta && $isPendingPlan):
+                        <?php
+                        $canOpenPlanModal = !$isRishta && $isPendingPlan && $planPackages !== [] && $planStaff !== [];
+                        if ($canOpenPlanModal):
                             $locParts = array_filter([
                                 trim((string) ($r['country'] ?? '')),
                                 trim((string) ($r['state'] ?? '')),
@@ -497,7 +526,9 @@ require __DIR__ . '/partials/sidebar.php';
                                 'gender' => strtolower((string) ($r['gender'] ?? '')),
                             ];
                             ?>
-                            <button type="button" class="btn-action btn-action-green plan-assign-open" data-plan="<?= htmlspecialchars(json_encode($planModalPayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8') ?>">Approve as Paid</button>
+                            <button type="button" class="btn-action btn-action-green plan-assign-open" data-plan="<?= htmlspecialchars(json_encode($planModalPayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>">Approve as Paid</button>
+                        <?php elseif (!$isRishta && $isPendingPlan): ?>
+                            <span class="btn-action btn-action-muted" title="Add membership packages and admin staff users with roles to enable plan assignment">Plan assign unavailable</span>
                         <?php endif; ?>
                         <?php if (!$isRishta && !$isPendingPlan && $paySt === 'paid'): ?>
                             <span class="btn-action btn-action-muted" title="This fee is already marked paid">Marked paid</span>
@@ -534,6 +565,12 @@ require __DIR__ . '/partials/sidebar.php';
                             </form>
                         <?php endif; ?>
                     <?php endif; ?>
+                    <?php
+                    $deleteFeeId = (int) $feeId;
+                    $deleteUserId = $uid > 0 ? (int) $uid : 0;
+                    $deleteRedirect = $isRishta ? '/admin/accounts/income/rishta-fee' : '/admin/accounts/income/registration-fee';
+                    require __DIR__ . '/partials/delete_entity_forms.php';
+                    ?>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -548,7 +585,7 @@ require __DIR__ . '/partials/sidebar.php';
             <span id="planAssignTitle">Plan Assignment</span>
             <button type="button" class="close-popup border-0 bg-transparent fs-4 lh-1" onclick="closePlanAssignModal()" aria-label="Close">&times;</button>
         </div>
-        <form class="plan-assign-body" method="post" action="<?= BASE_URL ?>/admin/accounts/income/assign-plan" id="planAssignForm">
+        <form class="plan-assign-body" method="post" action="<?= BASE_URL ?>/admin/accounts/income/assign-plan" id="planAssignForm" onsubmit="var b=this.querySelector('button.btn-pa-submit');if(b){b.disabled=true;}">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="fee_id" id="pa_fee_id" value="">
             <input type="hidden" name="user_id" id="pa_user_id" value="">
@@ -970,6 +1007,11 @@ function submitFeeBulkStatus(statusValue) {
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '<?= BASE_URL ?>/admin/users/bulk-status';
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = 'csrf_token';
+    csrf.value = <?= json_encode((string) ($_SESSION['csrf_token'] ?? ''), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    form.appendChild(csrf);
     const bulk = document.createElement('input');
     bulk.type = 'hidden';
     bulk.name = 'bulk_status';
@@ -1086,9 +1128,17 @@ const paTeamEl = document.getElementById('pa_team_label');
 if (paTeamEl) paTeamEl.addEventListener('change', syncPaPaymentNote);
 document.querySelectorAll('.plan-assign-open').forEach(function (btn) {
     btn.addEventListener('click', function () {
+        const raw = this.getAttribute('data-plan');
+        if (!raw) {
+            alert('Missing plan data. Refresh the page and try again.');
+            return;
+        }
         try {
-            openPlanAssignModal(JSON.parse(this.getAttribute('data-plan')));
-        } catch (e) {}
+            openPlanAssignModal(JSON.parse(raw));
+        } catch (e) {
+            console.error('plan-assign-open', e, raw);
+            alert('Could not open the plan form. Refresh the page or check the member name for unusual characters.');
+        }
     });
 });
 

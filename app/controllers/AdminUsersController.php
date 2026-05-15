@@ -29,6 +29,9 @@ class AdminUsersController
         $this->userModel = new User();
         $this->paidModel = new AdminPaidProfileModel();
         $this->model     = new AdminUserModel();
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
     }
 
     // ✅ FIXED
@@ -673,18 +676,70 @@ class AdminUsersController
 
     public function delete()
     {
-        if (
-            !empty($_POST['id']) &&
-            !empty($_POST['csrf_token']) &&
-            $_POST['csrf_token'] === $_SESSION['csrf_token']
-        ) {
-            $this->model->deleteUser((int)$_POST['id']);
-            $_SESSION['flash_success'] = "User deleted!";
-        } else {
-            $_SESSION['flash_error'] = "Invalid request!";
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/admin/users');
+            exit;
         }
+        $token = (string) ($_POST['csrf_token'] ?? '');
+        if ($token === '' || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            $_SESSION['flash_error'] = 'Invalid request.';
+            header('Location: ' . BASE_URL . '/admin/users');
+            exit;
+        }
+        $id = (int) ($_POST['id'] ?? 0);
+        if ($id <= 0) {
+            $_SESSION['flash_error'] = 'Invalid member.';
+            header('Location: ' . BASE_URL . '/admin/users');
+            exit;
+        }
+        $ok = $this->model->deleteUserCompletely($id);
+        $_SESSION['flash_' . ($ok ? 'success' : 'error')] = $ok
+            ? 'Member and related records deleted.'
+            : 'Could not delete member.';
 
-        header('Location: ' . BASE_URL . '/admin/users');
+        $red = trim((string) ($_POST['redirect'] ?? ''));
+        if ($red !== '' && $red[0] === '/' && strpos($red, '//') === false) {
+            header('Location: ' . rtrim(BASE_URL, '/') . $red);
+        } else {
+            header('Location: ' . BASE_URL . '/admin/users');
+        }
+        exit;
+    }
+
+    /** GET ?ids=1,2,3 — unified profile badge meta for live polling (same rules as Manage Members). */
+    public function profileStatusJson(): void
+    {
+        $raw = (string) ($_GET['ids'] ?? '');
+        $parts = preg_split('/[\s,]+/', $raw, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $ids = [];
+        foreach ($parts as $p) {
+            $n = (int) $p;
+            if ($n > 0) {
+                $ids[] = $n;
+            }
+        }
+        $ids = array_values(array_unique($ids));
+        if (count($ids) > 200) {
+            $ids = array_slice($ids, 0, 200);
+        }
+        $rows = $this->model->profileStatusRowsForIds($ids);
+        require_once __DIR__ . '/../helpers/admin_member_status.php';
+        $items = [];
+        foreach ($rows as $r) {
+            $id = (int) ($r['id'] ?? 0);
+            if ($id <= 0) {
+                continue;
+            }
+            $meta = admin_member_unified_badge_meta($r);
+            $items[] = array_merge([
+                'id' => $id,
+                'profile_status' => strtolower(trim((string) ($r['status'] ?? 'approved'))),
+                'registration_queued' => (int) ($r['registration_fee_queued'] ?? 0),
+            ], $meta);
+        }
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+        echo json_encode(['ok' => true, 'items' => $items], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -768,10 +823,30 @@ class AdminUsersController
             header('Location: ' . BASE_URL . '/admin/users');
             exit;
         }
+        // Same merged row as admin profile view (plan, added-by, last login, etc.).
+        $user = array_merge($user, $this->model->getUserListSupplement($id));
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
         require __DIR__ . '/../views/admin/profile_pdf_template.php';
     }
 
+    /**
+     * Inline image for admin lists/cards — uses same disk resolution as download (works when /uploads/ URLs fail on production).
+     */
+    public function memberPhoto()
+    {
+        $this->streamMemberPhoto(false);
+    }
+
     public function downloadMemberPhoto()
+    {
+        $this->streamMemberPhoto(true);
+    }
+
+    /**
+     * @param bool $asAttachment true = download, false = inline (for &lt;img src&gt;)
+     */
+    private function streamMemberPhoto(bool $asAttachment): void
     {
         $id = (int) ($_GET['id'] ?? 0);
         if ($id <= 0) {
@@ -816,9 +891,14 @@ class AdminUsersController
         $fn = basename($abs);
         $fn = preg_replace('/[^A-Za-z0-9._-]+/', '_', $fn) ?: 'photo';
         header('Content-Type: ' . $mime);
-        header('Content-Disposition: attachment; filename="' . $fn . '"');
+        if ($asAttachment) {
+            header('Content-Disposition: attachment; filename="' . $fn . '"');
+        } else {
+            header('Content-Disposition: inline; filename="' . $fn . '"');
+        }
         header('Content-Length: ' . (string) filesize($abs));
         header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: private, max-age=3600');
         readfile($abs);
         exit;
     }

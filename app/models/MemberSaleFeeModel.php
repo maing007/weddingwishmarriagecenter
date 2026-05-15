@@ -150,6 +150,8 @@ class MemberSaleFeeModel
      */
     public function allByTypeForIncomeUi(string $feeType): array
     {
+        $pfx = MATRI_ID_PREFIX;
+        $leg = MATRI_ID_PREFIX_LEGACY;
         $sql = "
             SELECT
                 msf.*,
@@ -170,6 +172,31 @@ class MemberSaleFeeModel
                 ud.dob,
                 ud.created_at AS ud_created_at,
                 ud.user_status,
+                COALESCE(ud.registration_fee_queued, 0) AS registration_fee_queued,
+                (
+                    SELECT MAX(
+                        CASE
+                            WHEN LOWER(TRIM(COALESCE(rmsf.staff_payment_status, ''))) = 'paid' THEN 1
+                            WHEN EXISTS (
+                                SELECT 1 FROM member_fee_payment_proofs p WHERE p.fee_id = rmsf.id
+                            ) THEN 1
+                            ELSE 0
+                        END
+                    )
+                    FROM member_sale_fees rmsf
+                    WHERE rmsf.fee_type = 'registration'
+                      AND (
+                          (rmsf.linked_user_id IS NOT NULL AND rmsf.linked_user_id > 0 AND rmsf.linked_user_id = ud.id)
+                          OR (
+                              (rmsf.linked_user_id IS NULL OR rmsf.linked_user_id = 0)
+                              AND (
+                                  (NULLIF(TRIM(ud.matri_id), '') IS NOT NULL AND TRIM(rmsf.matri_id) = TRIM(ud.matri_id))
+                                  OR TRIM(rmsf.matri_id) = CONCAT('{$pfx}', ud.id)
+                                  OR TRIM(rmsf.matri_id) = CONCAT('{$leg}', ud.id)
+                              )
+                          )
+                      )
+                ) AS registration_fee_paid,
                 ud.photo1_status,
                 ud.photo2_url,
                 ud.photo3_url,
@@ -676,6 +703,98 @@ class MemberSaleFeeModel
     }
 
     /**
+     * user_packages.user_id FK points at users.id; registration only creates user_details rows.
+     * Insert a matching users row when missing so package assignment works on production.
+     */
+    private function ensureUsersRowForUserDetailsId(int $userId): bool
+    {
+        if ($userId <= 0) {
+            return false;
+        }
+        $chk = $this->db->prepare('SELECT 1 FROM users WHERE id = :id LIMIT 1');
+        $chk->execute([':id' => $userId]);
+        if ($chk->fetchColumn()) {
+            return true;
+        }
+
+        $st = $this->db->prepare('SELECT * FROM user_details WHERE id = :id LIMIT 1');
+        $st->execute([':id' => $userId]);
+        $ud = $st->fetch(PDO::FETCH_ASSOC);
+        if (!$ud) {
+            return false;
+        }
+
+        $email = trim((string) ($ud['email'] ?? ''));
+        if ($email !== '') {
+            $eDup = $this->db->prepare('SELECT id FROM users WHERE email = :e LIMIT 1');
+            $eDup->execute([':e' => $email]);
+            $other = $eDup->fetchColumn();
+            if ($other !== false && (int) $other !== $userId) {
+                $email = '';
+            }
+        }
+        if ($email === '') {
+            $email = 'ud-sync-' . $userId . '@users-table.local';
+        }
+
+        $fn = trim((string) ($ud['first_name'] ?? '')) !== '' ? trim((string) $ud['first_name']) : 'Member';
+        $ln = trim((string) ($ud['second_name'] ?? '')) !== '' ? trim((string) $ud['second_name']) : '-';
+        $gender = trim((string) ($ud['gender'] ?? 'Male')) !== '' ? trim((string) $ud['gender']) : 'Male';
+        if (strlen($gender) > 10) {
+            $gender = substr($gender, 0, 10);
+        }
+        $phone = trim((string) ($ud['mobile_number'] ?? ''));
+        if ($phone === '') {
+            $phone = trim((string) ($ud['phone'] ?? ''));
+        }
+        $cc = trim((string) ($ud['country_code'] ?? ''));
+        $pw = trim((string) ($ud['password'] ?? ''));
+        if ($pw === '') {
+            $pw = password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT);
+        }
+        $dob = $ud['dob'] ?? null;
+        if ($dob === null || $dob === '' || (string) $dob === '0000-00-00') {
+            $dob = '1990-01-01';
+        }
+        $rel = trim((string) ($ud['religion'] ?? '')) !== '' ? trim((string) $ud['religion']) : 'Muslim';
+        $matri = trim((string) ($ud['matri_id'] ?? ''));
+        $avatar = trim((string) ($ud['photo2_url'] ?? ''));
+        if ($avatar === '') {
+            $avatar = 'default.png';
+        }
+        $created = $ud['created_at'] ?? date('Y-m-d H:i:s');
+
+        try {
+            $ins = $this->db->prepare('
+                INSERT INTO users (id, gender, first_name, last_name, phone, country_code, email, password_hash, dob, religion, matri_id, avatar, created_at)
+                VALUES (:id, :gender, :fn, :ln, :phone, :cc, :email, :pw, :dob, :rel, :matri, :avatar, :created)
+            ');
+
+            return $ins->execute([
+                ':id' => $userId,
+                ':gender' => $gender,
+                ':fn' => substr($fn, 0, 100),
+                ':ln' => substr($ln, 0, 100),
+                ':phone' => substr($phone, 0, 20),
+                ':cc' => substr($cc, 0, 10),
+                ':email' => substr($email, 0, 255),
+                ':pw' => $pw,
+                ':dob' => $dob,
+                ':rel' => substr($rel, 0, 50),
+                ':matri' => substr($matri, 0, 30),
+                ':avatar' => substr($avatar, 0, 255),
+                ':created' => $created,
+            ]);
+        } catch (Throwable $e) {
+            error_log('ensureUsersRowForUserDetailsId: ' . $e->getMessage());
+            $chk2 = $this->db->prepare('SELECT 1 FROM users WHERE id = :id LIMIT 1');
+            $chk2->execute([':id' => $userId]);
+
+            return (bool) $chk2->fetchColumn();
+        }
+    }
+
+    /**
      * Plan assignment modal submit: create package row, approve member, update fee row for sales report.
      *
      * @param array<string, mixed> $in
@@ -702,9 +821,16 @@ class MemberSaleFeeModel
             return ['ok' => false, 'message' => 'Invalid registration fee record.'];
         }
 
+        $linkedCol = (int) ($feeRow['linked_user_id'] ?? 0);
+        $resolved = $this->getLinkedUserIdForFee($feeId);
+        $expectedUser = $linkedCol > 0 ? $linkedCol : (int) ($resolved ?? 0);
+        if ($expectedUser <= 0 || $expectedUser !== $userId) {
+            return ['ok' => false, 'message' => 'Member does not match this registration fee record. Refresh the page and try again.'];
+        }
+
         $pst = trim((string) ($feeRow['staff_payment_status'] ?? ''));
         if (strcasecmp($pst, self::STATUS_PENDING_PLAN) !== 0) {
-            return ['ok' => false, 'message' => 'This member is not awaiting plan assignment.'];
+            return ['ok' => true, 'message' => 'This assignment was already submitted.'];
         }
 
         $pkgStmt = $this->db->prepare('SELECT * FROM packages WHERE id = :id LIMIT 1');
@@ -743,6 +869,35 @@ class MemberSaleFeeModel
 
         $this->db->beginTransaction();
         try {
+            $lock = $this->db->prepare('SELECT * FROM member_sale_fees WHERE id = :id FOR UPDATE');
+            $lock->execute([':id' => $feeId]);
+            $locked = $lock->fetch(PDO::FETCH_ASSOC);
+            if (!$locked) {
+                $this->db->rollBack();
+
+                return ['ok' => false, 'message' => 'Fee record disappeared. Refresh and try again.'];
+            }
+            $pstLocked = trim((string) ($locked['staff_payment_status'] ?? ''));
+            if (strcasecmp($pstLocked, self::STATUS_PENDING_PLAN) !== 0) {
+                $this->db->commit();
+
+                return ['ok' => true, 'message' => 'This assignment was already saved.'];
+            }
+
+            $dupChk = $this->db->prepare('SELECT id FROM user_packages WHERE invoice_no = :inv LIMIT 1');
+            $dupChk->execute([':inv' => $invoiceRef]);
+            if ($dupChk->fetchColumn()) {
+                $this->db->commit();
+
+                return ['ok' => true, 'message' => 'This fee was already processed.'];
+            }
+
+            if (!$this->ensureUsersRowForUserDetailsId($userId)) {
+                $this->db->rollBack();
+
+                return ['ok' => false, 'message' => 'Could not link this member to the package system (users table). Check that the profile exists.'];
+            }
+
             $insUp = $this->db->prepare('
                 INSERT INTO user_packages (user_id, package_id, status, started_at, expires_at, invoice_no, is_paid)
                 VALUES (:uid, :pid, \'active\', :st, :ex, :inv, 0)
@@ -798,10 +953,17 @@ class MemberSaleFeeModel
 
             return ['ok' => true, 'message' => 'Plan assigned. Member approved.'];
         } catch (Throwable $e) {
-            $this->db->rollBack();
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
             error_log('assignRegistrationPlanAndApprove: ' . $e->getMessage());
 
-            return ['ok' => false, 'message' => 'Could not save assignment.'];
+            $msg = 'Could not save assignment.';
+            if (strpos($e->getMessage(), '1452') !== false || stripos($e->getMessage(), 'foreign key') !== false) {
+                $msg = 'Could not save package (database constraint). If this continues, contact support with the member ID.';
+            }
+
+            return ['ok' => false, 'message' => $msg];
         }
     }
 
@@ -934,6 +1096,43 @@ class MemberSaleFeeModel
         }
     }
 
+    /**
+     * Resolve stored receipt file for admin download (same disk rules as member photos; path must stay under uploads/).
+     *
+     * @return array{absolute: string, filename: string}|null
+     */
+    public function paymentProofFileForAdminDownload(int $proofId): ?array
+    {
+        if ($proofId <= 0) {
+            return null;
+        }
+        $stmt = $this->db->prepare('SELECT id, receipt_path FROM member_fee_payment_proofs WHERE id = :id LIMIT 1');
+        $stmt->execute([':id' => $proofId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            return null;
+        }
+        $rel = trim((string) ($row['receipt_path'] ?? ''));
+        if ($rel === '') {
+            return null;
+        }
+        if (!function_exists('admin_member_photo_public_absolute_path')) {
+            return null;
+        }
+        $abs = admin_member_photo_public_absolute_path($rel);
+        if ($abs === null || !is_readable($abs)) {
+            return null;
+        }
+        $relNorm = strtolower(str_replace('\\', '/', ltrim(trim($rel), '/')));
+        if (strpos($relNorm, 'uploads/payment_proofs/') !== 0) {
+            return null;
+        }
+        $fn = basename(str_replace('\\', '/', $abs));
+        $fn = preg_replace('/[^A-Za-z0-9._-]+/', '_', $fn) ?: 'payment-proof';
+
+        return ['absolute' => $abs, 'filename' => $fn];
+    }
+
     public function listPaymentProofs(int $feeId): array
     {
         $stmt = $this->db->prepare('SELECT * FROM member_fee_payment_proofs WHERE fee_id = :id ORDER BY id DESC');
@@ -1016,5 +1215,32 @@ class MemberSaleFeeModel
         }
 
         return $row;
+    }
+
+    /** Delete one sales / income fee row and its payment proof rows. */
+    public function deleteMemberSaleFeeById(int $feeId): bool
+    {
+        if ($feeId <= 0) {
+            return false;
+        }
+        $exists = $this->findById($feeId);
+        if (!$exists) {
+            return false;
+        }
+        try {
+            $this->db->beginTransaction();
+            $this->db->prepare('DELETE FROM member_fee_payment_proofs WHERE fee_id = ?')->execute([$feeId]);
+            $this->db->prepare('DELETE FROM member_sale_fees WHERE id = ?')->execute([$feeId]);
+            $this->db->commit();
+
+            return true;
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            error_log('MemberSaleFeeModel::deleteMemberSaleFeeById: ' . $e->getMessage());
+
+            return false;
+        }
     }
 }

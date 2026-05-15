@@ -1,9 +1,11 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Serve theme assets and user uploads from /public (URLs stay /assets/... and /uploads/...)
+    # Serve theme assets from /public (URLs stay /assets/...)
     RewriteRule ^assets/(.*)$ public/assets/$1 [L]
-    RewriteRule ^uploads/(.*)$ public/uploads/$1 [L]
+    # User uploads live in project root /uploads (URL may be /upload/… or /uploads/…)
+    RewriteRule ^upload/(.*)$ uploads/$1 [L]
+    RewriteRule ^uploads/(.*)$ uploads/$1 [L]
 
     # Existing files or directories at project root
     RewriteCond %{REQUEST_FILENAME} -f [OR]
